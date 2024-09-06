@@ -17,13 +17,13 @@ export const authOptions: NextAuthOptions = {
 
                 const userFound = await prisma.usuario.findUnique({
                     where: {
-                        username: credentials.username,
+                        username: username,
                     }
-                })
+                });
                 if (!userFound) {
-                    throw new Error("El correo electrónico no está registrado.");
+                    throw new Error("El nombre de usuario no está registrado.");
                 }
-                const passwordMatch = await bcrypt.compare(credentials.password, userFound.password)
+                const passwordMatch = await bcrypt.compare(password, userFound.password);
                 if (!passwordMatch) {
                     throw new Error("La contraseña es incorrecta.");
                 }
@@ -39,7 +39,22 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     callbacks: {
-        // Tus callbacks aquí
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                token.rol = user.rol;
+                // Agrega otros campos que necesites
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            if (token) {
+                session.user.id = token.id as string; // Asegúrate de que token.id sea un string
+                session.user.rol = token.rol as string; // Asegúrate de que token.rol sea un string
+                // Agrega otros campos que necesites
+            }
+            return session;
+        }
     },
     pages: {
         signIn: '/login/inicio',

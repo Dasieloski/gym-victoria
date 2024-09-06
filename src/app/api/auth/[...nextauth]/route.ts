@@ -1,8 +1,5 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import prisma from "@/lib/prisma";
-import bcrypt from "bcrypt";
-import { authOptions } from "@/lib/auth"; // Cambiar esta línea para importar authOptions
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 declare module "next-auth" {
     interface User {
