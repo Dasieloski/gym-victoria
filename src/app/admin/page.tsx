@@ -50,12 +50,12 @@ export default function AdminDashboard() {
         setIsMobileMenuOpen(!isMobileMenuOpen)
     }
 
-    const handleTabChange = (tab) => {
+    const handleTabChange = (tab: string) => {
         setActiveTab(tab)
         setIsMobileMenuOpen(false)
     }
 
-    const sortItems = (items) => {
+    const sortItems = (items: { [key: string]: any }[]) => {
         if (sortBy) {
             return [...items].sort((a, b) => {
                 if (a[sortBy] < b[sortBy]) return -1
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
                 labels: {
                     font: {
                         size: 14,
-                        weight: 'bold',
+                        weight: 'bold' as const, // Cambiado a 'bold' como string literal
                     },
                     color: isDarkMode ? 'white' : 'black',
                 },
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
                 text: 'Asistencia Semanal',
                 font: {
                     size: 18,
-                    weight: 'bold',
+                    weight: 'bold' as const, // Cambiado a 'bold' como string literal
                 },
                 color: isDarkMode ? 'white' : 'black',
             },
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
                 labels: {
                     font: {
                         size: 14,
-                        weight: 'bold',
+                        weight: 'bold' as const, // Cambiado a 'bold' como string literal
                     },
                     color: isDarkMode ? 'white' : 'black',
                 },
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
                 text: 'Distribución de Membresías',
                 font: {
                     size: 18,
-                    weight: 'bold',
+                    weight: 'bold' as const, // Cambiado a 'bold' como string literal
                 },
                 color: isDarkMode ? 'white' : 'black',
             },
@@ -279,7 +279,7 @@ export default function AdminDashboard() {
                             </button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(clients).map((client) => (
+                            {sortItems(clients).map((client: any) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <h3 className="text-lg font-semibold mb-2">{client.name}</h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">ID: {client.clientId}</p>
@@ -325,7 +325,7 @@ export default function AdminDashboard() {
                             </button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(memberships).map((membership) => (
+                            {sortItems(memberships).map((membership: any) => (
                                 <div key={membership.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <h3 className="text-lg font-semibold mb-2">{membership.clientName}</h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tipo: {membership.type}</p>
@@ -370,7 +370,7 @@ export default function AdminDashboard() {
                             </button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(bookings).map((booking) => (
+                            {sortItems(bookings).map((booking: any) => (
                                 <div key={booking.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <h3 className="text-lg font-semibold mb-2">{booking.clientName}</h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Fecha: {booking.date}</p>
@@ -410,7 +410,7 @@ export default function AdminDashboard() {
                             </select>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(newClients).map((client) => (
+                            {sortItems(newClients).map((client: any) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <h3 className="text-lg font-semibold mb-2">{client.name}</h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Usuario: {client.username}</p>

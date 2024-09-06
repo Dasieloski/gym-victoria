@@ -40,12 +40,12 @@ export default function TrainerPage() {
         setIsMobileMenuOpen(!isMobileMenuOpen)
     }
 
-    const handleTabChange = (tab) => {
+    const handleTabChange = (tab: string) => {
         setActiveTab(tab)
         setIsMobileMenuOpen(false)
     }
 
-    const handlePaymentUpdate = (clientId, paid) => {
+    const handlePaymentUpdate = (clientId: number, paid: boolean) => {
         setClients(clients.map(client => {
             if (client.id === clientId) {
                 const today = new Date()
@@ -54,14 +54,14 @@ export default function TrainerPage() {
                     ...client,
                     lastPayment: paid ? new Date().toISOString().split('T')[0] : client.lastPayment,
                     nextPayment: paid ? nextPaymentDate.toISOString().split('T')[0] : client.nextPayment,
-                    daysUntilPayment: paid ? Math.ceil((nextPaymentDate - new Date()) / (1000 * 60 * 60 * 24)) : client.daysUntilPayment
+                    daysUntilPayment: paid ? Math.ceil((nextPaymentDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : client.daysUntilPayment
                 }
             }
             return client
         }))
     }
 
-    const handleMembershipChange = (clientId, newMembershipType) => {
+    const handleMembershipChange = (clientId: number, newMembershipType: string) => {
         setClients(clients.map(client => {
             if (client.id === clientId) {
                 return {
@@ -73,7 +73,7 @@ export default function TrainerPage() {
         }))
     }
 
-    const handleSortChange = (tab, criteria) => {
+    const handleSortChange = (tab: string, criteria: string) => {
         setSortCriteria(prev => ({ ...prev, [tab]: criteria }))
     }
 
@@ -93,7 +93,7 @@ export default function TrainerPage() {
     const sortedSchedules = [...schedules].sort((a, b) => {
         switch (sortCriteria.schedules) {
             case 'date':
-                return new Date(a.date) - new Date(b.date)
+                return new Date(a.date).getTime() - new Date(b.date).getTime()
             case 'clientName':
                 return a.clientName.localeCompare(b.clientName)
             case 'time':
@@ -110,7 +110,7 @@ export default function TrainerPage() {
             case 'membershipType':
                 return a.membershipType.localeCompare(b.membershipType)
             case 'nextPayment':
-                return new Date(a.nextPayment) - new Date(b.nextPayment)
+                return new Date(a.nextPayment).getTime() - new Date(b.nextPayment).getTime()
             case 'daysUntilPayment':
                 return a.daysUntilPayment - b.daysUntilPayment
             default:
@@ -118,11 +118,11 @@ export default function TrainerPage() {
         }
     })
 
-    const SortDropdown = ({ tab, options }) => (
+    const SortDropdown = ({ tab, options }: { tab: string; options: { value: string; label: string }[] }) => (
         <div className="mb-6 flex items-center justify-end">
             <div className="relative">
                 <select
-                    value={sortCriteria[tab]}
+                    value={sortCriteria[tab as keyof typeof sortCriteria]}
                     onChange={(e) => handleSortChange(tab, e.target.value)}
                     className="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 py-2 px-4 pr-8 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2272FF] focus:border-transparent"
                 >
