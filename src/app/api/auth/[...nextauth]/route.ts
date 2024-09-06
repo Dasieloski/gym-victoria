@@ -15,6 +15,6 @@ declare module "next-auth" {
     }
 }
 
-const handler = NextAuth(authOptions); // Asegúrate de que esta línea use authOptions importado
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
