@@ -87,7 +87,7 @@ export default function LoginPage() {
         if (savedUsername) {
             setValue("username", savedUsername); // Establecer el valor en el formulario
         }
-    }, []);
+    }, [setValue]); // Agregar setValue a las dependencias
 
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col justify-center items-center px-4 transition-colors duration-300`}>
