@@ -1,0 +1,40 @@
+import { NextResponse } from "next/server"
+import prisma from "@/lib/prisma"
+import bcrypt from "bcrypt"
+
+export async function POST(request: Request) {
+    try {
+        const data = await request.json()
+        const userfound = await prisma.usuario.findFirst({
+            where: {
+                OR: [
+                    { username: data.username },
+                    { carnetIdentidad: data.carnetIdentidad }
+                ]
+            }
+        })
+
+        if (userfound) {
+            return NextResponse.json({
+                message: "El usuario ya existe"
+            }, { status: 400 })
+        }
+
+        const hashedPassword = await bcrypt.hash(data.password, 10)
+        const NewUser = await prisma.usuario.create({
+            data: {
+                nombre: data.nombre,
+                username: data.username,
+                carnetIdentidad: data.carnetIdentidad,
+                telefono: data.telefono,
+                password: hashedPassword,
+                rol: 'CLIENTEESPERA'
+            }
+        })
+
+        return NextResponse.json({ message: "Usuario creado exitosamente", user: NewUser })
+    } catch (error) {
+        console.error("Error en el registro:", error)
+        return NextResponse.json({ message: "Error interno del servidor" }, { status: 500 })
+    }
+}

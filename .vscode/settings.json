@@ -1,0 +1,15 @@
+{
+    "WillLuke.nextjs.addTypesOnSave": true,
+    "WillLuke.nextjs.hasPrompted": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "gym-victoria",
+            "database": "gym-victoria",
+            "username": "postgres"
+        }
+    ]
+}

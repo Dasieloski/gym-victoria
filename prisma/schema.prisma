@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id                   Int         @id @default(autoincrement())
+  nombre               String
+  username             String      @unique
+  password             String
+  carnetIdentidad      String      @unique
+  telefono             String
+  visitasEsteMes       Int         @default(0)
+  rol                  Rol
+  membresias           Membresia[]
+  membresiaActual      Membresia?  @relation("MembresiaActual", fields: [membresiaActualId], references: [id])
+  membresiaActualId    Int?        @unique
+  reservasCliente      Reserva[]   @relation("ClienteReservas")
+  reservasEntrenador   Reserva[]   @relation("EntrenadorReservas")
+  historiales          Historial[]
+  entrenador           Entrenador?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  entrenadorAsignado   Usuario?    @relation("EntrenadorClientes", fields: [entrenadorAsignadoId], references: [id])
+  entrenadorAsignadoId Int?
+  clientesAsignados    Usuario[]   @relation("EntrenadorClientes")
+}
+
+enum Rol {
+  ADMIN
+  ENTRENADOR
+  CLIENTE
+  CLIENTEESPERA
+}
+
+model Entrenador {
+  id          Int         @id @default(autoincrement())
+  usuario     Usuario     @relation(fields: [usuarioId], references: [id])
+  usuarioId   Int         @unique
+  reservas    Reserva[]
+  historiales Historial[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("Entrenador") // Especificamos que el nombre de la tabla será "Entrenador"
+}
+
+model Membresia {
+  id            Int           @id @default(autoincrement())
+  tipo          TipoMembresia
+  fechaInicio   DateTime
+  fechaFin      DateTime
+  estadoPago    EstadoPago
+  cliente       Usuario       @relation(fields: [clienteId], references: [id])
+  clienteId     Int
+  usuarioActual Usuario?      @relation("MembresiaActual")
+  historiales   Historial[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum TipoMembresia {
+  MENSUAL
+  TRIMESTRAL
+  ANUAL
+}
+
+enum EstadoPago {
+  PAGADO
+  IMPAGADO
+}
+
+model Reserva {
+  id                 Int           @id @default(autoincrement())
+  clienteId          Int
+  entrenadorId       Int?
+  fecha              DateTime // Este campo almacena la fecha y la hora
+  estado             EstadoReserva
+  cliente            Usuario       @relation("ClienteReservas", fields: [clienteId], references: [id])
+  entrenador         Usuario?      @relation("EntrenadorReservas", fields: [entrenadorId], references: [id])
+  entrenadorRelacion Entrenador?   @relation(fields: [entrenadorId], references: [id], map: "Reserva_entrenadorRelacion_fkey")
+  historiales        Historial[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+enum EstadoReserva {
+  ACTIVA
+  CANCELADA
+}
+
+model Historial {
+  id           Int         @id @default(autoincrement())
+  accion       String
+  descripcion  String
+  usuario      Usuario     @relation(fields: [usuarioId], references: [id])
+  usuarioId    Int
+  entrenador   Entrenador? @relation(fields: [entrenadorId], references: [id])
+  entrenadorId Int?
+  membresia    Membresia?  @relation(fields: [membresiaId], references: [id])
+  membresiaId  Int?
+  reserva      Reserva?    @relation(fields: [reservaId], references: [id])
+  reservaId    Int?
+  fecha        DateTime    @default(now())
+}
