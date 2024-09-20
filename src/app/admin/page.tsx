@@ -1,37 +1,274 @@
 "use client"
 import { useState, useEffect } from 'react'
-import { Dumbbell, Users, CreditCard, Calendar, BarChart, Sun, Moon, Edit, Trash, Plus, ChevronLeft, ChevronRight, Search, Menu, UserPlus } from 'lucide-react'
+import { Dumbbell, Users, CreditCard, Calendar, BarChart, Sun, Moon, Edit, Trash, Plus, ChevronLeft, ChevronRight, Search, Menu, UserPlus, History, UserCog } from 'lucide-react'
 import Link from 'next/link'
 import { Bar, Pie } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import axios from 'axios'
+import React from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
 
+// Confirmation Dialog Component
+const ConfirmationDialog = ({ isOpen, onClose, onConfirm, message }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; message: string; }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl">
+                <p className="mb-4 text-lg">{message}</p>
+                <div className="flex justify-end space-x-2">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                        Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function AdminDashboard() {
+    const [sortBy, setSortBy] = useState('')
+    const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: null, type: '' })
+    const [trainers, setTrainers] = useState([])
+    const [editingClient, setEditingClient] = useState(null)
+    const [clientes, setClientes] = useState([])
+    const [clientesEspera, setClientesEspera] = useState([]);
     const [isDarkMode, setIsDarkMode] = useState(false)
     const [activeTab, setActiveTab] = useState('dashboard')
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const [clients, setClients] = useState([
-        { id: 1, name: 'Juan Pérez', clientId: 'GV001', phone: '+34 123 456 789', attendance: '3/week', paymentStatus: 'Al día', trainer: 'María García' },
-        { id: 2, name: 'Ana López', clientId: 'GV002', phone: '+34 987 654 321', attendance: '2/week', paymentStatus: 'Pendiente', trainer: 'Carlos Rodríguez' },
-        { id: 3, name: 'Luis Martínez', clientId: 'GV003', phone: '+34 456 789 123', attendance: '4/week', paymentStatus: 'Al día', trainer: 'María García' },
-    ])
-    const [memberships, setMemberships] = useState([
-        { id: 1, clientName: 'Juan Pérez', type: 'Anual', startDate: '01/01/2023', endDate: '31/12/2023', status: 'Activo' },
-        { id: 2, clientName: 'Ana López', type: 'Mensual', startDate: '01/05/2023', endDate: '31/05/2023', status: 'Activo' },
-        { id: 3, clientName: 'Luis Martínez', type: 'Trimestral', startDate: '01/04/2023', endDate: '30/06/2023', status: 'Activo' },
-    ])
-    const [bookings, setBookings] = useState([
-        { id: 1, clientName: 'Juan Pérez', date: '2023-05-15', time: '10:00', trainer: 'María García' },
-        { id: 2, clientName: 'Ana López', date: '2023-05-16', time: '15:00', trainer: 'Carlos Rodríguez' },
-        { id: 3, clientName: 'Luis Martínez', date: '2023-05-17', time: '18:00', trainer: 'María García' },
-    ])
-    const [newClients, setNewClients] = useState([
-        { id: 1, name: 'Pedro Sánchez', username: 'pedros', idCard: '12345678A', phone: '+34 111 222 333' },
-        { id: 2, name: 'María Rodríguez', username: 'mariar', idCard: '87654321B', phone: '+34 444 555 666' },
-        { id: 3, name: 'Carlos García', username: 'carlosg', idCard: '11223344C', phone: '+34 777 888 999' },
-    ])
-    const [sortBy, setSortBy] = useState('')
+    const [bookings, setBookings] = useState([])
+    const [users, setUsers] = useState([])
+    const [historiales, setHistoriales] = useState([])
+    const [clientesConMembresia, setClientesConMembresia] = useState([])
+    const [searchClients, setSearchClients] = useState('');
+    const [searchNewClients, setSearchNewClients] = useState('');
+    const [searchMemberships, setSearchMemberships] = useState('');
+    const [searchHistory, setSearchHistory] = useState('');
+    const [searchUsers, setSearchUsers] = useState(''); // Agregar estado para búsqueda de usuarios
+    const [previousIngresosMensuales, setPreviousIngresosMensuales] = useState(0);
+    const [previousTotalClientes, setPreviousTotalClientes] = useState(0);
+
+    const filteredClients = clientes.filter((client: { nombre: string; carnetIdentidad: string; telefono: string }) =>
+        client.nombre.toLowerCase().includes(searchClients.toLowerCase()) ||
+        client.carnetIdentidad.toLowerCase().includes(searchClients.toLowerCase()) ||
+        client.telefono.toLowerCase().includes(searchClients.toLowerCase())
+    );
+
+    const filteredNewClients = clientesEspera.filter((client: { nombre: string; username: string; carnetIdentidad: string }) =>
+        client.nombre.toLowerCase().includes(searchNewClients.toLowerCase()) ||
+        client.username.toLowerCase().includes(searchNewClients.toLowerCase()) ||
+        client.carnetIdentidad.toLowerCase().includes(searchNewClients.toLowerCase())
+    );
+
+    const filteredMemberships = clientesConMembresia.filter(client =>
+        client.nombre.toLowerCase().includes(searchMemberships.toLowerCase()) ||
+        client.membresiaActual.tipo.toLowerCase().includes(searchMemberships.toLowerCase())
+    );
+
+    const filteredHistory = historiales.filter(item =>
+        item.accion.toLowerCase().includes(searchHistory.toLowerCase()) ||
+        item.descripcion.toLowerCase().includes(searchHistory.toLowerCase()) ||
+        item.usuario.nombre.toLowerCase().includes(searchHistory.toLowerCase())
+    );
+
+    // Filtrar usuarios según la búsqueda
+    const filteredUsers = users.filter(user =>
+        user.nombre.toLowerCase().includes(searchUsers.toLowerCase()) ||
+        user.rol.toLowerCase().includes(searchUsers.toLowerCase())
+    );
+
+    // Calcular ingresos mensuales: 2000 pesos por cada cliente con membresía activa
+    const ingresosMensuales = clientesConMembresia.length * 2000;
+    const totalClientes = users.filter(user => user.rol === 'CLIENTE').length;
+
+    // Calcular porcentajes
+    const ingresosPorcentaje = previousIngresosMensuales ? ((ingresosMensuales - previousIngresosMensuales) / previousIngresosMensuales) * 100 : 0;
+    const clientesPorcentaje = previousTotalClientes ? ((totalClientes - previousTotalClientes) / previousTotalClientes) * 100 : 0;
+
+    // Actualizar valores anteriores al final del efecto
+    useEffect(() => {
+        setPreviousIngresosMensuales(ingresosMensuales);
+        setPreviousTotalClientes(totalClientes);
+    }, [ingresosMensuales, totalClientes]);
+
+    useEffect(() => {
+        const fetchBookings = async () => {
+            try {
+                const response = await fetch('/api/admin/bookings');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error al obtener las reservas');
+                }
+                const data = await response.json();
+                console.log('Reservas obtenidas:', data);
+                setBookings(data); // Actualizado para asignar data directamente
+            } catch (error) {
+                console.error('Error al obtener las reservas:', error);
+                toast.error(`Error al cargar las reservas: ${error.message}`);
+            }
+        };
+
+        fetchBookings();
+    }, []);
+
+    useEffect(() => {
+        const fetchHistoriales = async () => {
+            try {
+                const response = await fetch('/api/historial');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setHistoriales(data);
+            } catch (error) {
+                console.error('Error al obtener los historiales:', error);
+                // Puedes manejar el error aquí, por ejemplo, mostrando un mensaje al usuario
+            }
+        };
+
+        fetchHistoriales();
+    }, []);
+
+    useEffect(() => {
+        const fetchMemberships = async () => {
+            try {
+                const response = await fetch('/api/admin/memberships');
+                if (!response.ok) {
+                    throw new Error('Error al obtener las membresías');
+                }
+                const data = await response.json();
+                console.log('Datos de membresías:', data); // Verifica los datos aquí
+                setClientesConMembresia(data);
+            } catch (error) {
+                console.error('Error al obtener las membresías:', error);
+                toast.error(`Error al cargar las membresías: ${error.message}`);
+            }
+        };
+
+        fetchMemberships();
+    }, []);
+
+
+
+    const confirmDelete = async () => {
+        if (deleteConfirmation.id && deleteConfirmation.type) {
+            try {
+                const response = await fetch(`/api/admin/${deleteConfirmation.type === 'client' ? 'clientes' : 'bookings'}?id=${deleteConfirmation.id}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error desconocido al eliminar el elemento');
+                }
+
+                if (deleteConfirmation.type === 'client') {
+                    setClientes(prevClientes => prevClientes.filter(client => client.id !== deleteConfirmation.id));
+                    toast.success('Cliente eliminado con éxito');
+                } else if (deleteConfirmation.type === 'booking') {
+                    setBookings(prevBookings => prevBookings.filter(booking => booking.id !== deleteConfirmation.id));
+                    toast.success('Reserva eliminada con éxito');
+                }
+
+                setDeleteConfirmation({ isOpen: false, id: null, type: '' });
+            } catch (error) {
+                console.error(`Error al eliminar el ${deleteConfirmation.type}:`, error);
+                toast.error(`Error al eliminar el ${deleteConfirmation.type}: ${error.message}`);
+            }
+        }
+    };
+    useEffect(() => {
+        const fetchNewClients = async () => {
+            try {
+                const response = await fetch('/api/admin/newClients');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error al obtener los nuevos clientes');
+                }
+                const data = await response.json();
+                setClientesEspera(data); // Asegúrate de que los datos se están asignando correctamente
+            } catch (error) {
+                console.error('Error al obtener los nuevos clientes:', error);
+                toast.error(`Error al cargar los nuevos clientes: ${error.message}`);
+            }
+        };
+
+        fetchNewClients();
+    }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/api/admin/clientes');
+                const data = await response.json();
+                setClientes(data.clientes);
+                setTrainers(data.entrenadores);
+            } catch (error) {
+                console.error('Error al obtener los datos:', error);
+                toast.error('Error al cargar los clientes');
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handleConvertToClient = async (id) => {
+        try {
+            const response = await fetch(`/api/admin/newClients`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error desconocido al convertir el cliente');
+            }
+
+            const updatedUser = await response.json();
+            setClientesEspera(prevClientes =>
+                prevClientes.filter(c => c.id !== updatedUser.id)
+            );
+            toast.success('Cliente convertido con éxito');
+        } catch (error) {
+            console.error('Error al convertir el cliente:', error);
+            toast.error(`Error al convertir el cliente: ${error.message}`);
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/api/admin/roles');
+                const data = await response.json();
+                setUsers(data);
+            } catch (error) {
+                console.error('Error al obtener los datos:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true'
@@ -56,22 +293,89 @@ export default function AdminDashboard() {
     }
 
     const sortItems = (items: { [key: string]: any }[]) => {
+        if (!items) return [];
         if (sortBy) {
             return [...items].sort((a, b) => {
-                if (a[sortBy] < b[sortBy]) return -1
-                if (a[sortBy] > b[sortBy]) return 1
-                return 0
-            })
+                if (a[sortBy] < b[sortBy]) return -1;
+                if (a[sortBy] > b[sortBy]) return 1;
+                return 0;
+            });
         }
-        return items
+        return items;
     }
 
-  const barChartData = {
-        labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+    const handleDelete = (id: number, type: string) => {
+        setDeleteConfirmation({ isOpen: true, id, type });
+    };
+
+    const handleEditClient = (client) => {
+        setEditingClient(client);
+    };
+
+    const handleSaveClient = async () => {
+        if (!editingClient) {
+            console.error('No hay cliente en edición');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/admin/clientes', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: editingClient.id,
+                    nombre: editingClient.nombre,
+                    telefono: editingClient.telefono,
+                    entrenadorAsignadoId: editingClient.entrenadorAsignadoId,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error desconocido al actualizar el cliente');
+            }
+
+            const updatedClient = await response.json();
+            setClientes((prevClientes) =>
+                prevClientes.map((c) => (c.id === updatedClient.id ? updatedClient : c))
+            );
+            setEditingClient(null);
+            toast.success('Cliente editado con éxito');
+            // Cerrar el diálogo de edición
+            document.querySelector('[data-state="open"]')?.click();
+        } catch (error) {
+            console.error('Error al guardar el cliente:', error);
+            toast.error(`Error al guardar el cliente: ${error.message}`);
+        }
+    };
+
+    // Calcular asistencia semanal
+    const asistenciaSemanal = [0, 0, 0, 0, 0, 0, 0]; // Array para almacenar la asistencia de cada día
+
+    // Verifica si hoy es domingo
+    const today = new Date();
+    if (today.getDay() === 0) {
+        // Reinicia el conteo si es domingo
+        asistenciaSemanal.fill(0);
+    }
+
+    // Iterar sobre las reservas y contar los clientes por día
+    bookings.forEach(booking => {
+        const fecha = new Date(booking.fecha);
+        const dia = fecha.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+        if (dia >= 0 && dia <= 6) {
+            asistenciaSemanal[dia] += 1; // Incrementar el contador para el día correspondiente
+        }
+    });
+
+    const barChartData = {
+        labels: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
         datasets: [
             {
-                label: 'Asistencia Diaria',
-                data: [65, 59, 80, 81, 56, 55, 40],
+                label: 'Asistencia Semanal',
+                data: asistenciaSemanal,
                 backgroundColor: 'rgba(34, 114, 255, 0.6)',
                 borderColor: 'rgba(34, 114, 255, 1)',
                 borderWidth: 1,
@@ -88,7 +392,7 @@ export default function AdminDashboard() {
                 labels: {
                     font: {
                         size: 14,
-                        weight: 'bold' as const, // Cambiado a 'bold' como string literal
+                        weight: 'bold' as const,
                     },
                     color: isDarkMode ? 'white' : 'black',
                 },
@@ -98,7 +402,7 @@ export default function AdminDashboard() {
                 text: 'Asistencia Semanal',
                 font: {
                     size: 18,
-                    weight: 'bold' as const, // Cambiado a 'bold' como string literal
+                    weight: 'bold' as const,
                 },
                 color: isDarkMode ? 'white' : 'black',
             },
@@ -130,11 +434,22 @@ export default function AdminDashboard() {
         },
     }
 
+    // Verifica el contenido de clientesConMembresia
+    console.log('Clientes con membresía:', clientesConMembresia);
+
+    // Calcular la distribución de membresías
+    const totalMensual = clientesConMembresia.filter(client => client.membresiaActual?.tipo === 'MENSUAL').length;
+    const totalTrimestral = clientesConMembresia.filter(client => client.membresiaActual?.tipo === 'TRIMESTRAL').length;
+    const totalAnual = clientesConMembresia.filter(client => client.membresiaActual?.tipo === 'ANUAL').length;
+
+    // Verifica los totales calculados
+    console.log('Distribución de membresías:', { totalMensual, totalTrimestral, totalAnual });
+
     const pieChartData = {
         labels: ['Mensual', 'Trimestral', 'Anual'],
         datasets: [
             {
-                data: [30, 50, 20],
+                data: [totalMensual, totalTrimestral, totalAnual],
                 backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
                 borderColor: ['#FF6384', '#36A2EB', '#FFCE56'],
                 borderWidth: 1,
@@ -151,7 +466,7 @@ export default function AdminDashboard() {
                 labels: {
                     font: {
                         size: 14,
-                        weight: 'bold' as const, // Cambiado a 'bold' como string literal
+                        weight: 'bold' as const,
                     },
                     color: isDarkMode ? 'white' : 'black',
                 },
@@ -161,12 +476,13 @@ export default function AdminDashboard() {
                 text: 'Distribución de Membresías',
                 font: {
                     size: 18,
-                    weight: 'bold' as const, // Cambiado a 'bold' como string literal
+                    weight: 'bold' as const,
                 },
                 color: isDarkMode ? 'white' : 'black',
             },
         },
     }
+
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''}`}>
             {/* Sidebar */}
@@ -207,6 +523,18 @@ export default function AdminDashboard() {
                                 <span className="ml-3">Nuevos Clientes</span>
                             </button>
                         </li>
+                        <li>
+                            <button onClick={() => handleTabChange('roles')} className={`flex items-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 ${activeTab === 'roles' ? 'bg-gray-200 dark:bg-gray-700' : ''}`}>
+                                <UserCog className="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+                                <span className="ml-3">Gestionar Roles</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button onClick={() => handleTabChange('history')} className={`flex items-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 ${activeTab === 'history' ? 'bg-gray-200 dark:bg-gray-700' : ''}`}>
+                                <History className="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+                                <span className="ml-3">Historial</span>
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </aside>
@@ -239,18 +567,22 @@ export default function AdminDashboard() {
                         </div>
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                             <div className="h-80">
-                                <Pie data={pieChartData} options={pieChartOptions} />
+                                {totalMensual || totalTrimestral || totalAnual ? (
+                                    <Pie data={pieChartData} options={pieChartOptions} />
+                                ) : (
+                                    <p>No hay datos para mostrar en el gráfico.</p>
+                                )}
                             </div>
                         </div>
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                             <h3 className="text-lg font-semibold mb-2">Total Clientes</h3>
-                            <p className="text-4xl font-bold text-[#2272FF]">250</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">+5% desde el mes pasado</p>
+                            <p className="text-4xl font-bold text-[#2272FF]">{totalClientes}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{clientesPorcentaje.toFixed(2)}% desde hace 30 días</p>
                         </div>
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                             <h3 className="text-lg font-semibold mb-2">Ingresos Mensuales</h3>
-                            <p className="text-4xl font-bold text-[#2272FF]">€15,000</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">+8% desde el mes pasado</p>
+                            <p className="text-4xl font-bold text-[#2272FF]">{ingresosMensuales} CUP</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{ingresosPorcentaje.toFixed(2)}% desde hace 30 días</p>
                         </div>
                     </div>
                 )}
@@ -260,40 +592,102 @@ export default function AdminDashboard() {
                     <div>
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
                             <div className="relative w-full sm:w-auto">
-                                <input type="text" placeholder="Buscar clientes..." className="w-full sm:w-64 pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2272FF]" />
+                                <Input
+                                    type="text"
+                                    placeholder="Buscar clientes..."
+                                    className="w-full sm:w-64 pl-10 pr-4"
+                                    onChange={(e) => setSearchClients(e.target.value)}
+                                />
                                 <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
                             </div>
-                            <select
-                                className="w-full sm:w-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
-                                onChange={(e) => setSortBy(e.target.value)}
-                                value={sortBy}
-                            >
-                                <option value="">Ordenar por</option>
-                                <option value="name">Nombre</option>
-                                <option value="clientId">ID</option>
-                                <option value="paymentStatus">Estado de Pago</option>
-                            </select>
-                            <button className="w-full sm:w-auto bg-[#2272FF] text-white px-4 py-2 rounded-lg hover:bg-[#1b5acc] transition-colors duration-200 flex items-center justify-center">
-                                <Plus className="mr-2" size={20} />
-                                Añadir Cliente
-                            </button>
+                            <Select onValueChange={(value) => setSortBy(value)}>
+                                <SelectTrigger className="w-full sm:w-auto">
+                                    <SelectValue placeholder="Ordenar por" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="nombre">Nombre</SelectItem>
+                                    <SelectItem value="id">ID</SelectItem>
+                                    <SelectItem value="membresiaActual.tipo">Tipo de Membresía</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(clients).map((client: any) => (
+                            {sortItems(filteredClients).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{client.name}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">ID: {client.clientId}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Teléfono: {client.phone}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Asistencia: {client.attendance}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Estado de Pago: {client.paymentStatus}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Entrenador: {client.trainer}</p>
+                                    <h3 className="text-lg font-semibold mb-2">{client.nombre}</h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">ID: {client.id}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Teléfono: {client.telefono}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Carnet: {client.carnetIdentidad}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                        Membresía Actual: {client.membresiaActual?.tipo || 'Sin membresía'}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                        Entrenador: {client.entrenadorAsignado ? client.entrenadorAsignado.nombre : 'Sin entrenador asignado'}
+                                    </p>
                                     <div className="flex justify-end">
-                                        <button className="text-blue-500 hover:text-blue-700 mr-2">
-                                            <Edit size={18} />
-                                        </button>
-                                        <button className="text-red-500 hover:text-red-700">
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditClient(client)}>
+                                                    <Edit size={18} />
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="sm:max-w-[425px]">
+                                                <DialogHeader>
+                                                    <DialogTitle>Editar Cliente</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="grid gap-4 py-4">
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="name" className="text-right">
+                                                            Nombre
+                                                        </Label>
+                                                        <Input
+                                                            id="name"
+                                                            value={editingClient?.nombre || ''}
+                                                            onChange={(e) => setEditingClient({ ...editingClient, nombre: e.target.value })}
+                                                            className="col-span-3"
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="phone" className="text-right">
+                                                            Teléfono
+                                                        </Label>
+                                                        <Input
+                                                            id="phone"
+                                                            value={editingClient?.telefono || ''}
+                                                            onChange={(e) => setEditingClient({ ...editingClient, telefono: e.target.value })}
+                                                            className="col-span-3"
+                                                        />
+                                                    </div>
+                                                    <div className="grid grid-cols-4 items-center gap-4">
+                                                        <Label htmlFor="trainer" className="text-right">
+                                                            Entrenador
+                                                        </Label>
+                                                        <Select
+                                                            value={editingClient?.entrenadorAsignadoId?.toString() || 'Sin entrenador'}
+                                                            onValueChange={(value) => setEditingClient({ ...editingClient, entrenadorAsignadoId: value === 'Sin entrenador' ? null : parseInt(value) })}
+                                                        >
+                                                            <SelectTrigger className="col-span-3">
+                                                                <SelectValue placeholder="Seleccionar entrenador" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="Sin entrenador">Sin entrenador</SelectItem>
+                                                                {trainers.map((trainer) => (
+                                                                    <SelectItem key={trainer.id} value={trainer.id.toString()}>
+                                                                        {trainer.nombre}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button onClick={handleSaveClient}>Guardar cambios</Button>
+                                                </DialogFooter>
+                                            </DialogContent>
+                                        </Dialog>
+                                        <Button variant="outline" size="sm" onClick={() => handleDelete(client.id, 'client')}>
                                             <Trash size={18} />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             ))}
@@ -306,40 +700,33 @@ export default function AdminDashboard() {
                     <div>
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
                             <div className="relative w-full sm:w-auto">
-                                <input type="text" placeholder="Buscar membresías..." className="w-full sm:w-64 pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2272FF]" />
+                                <Input
+                                    type="text"
+                                    placeholder="Buscar membresías..."
+                                    className="w-full sm:w-64 pl-10 pr-4"
+                                    onChange={(e) => setSearchMemberships(e.target.value)}
+                                />
                                 <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
                             </div>
-                            <select
-                                className="w-full sm:w-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
-                                onChange={(e) => setSortBy(e.target.value)}
-                                value={sortBy}
-                            >
-                                <option value="">Ordenar por</option>
-                                <option value="clientName">Nombre del Cliente</option>
-                                <option value="type">Tipo de Membresía</option>
-                                <option value="startDate">Fecha de Inicio</option>
-                            </select>
-                            <button className="w-full sm:w-auto bg-[#2272FF] text-white px-4 py-2 rounded-lg hover:bg-[#1b5acc] transition-colors duration-200 flex items-center justify-center">
-                                <Plus className="mr-2" size={20} />
-                                Nueva Membresía
-                            </button>
+                            <Select onValueChange={(value) => setSortBy(value)}>
+                                <SelectTrigger className="w-full sm:w-auto">
+                                    <SelectValue placeholder="Ordenar por" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="clientName">Nombre del Cliente</SelectItem>
+                                    <SelectItem value="type">Tipo de Membresía</SelectItem>
+                                    <SelectItem value="startDate">Fecha de Inicio</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(memberships).map((membership: any) => (
-                                <div key={membership.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{membership.clientName}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tipo: {membership.type}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Inicio: {membership.startDate}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Fin: {membership.endDate}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Estado: {membership.status}</p>
-                                    <div className="flex justify-end">
-                                        <button className="text-blue-500 hover:text-blue-700 mr-2">
-                                            <Edit size={18} />
-                                        </button>
-                                        <button className="text-red-500 hover:text-red-700">
-                                            <Trash size={18} />
-                                        </button>
-                                    </div>
+                            {sortItems(filteredMemberships).map((client) => (
+                                <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                                    <h3 className="text-lg font-semibold mb-2">{client.nombre}</h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tipo: {client.membresiaActual.tipo}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Inicio: {new Date(client.membresiaActual.fechaInicio).toLocaleDateString()}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Fin: {new Date(client.membresiaActual.fechaFin).toLocaleDateString()}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Estado: {client.membresiaActual.estadoPago}</p>
                                 </div>
                             ))}
                         </div>
@@ -349,40 +736,24 @@ export default function AdminDashboard() {
                 {/* Bookings Management */}
                 {activeTab === 'bookings' && (
                     <div>
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
-                            <div className="relative w-full sm:w-auto">
-                                <input type="text" placeholder="Buscar reservas..." className="w-full sm:w-64 pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2272FF]" />
-                                <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
-                            </div>
-                            <select
-                                className="w-full sm:w-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
-                                onChange={(e) => setSortBy(e.target.value)}
-                                value={sortBy}
-                            >
-                                <option value="">Ordenar por</option>
-                                <option value="clientName">Nombre del Cliente</option>
-                                <option value="date">Fecha</option>
-                                <option value="trainer">Entrenador</option>
-                            </select>
-                            <button className="w-full sm:w-auto bg-[#2272FF] text-white px-4 py-2 rounded-lg hover:bg-[#1b5acc] transition-colors duration-200 flex items-center justify-center">
-                                <Plus className="mr-2" size={20} />
-                                Nueva Reserva
-                            </button>
-                        </div>
+                        {/* ...otros componentes como el buscador y select de ordenación... */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(bookings).map((booking: any) => (
+                            {sortItems(bookings || []).map((booking) => (
                                 <div key={booking.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{booking.clientName}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Fecha: {booking.date}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Hora: {booking.time}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Entrenador: {booking.trainer}</p>
+                                    <h3 className="text-lg font-semibold mb-2">{booking.cliente.nombre}</h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                        Fecha: {new Date(booking.fecha).toLocaleString()} {/* Muestra la fecha completa */}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                        Entrenador: {booking.entrenadorNombre}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                        Estado: {booking.estado}
+                                    </p>
                                     <div className="flex justify-end">
-                                        <button className="text-blue-500 hover:text-blue-700 mr-2">
-                                            <Edit size={18} />
-                                        </button>
-                                        <button className="text-red-500 hover:text-red-700">
+                                        <Button variant="outline" size="sm" onClick={() => handleDelete(booking.id, 'booking')}>
                                             <Trash size={18} />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             ))}
@@ -395,35 +766,167 @@ export default function AdminDashboard() {
                     <div>
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
                             <div className="relative w-full sm:w-auto">
-                                <input type="text" placeholder="Buscar nuevos clientes..." className="w-full sm:w-64 pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2272FF]" />
+                                <Input
+                                    type="text"
+                                    placeholder="Buscar nuevos clientes..."
+                                    className="w-full sm:w-64 pl-10 pr-4"
+                                    onChange={(e) => setSearchNewClients(e.target.value)}
+                                />
                                 <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
                             </div>
-                            <select
-                                className="w-full sm:w-auto bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
-                                onChange={(e) => setSortBy(e.target.value)}
-                                value={sortBy}
-                            >
-                                <option value="">Ordenar por</option>
-                                <option value="name">Nombre</option>
-                                <option value="username">Nombre de Usuario</option>
-                                <option value="idCard">Carnet de Identidad</option>
-                            </select>
+                            <Select onValueChange={(value) => setSortBy(value)}>
+                                <SelectTrigger className="w-full sm:w-auto">
+                                    <SelectValue placeholder="Ordenar por" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="nombre">Nombre</SelectItem>
+                                    <SelectItem value="username">Nombre de Usuario</SelectItem>
+                                    <SelectItem value="carnetIdentidad">Carnet de Identidad</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(newClients).map((client: any) => (
+                            {sortItems(filteredNewClients).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{client.name}</h3>
+                                    <h3 className="text-lg font-semibold mb-2">{client.nombre}</h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Usuario: {client.username}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Carnet: {client.idCard}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Teléfono: {client.phone}</p>
-                                    <button className="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Carnet: {client.carnetIdentidad}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Teléfono: {client.telefono}</p>
+                                    <Button className="w-full" onClick={() => handleConvertToClient(client.id)}>
                                         Convertir en Cliente Oficial
-                                    </button>
+                                    </Button>
                                 </div>
                             ))}
                         </div>
                     </div>
                 )}
+
+                {/* Roles Management */}
+                {activeTab === 'roles' && (
+                    <div>
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+                            <div className="relative w-full sm:w-auto">
+                                <Input
+                                    type="text"
+                                    placeholder="Buscar usuarios..."
+                                    className="w-full sm:w-64 pl-10 pr-4"
+                                    onChange={(e) => setSearchUsers(e.target.value)} // Actualizar estado de búsqueda
+                                />
+                                <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
+                            </div>
+                            <Select onValueChange={(value) => setSortBy(value)}>
+                                <SelectTrigger className="w-full sm:w-auto">
+                                    <SelectValue placeholder="Ordenar por" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="nombre">Nombre</SelectItem>
+                                    <SelectItem value="rol">Rol</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {sortItems(filteredUsers).map((user) => ( // Usar filteredUsers aquí
+                                <div key={user.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                                    <h3 className="text-lg font-semibold mb-2">{user.nombre}</h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Rol actual: {user.rol}</p>
+                                    <Select
+                                        onValueChange={async (value) => {
+                                            try {
+                                                const response = await fetch('/api/admin/updateRole', {
+                                                    method: 'PUT',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                    },
+                                                    body: JSON.stringify({ id: user.id, rol: value }),
+                                                });
+
+                                                if (!response.ok) {
+                                                    const errorData = await response.json();
+                                                    throw new Error(errorData.error || 'Error desconocido al actualizar el rol');
+                                                }
+
+                                                const updatedUser = await response.json();
+                                                setUsers(prevUsers =>
+                                                    prevUsers.map(u =>
+                                                        u.id === updatedUser.id ? { ...u, rol: updatedUser.rol } : u
+                                                    )
+                                                );
+                                                toast.success('Rol actualizado con éxito');
+                                            } catch (error: unknown) {
+                                                if (error instanceof Error) {
+                                                    console.error('Error detallado al actualizar el rol:', error);
+                                                    toast.error(`Error al actualizar el rol: ${error.message}`);
+                                                } else {
+                                                    console.error('Error desconocido al actualizar el rol:', error);
+                                                    toast.error('Error al actualizar el rol: error desconocido');
+                                                }
+                                            }
+                                        }}
+                                        defaultValue={user.rol}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Seleccionar rol" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ADMIN">ADMIN</SelectItem>
+                                            <SelectItem value="ENTRENADOR">ENTRENADOR</SelectItem>
+                                            <SelectItem value="CLIENTE">CLIENTE</SelectItem>
+                                            <SelectItem value="CLIENTEESPERA">CLIENTEESPERA</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* History */}
+                {activeTab === 'history' && (
+                    <div>
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+                            <div className="relative w-full sm:w-auto">
+                                <Input
+                                    type="text"
+                                    placeholder="Buscar en historial..."
+                                    className="w-full sm:w-64 pl-10 pr-4"
+                                    onChange={(e) => setSearchHistory(e.target.value)}
+                                />
+                                <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
+                            </div>
+                            <Select onValueChange={(value) => setSortBy(value)}>
+                                <SelectTrigger className="w-full sm:w-auto">
+                                    <SelectValue placeholder="Ordenar por" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="fecha">Fecha</SelectItem>
+                                    <SelectItem value="accion">Acción</SelectItem>
+                                    <SelectItem value="usuario">Usuario</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {sortItems(filteredHistory).map((item) => (
+                                <div key={item.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                                    <h3 className="text-lg font-semibold mb-2">{item.accion}</h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Descripción: {item.descripcion}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Usuario: {item.usuario.nombre}</p>
+                                    {item.entrenador && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Entrenador: {item.entrenador.usuario.nombre}</p>}
+                                    {item.membresia && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Membresía: {item.membresia.tipo}</p>}
+                                    {item.reserva && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Reserva: {new Date(item.reserva.fecha).toLocaleString()}</p>}
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Fecha: {new Date(item.fecha).toLocaleString()}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Confirmation Dialog */}
+                <ConfirmationDialog
+                    isOpen={deleteConfirmation.isOpen}
+                    onClose={() => setDeleteConfirmation({ isOpen: false, id: null, type: '' })}
+                    onConfirm={confirmDelete}
+                    message="¿Está seguro de que desea eliminar este elemento?"
+                />
             </div>
         </div>
     )

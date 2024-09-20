@@ -20,17 +20,16 @@ model Usuario {
   visitasEsteMes       Int         @default(0)
   rol                  Rol
   membresias           Membresia[]
-  membresiaActual      Membresia?  @relation("MembresiaActual", fields: [membresiaActualId], references: [id])
   membresiaActualId    Int?        @unique
+  membresiaActual      Membresia?  @relation("MembresiaActual", fields: [membresiaActualId], references: [id])
   reservasCliente      Reserva[]   @relation("ClienteReservas")
-  reservasEntrenador   Reserva[]   @relation("EntrenadorReservas")
   historiales          Historial[]
+  entrenadorAsignadoId Int?
+  entrenadorAsignado   Usuario?    @relation("EntrenadorClientes", fields: [entrenadorAsignadoId], references: [id])
+  clientesAsignados    Usuario[]   @relation("EntrenadorClientes")
   entrenador           Entrenador?
   createdAt            DateTime    @default(now())
   updatedAt            DateTime    @updatedAt
-  entrenadorAsignado   Usuario?    @relation("EntrenadorClientes", fields: [entrenadorAsignadoId], references: [id])
-  entrenadorAsignadoId Int?
-  clientesAsignados    Usuario[]   @relation("EntrenadorClientes")
 }
 
 enum Rol {
@@ -42,9 +41,9 @@ enum Rol {
 
 model Entrenador {
   id          Int         @id @default(autoincrement())
-  usuario     Usuario     @relation(fields: [usuarioId], references: [id])
   usuarioId   Int         @unique
-  reservas    Reserva[]
+  usuario     Usuario     @relation(fields: [usuarioId], references: [id])
+  reservas    Reserva[]   @relation("EntrenadorReservas")
   historiales Historial[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -58,8 +57,8 @@ model Membresia {
   fechaInicio   DateTime
   fechaFin      DateTime
   estadoPago    EstadoPago
-  cliente       Usuario       @relation(fields: [clienteId], references: [id])
   clienteId     Int
+  cliente       Usuario       @relation(fields: [clienteId], references: [id])
   usuarioActual Usuario?      @relation("MembresiaActual")
   historiales   Historial[]
   createdAt     DateTime      @default(now())
@@ -78,17 +77,16 @@ enum EstadoPago {
 }
 
 model Reserva {
-  id                 Int           @id @default(autoincrement())
-  clienteId          Int
-  entrenadorId       Int?
-  fecha              DateTime // Este campo almacena la fecha y la hora
-  estado             EstadoReserva
-  cliente            Usuario       @relation("ClienteReservas", fields: [clienteId], references: [id])
-  entrenador         Usuario?      @relation("EntrenadorReservas", fields: [entrenadorId], references: [id])
-  entrenadorRelacion Entrenador?   @relation(fields: [entrenadorId], references: [id], map: "Reserva_entrenadorRelacion_fkey")
-  historiales        Historial[]
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  id           Int           @id @default(autoincrement())
+  clienteId    Int
+  entrenadorId Int?
+  fecha        DateTime
+  estado       EstadoReserva
+  cliente      Usuario       @relation("ClienteReservas", fields: [clienteId], references: [id], map: "Reserva_ClienteId_fkey")
+  entrenador   Entrenador?   @relation("EntrenadorReservas", fields: [entrenadorId], references: [id], map: "Reserva_EntrenadorId_fkey")
+  historiales  Historial[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @default(now())
 }
 
 enum EstadoReserva {
@@ -100,13 +98,13 @@ model Historial {
   id           Int         @id @default(autoincrement())
   accion       String
   descripcion  String
-  usuario      Usuario     @relation(fields: [usuarioId], references: [id])
   usuarioId    Int
-  entrenador   Entrenador? @relation(fields: [entrenadorId], references: [id])
+  usuario      Usuario     @relation(fields: [usuarioId], references: [id], map: "Historial_UsuarioId_fkey")
   entrenadorId Int?
-  membresia    Membresia?  @relation(fields: [membresiaId], references: [id])
+  entrenador   Entrenador? @relation(fields: [entrenadorId], references: [id], map: "Historial_EntrenadorId_fkey")
   membresiaId  Int?
-  reserva      Reserva?    @relation(fields: [reservaId], references: [id])
+  membresia    Membresia?  @relation(fields: [membresiaId], references: [id], map: "Historial_MembresiaId_fkey")
   reservaId    Int?
+  reserva      Reserva?    @relation(fields: [reservaId], references: [id], map: "Historial_ReservaId_fkey")
   fecha        DateTime    @default(now())
 }

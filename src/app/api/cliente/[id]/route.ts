@@ -28,10 +28,22 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const usuario = await prisma.usuario.findUnique({
       where: { id: userId },
       include: {
-        reservasCliente: true,
+        reservasCliente: {
+          include: {
+            entrenador: { // Asegúrate de incluir el entrenador
+              include: {
+                usuario: true,
+              },
+            },
+          },
+        },
         membresias: true,
-        entrenador: true, // Asegúrate de que esto esté presente
-        entrenadorAsignado: true,
+        entrenador: true,
+        entrenadorAsignado: { // Modificación aquí
+          include: {
+            entrenador: true, // Incluir la relación 'entrenador'
+          },
+        },
       },
     });
 
@@ -70,6 +82,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
         id: r.id,
         fecha: r.fecha,
         estado: r.estado,
+        entrenador: r.entrenador ? {
+          id: r.entrenador.id,
+          nombre: r.entrenador.usuario.nombre, // Asegúrate de acceder correctamente al nombre
+        } : null,
       })),
       membresias: usuario.membresias.map(m => ({
         id: m.id,
@@ -94,26 +110,55 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const { clienteId, fecha } = await request.json();
+
   try {
-    const { clienteId, fecha, hora } = await request.json(); // Asegúrate de recibir clienteId
+    const parsedDate = new Date(fecha);
+    if (isNaN(parsedDate.getTime())) {
+      throw new Error('Fecha inválida');
+    }
 
-    const hora24 = convertirHora12a24(hora); // Convierte la hora a formato 24 horas
-    const fechaHora = new Date(`${fecha}T${hora24}:00`); // Combina la fecha y la hora
-
-    // Crear la nueva reserva
-    const reserva = await prisma.reserva.create({
-      data: {
-        clienteId, // Asegúrate de que esto esté definido
-        fecha: fechaHora,
-        estado: "ACTIVA" // Puedes ajustar el estado según sea necesario
-      }
+    // Validar que el cliente exista
+    const cliente = await prisma.usuario.findUnique({
+      where: { id: parseInt(clienteId) },
+      include: {
+        entrenadorAsignado: {
+          include: {
+            entrenador: true // Incluye la relación 'entrenador' dentro de 'entrenadorAsignado'
+          }
+        }
+      },
     });
 
-    return NextResponse.json({ reserva });
+    if (!cliente) {
+      throw new Error('Cliente no encontrado');
+    }
+
+    // Validar que el entrenador asignado exista
+    const entrenadorId = cliente.entrenadorAsignado?.entrenador?.id || null;
+    if (entrenadorId) {
+      const entrenador = await prisma.entrenador.findUnique({
+        where: { id: entrenadorId },
+      });
+    }
+
+    const newReserva = await prisma.reserva.create({
+      data: {
+        clienteId: parseInt(clienteId),
+        fecha: parsedDate,
+        estado: 'ACTIVA',
+        entrenadorId: entrenadorId,
+      },
+    });
+
+    return NextResponse.json({ reserva: newReserva });
   } catch (error) {
-    console.error('Error al crear la reserva:', error);
-    return NextResponse.json({ error: 'Error al crear la reserva. Por favor, intenta de nuevo.' }, { status: 500 });
+    console.error('Error creating reservation:', error);
+    return NextResponse.json({ error: 'Error creating reservation' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -125,11 +170,13 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   }
 
   try {
-    const deletedReservation = await prisma.reserva.delete({
+    // Cancelar la reserva
+    const updatedReservation = await prisma.reserva.update({
       where: { id: reservaId },
+      data: { estado: 'CANCELADA' },
     });
 
-    return NextResponse.json({ message: 'Reserva eliminada con éxito', reserva: deletedReservation });
+    return NextResponse.json({ message: 'Reserva cancelada con éxito', reserva: updatedReservation });
   } catch (error) {
     console.error('Error al eliminar la reserva:', error);
     return NextResponse.json({ error: 'Error al eliminar la reserva' }, { status: 500 });

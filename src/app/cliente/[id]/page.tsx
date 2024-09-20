@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react'
-import { Dumbbell, Sun, Moon, ChevronRight, ChevronLeft, X, Menu, MessageSquare, Activity, User, CreditCard, Phone, Calendar } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { Dumbbell, Sun, Moon, ChevronRight, ChevronLeft, X, Menu, MessageSquare, Activity, User, CreditCard, Phone, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { signOut } from "next-auth/react";
 import { motion } from 'framer-motion';
+import { addToHistorial } from '@/services/historialService';
 
 interface ClientInfo {
     id: number;
@@ -137,12 +138,7 @@ export default function ClientPage({ params }: { params: PageParams }) {
 
                 // Cargar las reservas existentes
                 if (data.reservas) {
-                    const formattedReservas = data.reservas.map((reserva: Reserva) => ({
-                        id: reserva.id,
-                        fecha: reserva.fecha,
-                        estado: reserva.estado,
-                    }));
-                    setBookings(formattedReservas);
+                    setBookings(data.reservas);
                 }
             } catch (error) {
                 console.error('Error fetching client info:', error)
@@ -230,15 +226,32 @@ export default function ClientPage({ params }: { params: PageParams }) {
     const bookSession = async (fecha: string, hora: string) => {
         if (selectedDate && clientInfo) {
             try {
+                // Combina la fecha y la hora en una sola cadena
+                const [hour, period] = hora.split(' ');
+                let [hours, minutes] = hour.split(':').map(Number);
+
+                if (period.toUpperCase() === 'PM' && hours !== 12) {
+                    hours += 12;
+                } else if (period.toUpperCase() === 'AM' && hours === 12) {
+                    hours = 0;
+                }
+
+                // Crear un objeto Date en UTC
+                const dateTimeString = `${fecha}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00Z`;
+                const dateTime = new Date(dateTimeString);
+
+                if (isNaN(dateTime.getTime())) {
+                    throw new Error('Fecha y hora inválidas');
+                }
+
                 const response = await fetch(`/api/cliente/${clientInfo.id}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        clienteId: clientInfo.id, // Asegúrate de incluir el clienteId aquí
-                        fecha,
-                        hora,
+                        clienteId: clientInfo.id,
+                        fecha: dateTime.toISOString(),
                     }),
                 });
 
@@ -247,9 +260,27 @@ export default function ClientPage({ params }: { params: PageParams }) {
                     throw new Error(errorData.error || 'Error al crear la reserva');
                 }
 
-                // Actualiza la lista de reservas para mostrar todas las reservas
                 const newBooking = await response.json();
-                setBookings(prevBookings => [...prevBookings, newBooking.reserva]); // Agrega la nueva reserva a la lista
+                setBookings(prevBookings => [...prevBookings, newBooking.reserva]);
+
+                // Agregar al historial
+                const historialResponse = await fetch('/api/historial', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        accion: 'Nueva reserva',
+                        descripcion: `Reserva creada para ${dateTime.toLocaleString()}`,
+                        usuarioId: clientInfo.id,
+                        reservaId: newBooking.reserva.id,
+                    }),
+                });
+
+                if (!historialResponse.ok) {
+                    console.error('Error al agregar al historial:', await historialResponse.text());
+                }
+
             } catch (error) {
                 console.error('Error al crear la reserva:', error);
                 alert('Error al crear la reserva. Por favor, intenta de nuevo.');
@@ -301,6 +332,12 @@ export default function ClientPage({ params }: { params: PageParams }) {
         // Cerrar sesión usando next-auth
         await signOut({ callbackUrl: '/' });
     };
+
+    const formatDate = (dateTimeString: string) => {
+        const [date, time] = dateTimeString.split('T');
+        return { date, time: time.split('.')[0] }; // Eliminar la parte de los milisegundos
+    };
+
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300`}>
             {/* Header */}
@@ -471,7 +508,7 @@ export default function ClientPage({ params }: { params: PageParams }) {
                         {clientInfo.membresias.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {clientInfo.membresias.map((membresia) => (
-                                    <div key={membresia.id} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
+                                    <div key={membresia.id} className={`bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow ${clientInfo.membresia?.id === membresia.id ? 'border-2 border-[#2272FF]' : ''}`}>
                                         <h3 className="text-lg font-semibold mb-2">Membresía {membresia.tipo}</h3>
                                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                                             Fecha de Inicio: {new Date(membresia.fechaInicio).toLocaleDateString()}
@@ -482,6 +519,9 @@ export default function ClientPage({ params }: { params: PageParams }) {
                                         <p className={`text-sm font-medium ${membresia.estadoPago === 'PAGADO' ? 'text-green-500' : 'text-yellow-500'}`}>
                                             Estado: {membresia.estadoPago}
                                         </p>
+                                        {clientInfo.membresia?.id === membresia.id && (
+                                            <p className="text-sm font-medium text-[#2272FF]">Membresía Actual</p>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -537,10 +577,7 @@ export default function ClientPage({ params }: { params: PageParams }) {
                             {bookings.length > 0 ? (
                                 <div className="grid grid-cols-1 gap-4">
                                     {bookings.map(({ id, fecha, estado }) => {
-                                        const date = new Date(fecha);
-                                        const formattedDate = date.toLocaleDateString('es-ES');
-                                        const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
+                                        const { date, time } = formatDate(fecha);
                                         return (
                                             <motion.div
                                                 key={id}
@@ -551,7 +588,8 @@ export default function ClientPage({ params }: { params: PageParams }) {
                                                 transition={{ duration: 0.3 }}
                                             >
                                                 <div className="flex items-center">
-                                                    <span className="font-medium">{formattedDate} - {formattedTime}</span>
+                                                    <span className="font-medium">{date}</span>
+                                                    <span className="ml-2 font-medium">{time}</span>
                                                     <span className={`ml-2 px-1 py-1 text-xs rounded ${estado === 'ACTIVA' ? 'bg-green-500' : 'bg-red-500'} text-white`}>
                                                         {estado}
                                                     </span>

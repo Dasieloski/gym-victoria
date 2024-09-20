@@ -2,16 +2,65 @@
 import { useState, useEffect } from 'react'
 import { Dumbbell, Calendar, Sun, Moon, X, Menu, MessageSquare, DollarSign, Users, Clock, CreditCard, CheckCircle, ArrowUpDown, Phone, IdCard, Award } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
+import { signOut, useSession } from "next-auth/react";
+import { addToHistorial } from '@/services/historialService';
+
+interface Client {
+    id: number;
+    nombre: string;
+    carnetIdentidad: string;
+    telefono: string;
+    rol: string;
+    entrenadorId: number | null;
+    entrenadorAsignado?: {
+        id: number;
+        nombre: string;
+        telefono: string;
+    } | null;
+    membresia: {
+        id: number;
+        tipo: string;
+        fechaInicio: string;
+        fechaFin: string;
+        estadoPago: string;
+    } | null;
+    membresias: {
+        id: number;
+        tipo: string;
+        fechaInicio: string;
+        fechaFin: string;
+        estadoPago: string;
+    }[];
+    visitasEsteMes: number;
+    entrenador: {
+        id: number;
+        nombre: string;
+    } | null;
+    lastPayment?: string;
+    nextPayment?: string;
+    daysUntilPayment?: number;
+    membresiaActual?: {
+        id: number;
+        tipo: string;
+        fechaInicio: string;
+        fechaFin: string;
+        estadoPago: string;
+    } | null;
+    reservasCliente: {
+        id: number;
+        fecha: string;
+        estado: string;
+    }[];
+}
 
 export default function TrainerPage() {
+    const { data: session } = useSession();
     const [isDarkMode, setIsDarkMode] = useState(false)
     const [activeTab, setActiveTab] = useState('clients')
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const [clients, setClients] = useState([
-        { id: 1, name: 'Juan Pérez', clientId: 'GV001', phone: '+34 123 456 789', membershipType: 'Anual', lastPayment: '2023-04-15', nextPayment: '2023-05-15', daysUntilPayment: 7 },
-        { id: 2, name: 'Ana López', clientId: 'GV002', phone: '+34 987 654 321', membershipType: 'Mensual', lastPayment: '2023-04-20', nextPayment: '2023-05-20', daysUntilPayment: 12 },
-        { id: 3, name: 'Luis Martínez', clientId: 'GV003', phone: '+34 456 789 123', membershipType: 'Trimestral', lastPayment: '2023-03-01', nextPayment: '2023-06-01', daysUntilPayment: 24 },
-    ])
+    const [clients, setClients] = useState<Client[]>([])
     const [schedules, setSchedules] = useState([
         { id: 1, clientName: 'Juan Pérez', date: '2023-05-15', time: '10:00' },
         { id: 2, clientName: 'Ana López', date: '2023-05-16', time: '15:00' },
@@ -22,12 +71,37 @@ export default function TrainerPage() {
         schedules: 'date',
         payments: 'name'
     })
+    const router = useRouter();
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true'
         setIsDarkMode(isDark)
         document.documentElement.classList.toggle('dark', isDark)
-    }, [])
+
+        const fetchClients = async () => {
+            try {
+                if (session?.user?.id) {
+                    const response = await fetch(`/api/entrenador/${session.user.id}`)
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch clients')
+                    }
+                    const data = await response.json()
+                    setClients(data)
+
+                    // Agregar al historial
+                    await addToHistorial({
+                        accion: 'Acceso a página de entrenador',
+                        descripcion: 'Entrenador accedió a su página',
+                        usuarioId: parseInt(session.user.id),
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error)
+            }
+        }
+
+        fetchClients()
+    }, [session])
 
     const toggleDarkMode = () => {
         const newDarkMode = !isDarkMode
@@ -45,28 +119,48 @@ export default function TrainerPage() {
         setIsMobileMenuOpen(false)
     }
 
-    const handlePaymentUpdate = (clientId: number, paid: boolean) => {
-        setClients(clients.map(client => {
-            if (client.id === clientId) {
-                const today = new Date()
-                const nextPaymentDate = new Date(today.setMonth(today.getMonth() + (client.membershipType === 'Anual' ? 12 : client.membershipType === 'Trimestral' ? 3 : 1)))
-                return {
-                    ...client,
-                    lastPayment: paid ? new Date().toISOString().split('T')[0] : client.lastPayment,
-                    nextPayment: paid ? nextPaymentDate.toISOString().split('T')[0] : client.nextPayment,
-                    daysUntilPayment: paid ? Math.ceil((nextPaymentDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : client.daysUntilPayment
-                }
+    const handlePaymentUpdate = async (clientId: number, paid: boolean, newMembershipType: string) => {
+        try {
+            const response = await fetch(`/api/entrenador/${clientId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ clientId, paid, newMembershipType }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update membership');
             }
-            return client
-        }))
-    }
+
+            const updatedClient = await response.json();
+            setClients(clients.map(client => client.id === clientId ? updatedClient : client));
+
+            // Agregar al historial
+            await addToHistorial({
+                accion: 'Actualización de membresía',
+                descripcion: `Membresía actualizada para el cliente ${updatedClient.nombre}`,
+                usuarioId: parseInt(session.user.id),
+                clienteId: clientId,
+            });
+        } catch (error) {
+            console.error('Error updating membership:', error);
+        }
+    };
 
     const handleMembershipChange = (clientId: number, newMembershipType: string) => {
         setClients(clients.map(client => {
             if (client.id === clientId) {
                 return {
                     ...client,
-                    membershipType: newMembershipType
+                    membresiaActual: {
+                        ...client.membresiaActual,
+                        tipo: newMembershipType,
+                        id: client.membresiaActual?.id ?? 0, // Ensure 'id' is always a number
+                        fechaInicio: client.membresiaActual?.fechaInicio ?? '',
+                        fechaFin: client.membresiaActual?.fechaFin ?? '',
+                        estadoPago: client.membresiaActual?.estadoPago ?? ''
+                    }
                 }
             }
             return client
@@ -80,17 +174,27 @@ export default function TrainerPage() {
     const sortedClients = [...clients].sort((a, b) => {
         switch (sortCriteria.clients) {
             case 'name':
-                return a.name.localeCompare(b.name)
+                return a.nombre.localeCompare(b.nombre)
             case 'membershipType':
-                return a.membershipType.localeCompare(b.membershipType)
+                return (a.membresia?.tipo || '').localeCompare(b.membresia?.tipo || '')
             case 'clientId':
-                return a.clientId.localeCompare(b.clientId)
+                return a.id - b.id
             default:
                 return 0
         }
     })
 
-    const sortedSchedules = [...schedules].sort((a, b) => {
+    const sortedSchedules = clients.flatMap(client => 
+        client.reservasCliente.map(reserva => {
+            const [date, time] = reserva.fecha.split('T');
+            return {
+                id: reserva.id,
+                clientName: client.nombre,
+                date,
+                time: time.slice(0, 5), // Asegurarse de que solo se tomen los primeros 5 caracteres de la hora
+            };
+        })
+    ).sort((a, b) => {
         switch (sortCriteria.schedules) {
             case 'date':
                 return new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -106,13 +210,13 @@ export default function TrainerPage() {
     const sortedPayments = [...clients].sort((a, b) => {
         switch (sortCriteria.payments) {
             case 'name':
-                return a.name.localeCompare(b.name)
-            case 'membershipType':
-                return a.membershipType.localeCompare(b.membershipType)
+                return a.nombre.localeCompare(b.nombre)
+           case 'membershipType':
+                return (a.membresia?.tipo || '').localeCompare(b.membresia?.tipo || '')
             case 'nextPayment':
-                return new Date(a.nextPayment).getTime() - new Date(b.nextPayment).getTime()
+                return new Date(a.nextPayment || '').getTime() - new Date(b.nextPayment || '').getTime()
             case 'daysUntilPayment':
-                return a.daysUntilPayment - b.daysUntilPayment
+                return (a.daysUntilPayment ?? 0) - (b.daysUntilPayment ?? 0)
             default:
                 return 0
         }
@@ -137,15 +241,71 @@ export default function TrainerPage() {
         </div>
     )
 
+    const handleSignOut = async () => {
+        // Agregar al historial antes de cerrar sesión
+        try {
+            await addToHistorial({
+                accion: 'Cierre de sesión',
+                descripcion: 'Entrenador cerró sesión',
+                usuarioId: parseInt(session.user.id),
+            });
+        } catch (error) {
+            console.error('Error al agregar al historial:', error);
+        }
+
+        // Eliminar todas las cookies
+        Object.keys(Cookies.get()).forEach(cookieName => {
+            Cookies.remove(cookieName);
+        });
+
+        // Eliminar tokens del localStorage si los hay
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('token');
+        }
+
+        // Cerrar sesión usando next-auth
+        await signOut({ callbackUrl: '/' });
+    };
+
+    const handleCancelReservation = async (reservationId: number) => {
+        try {
+            const response = await fetch(`/api/entrenador/${reservationId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al cancelar la reserva');
+            }
+
+            const updatedReservation = await response.json();
+            setSchedules(schedules.filter(schedule => schedule.id !== reservationId));
+
+            // Agregar al historial
+            await addToHistorial({
+                accion: 'Cancelación de reserva',
+                descripcion: `Reserva cancelada para el cliente ${updatedReservation.cliente.nombre}`,
+                usuarioId: parseInt(session.user.id),
+                clienteId: updatedReservation.cliente.id,
+                reservaId: reservationId,
+            });
+        } catch (error) {
+            console.error('Error al cancelar la reserva:', error);
+            alert('Error al cancelar la reserva. Por favor, intenta de nuevo.');
+        }
+    };
+
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''} transition-colors duration-300`}>
             {/* Header */}
             <header className="bg-white dark:bg-gray-800 shadow-md transition-colors duration-300">
                 <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <Link href="/" className="text-2xl font-bold text-[#2272FF] flex items-center transition-transform duration-300 hover:scale-105">
+                    <button
+                        onClick={handleSignOut}
+                        className="text-2xl font-bold text-[#2272FF] flex items-center transition-transform duration-300 hover:scale-105"
+                    >
                         <Dumbbell className="mr-2" />
                         GYM-VICTORIA
-                    </Link>
+                    </button>
                     <nav className="hidden md:flex space-x-4">
                         <button
                             onClick={() => handleTabChange('clients')}
@@ -219,7 +379,7 @@ export default function TrainerPage() {
                 {activeTab === 'clients' && (
                     <div className="animate-fadeIn">
                         <h2 className="text-2xl font-bold mb-4">Mis Clientes</h2>
-                        <SortDropdown 
+                        <SortDropdown
                             tab="clients"
                             options={[
                                 { value: 'name', label: 'Nombre' },
@@ -230,20 +390,23 @@ export default function TrainerPage() {
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {sortedClients.map((client, index) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                    <h3 className="text-xl font-semibold mb-2">{client.name}</h3>
+                                    <h3 className="text-xl font-semibold mb-2">{client.nombre}</h3>
                                     <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center">
                                         <IdCard className="inline-block mr-2" size={16} />
-                                        ID: {client.clientId}
+                                        ID: {client.carnetIdentidad}
                                     </p>
                                     <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center">
                                         <Phone className="inline-block mr-2" size={16} />
-                                        Teléfono: {client.phone}
+                                        Teléfono: {client.telefono}
                                     </p>
                                     <p className="text-gray-600 dark:text-gray-400 mb-4 flex items-center">
                                         <Award className="inline-block mr-2" size={16} />
-                                        Membresía: {client.membershipType}
+                                        Membresía: {client.membresiaActual?.tipo}
                                     </p>
-                                    <button className="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105">
+                                    <button
+                                        className="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105"
+                                        onClick={() => window.open(`https://wa.me/${client.telefono}`, '_blank')}
+                                    >
                                         <MessageSquare size={18} className="mr-2" />
                                         Mensaje
                                     </button>
@@ -257,7 +420,7 @@ export default function TrainerPage() {
                 {activeTab === 'schedules' && (
                     <div className="animate-fadeIn">
                         <h2 className="text-2xl font-bold mb-4">Horarios</h2>
-                        <SortDropdown 
+                        <SortDropdown
                             tab="schedules"
                             options={[
                                 { value: 'date', label: 'Fecha' },
@@ -277,7 +440,10 @@ export default function TrainerPage() {
                                         <Clock className="inline-block mr-1" size={16} />
                                         {schedule.time}
                                     </p>
-                                    <button className="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105">
+                                    <button
+                                        className="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105"
+                                        onClick={() => handleCancelReservation(schedule.id)}
+                                    >
                                         <X size={18} className="mr-2" />
                                         Cancelar
                                     </button>
@@ -291,7 +457,7 @@ export default function TrainerPage() {
                 {activeTab === 'payments' && (
                     <div className="animate-fadeIn">
                         <h2 className="text-2xl font-bold mb-4">Gestión de Pagos</h2>
-                        <SortDropdown 
+                        <SortDropdown
                             tab="payments"
                             options={[
                                 { value: 'name', label: 'Nombre' },
@@ -303,32 +469,32 @@ export default function TrainerPage() {
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {sortedPayments.map((client, index) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                    <h3 className="text-xl font-semibold mb-2">{client.name}</h3>
-                                    <p className="text-gray-600 dark:text-gray-400 mb-1">ID: {client.clientId}</p>
+                                    <h3 className="text-xl font-semibold mb-2">{client.nombre}</h3>
+                                    <p className="text-gray-600 dark:text-gray-400 mb-1">ID: {client.id}</p>
                                     <div className="mb-2">
                                         <label htmlFor={`membership-${client.id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Tipo de Membresía
                                         </label>
                                         <select
                                             id={`membership-${client.id}`}
-                                            value={client.membershipType}
+                                            value={client.membresiaActual?.tipo || ''}
                                             onChange={(e) => handleMembershipChange(client.id, e.target.value)}
                                             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
                                         >
-                                            <option value="Mensual">Mensual</option>
-                                            <option value="Trimestral">Trimestral</option>
-                                            <option value="Anual">Anual</option>
+                                            <option value="MENSUAL">Mensual</option>
+                                            <option value="TRIMESTRAL">Trimestral</option>
+                                            <option value="ANUAL">Anual</option>
                                         </select>
                                     </div>
                                     <p className="text-gray-600 dark:text-gray-400 mb-1">Último Pago: {client.lastPayment}</p>
                                     <p className="text-gray-600 dark:text-gray-400 mb-1">Próximo Pago: {client.nextPayment}</p>
                                     <p className="text-gray-600 dark:text-gray-400 mb-4">Días Restantes: {client.daysUntilPayment}</p>
                                     <button
-                                        onClick={() => handlePaymentUpdate(client.id, true)}
+                                        onClick={() => handlePaymentUpdate(client.id, true, client.membresiaActual?.tipo || 'MENSUAL')}
                                         className="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105"
                                     >
-                                        <CreditCard size={18} className="mr-2" />
-                                        Registrar Pago
+                                        <CheckCircle size={18} className="mr-2" />
+                                        Marcar como Pagado
                                     </button>
                                 </div>
                             ))}
