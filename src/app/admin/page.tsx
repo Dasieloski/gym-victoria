@@ -237,8 +237,9 @@ export default function AdminDashboard() {
         fetchData();
     }, []);
 
-    const handleConvertToClient = async (id: string) => { // Especificar el tipo de 'id'
+          const handleConvertToClient = async (id: string) => {
         try {
+            console.log('handleConvertToClient - Iniciando con ID:', id);
             const response = await fetch(`/api/admin/newClients`, {
                 method: 'PUT',
                 headers: {
@@ -249,10 +250,12 @@ export default function AdminDashboard() {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('handleConvertToClient - Error en la respuesta:', errorData);
                 throw new Error(errorData.error || 'Error desconocido al convertir el cliente');
             }
 
             const updatedUser = await response.json();
+            console.log('handleConvertToClient - Usuario actualizado:', updatedUser);
             setClientesEspera(prevClientes =>
                 prevClientes.filter((c: { id: number }) => c.id !== updatedUser.id)
             );

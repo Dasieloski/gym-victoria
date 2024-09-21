@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
+    console.log('GET /api/admin/newClients - Iniciando');
     const clientesEspera = await prisma.usuario.findMany({
       where: {
         rol: 'CLIENTEESPERA'
@@ -18,6 +19,7 @@ export async function GET() {
         rol: true,
       }
     });
+    console.log('GET /api/admin/newClients - Clientes en espera:', clientesEspera);
 
     return NextResponse.json(clientesEspera);
   } catch (error) {
@@ -30,7 +32,9 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
+    console.log('PUT /api/admin/newClients - Iniciando');
     const { id } = await req.json();
+    console.log('PUT /api/admin/newClients - ID recibido:', id);
 
     if (!id) {
       return NextResponse.json({ error: 'El id es requerido' }, { status: 400 });
@@ -40,6 +44,7 @@ export async function PUT(req: Request) {
       where: { id: parseInt(id) },
       data: { rol: 'CLIENTE' },
     });
+    console.log('PUT /api/admin/newClients - Usuario actualizado:', updatedUser);
 
     return NextResponse.json(updatedUser);
   } catch (error) {
