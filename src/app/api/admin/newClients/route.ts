@@ -32,26 +32,9 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
-    console.log('PUT /api/admin/newClients - Iniciando');
-    const body = await req.json();
-    console.log('PUT /api/admin/newClients - Datos recibidos:', body);
-
-    const { id } = body;
-    if (!id) {
-      return NextResponse.json({ error: 'El id es requerido' }, { status: 400 });
-    }
-
-    const updatedUser = await prisma.usuario.update({
-      where: { id: parseInt(id) },
-      data: { rol: 'CLIENTE' },
-    });
-    console.log('PUT /api/admin/newClients - Usuario actualizado:', updatedUser);
-
-    return NextResponse.json(updatedUser);
+    console.log('PUT /api/admin/newClients - Handler de prueba ejecutado');
+    return NextResponse.json({ message: 'PUT de prueba exitoso' }, { status: 200 });
   } catch (error) {
-    console.error('Error al actualizar el rol del usuario:', error);
-    return NextResponse.json({ error: 'Error al actualizar el rol del usuario' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+    return NextResponse.json({ error: 'Error en el PUT de prueba' }, { status: 500 });
   }
 }
