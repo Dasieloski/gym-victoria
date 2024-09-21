@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -30,11 +30,28 @@ export async function GET() {
   }
 }
 
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
   try {
-    console.log('PUT /api/admin/newClients - Handler de prueba ejecutado');
-    return NextResponse.json({ message: 'PUT de prueba exitoso' }, { status: 200 });
+    console.log('PUT /api/admin/newClients - Iniciando');
+    const body = await req.json();
+    console.log('PUT /api/admin/newClients - Datos recibidos:', body);
+
+    const { id } = body;
+    if (!id) {
+      return NextResponse.json({ error: 'El id es requerido' }, { status: 400 });
+    }
+
+    const updatedUser = await prisma.usuario.update({
+      where: { id: parseInt(id) },
+      data: { rol: 'CLIENTE' },
+    });
+    console.log('PUT /api/admin/newClients - Usuario actualizado:', updatedUser);
+
+    return NextResponse.json(updatedUser);
   } catch (error) {
-    return NextResponse.json({ error: 'Error en el PUT de prueba' }, { status: 500 });
+    console.error('Error al actualizar el rol del usuario:', error);
+    return NextResponse.json({ error: 'Error al actualizar el rol del usuario' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }
