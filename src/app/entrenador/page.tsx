@@ -54,7 +54,15 @@ interface Client {
         estado: string;
     }[];
 }
-
+type MiTipo = {
+    accion: string;
+    descripcion: string;
+    usuarioId: number;
+    entrenadorId?: number;
+    membresiaId?: number;
+    reservaId?: number;
+    clienteId?: number; // Agrega clienteId al tipo
+};
 export default function TrainerPage() {
     const { data: session } = useSession();
     const [isDarkMode, setIsDarkMode] = useState(false)
@@ -139,9 +147,8 @@ export default function TrainerPage() {
             // Agregar al historial
             await addToHistorial({
                 accion: 'Actualización de membresía',
-                descripcion: `Membresía actualizada para el cliente ${updatedClient.nombre}`,
-                usuarioId: parseInt(session.user.id),
-                clienteId: clientId,
+                   descripcion: `Membresía actualizada para el cliente ${updatedClient.nombre}`,
+                   usuarioId: parseInt(session?.user?.id ?? '0'), // Maneja el caso donde session es null
             });
         } catch (error) {
             console.error('Error updating membership:', error);
@@ -244,11 +251,15 @@ export default function TrainerPage() {
     const handleSignOut = async () => {
         // Agregar al historial antes de cerrar sesión
         try {
-            await addToHistorial({
-                accion: 'Cierre de sesión',
-                descripcion: 'Entrenador cerró sesión',
-                usuarioId: parseInt(session.user.id),
-            });
+            if (session && session.user) {
+                await addToHistorial({
+                    accion: 'Cierre de sesión',
+                    descripcion: 'Entrenador cerró sesión',
+                    usuarioId: parseInt(session.user.id),
+                });
+            } else {
+                console.error('Error: sesión no encontrada.');
+            }
         } catch (error) {
             console.error('Error al agregar al historial:', error);
         }
@@ -281,13 +292,16 @@ export default function TrainerPage() {
             setSchedules(schedules.filter(schedule => schedule.id !== reservationId));
 
             // Agregar al historial
-            await addToHistorial({
-                accion: 'Cancelación de reserva',
-                descripcion: `Reserva cancelada para el cliente ${updatedReservation.cliente.nombre}`,
-                usuarioId: parseInt(session.user.id),
-                clienteId: updatedReservation.cliente.id,
-                reservaId: reservationId,
-            });
+            if (session && session.user) {
+                await addToHistorial({
+                    accion: 'Cancelación de reserva',
+                    descripcion: `Reserva cancelada para el cliente ${updatedReservation.cliente.nombre}`,
+                    usuarioId: parseInt(session.user.id),
+                    reservaId: reservationId,
+                });
+            } else {
+                console.error('Error: sesión no encontrada.');
+            }
         } catch (error) {
             console.error('Error al cancelar la reserva:', error);
             alert('Error al cancelar la reserva. Por favor, intenta de nuevo.');

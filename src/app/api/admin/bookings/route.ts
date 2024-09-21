@@ -37,3 +37,17 @@ export async function GET() {
         return NextResponse.json({ error: 'Error al obtener las reservas' }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+        return NextResponse.json({ error: 'ID no proporcionado' }, { status: 400 });
+    }
+
+    // Lógica para eliminar la reserva con el ID proporcionado
+    // Por ejemplo, eliminar de la base de datos
+
+    return NextResponse.json({ message: 'Reserva eliminada con éxito' }, { status: 200 });
+}

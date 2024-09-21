@@ -39,8 +39,8 @@ export default function ClienteEsperaPage() {
                     usuarioId: data.id,
                 });
             } catch (error) {
-                console.error('Error:', error)
-                setError(error.message)
+                console.error('Error:', error as Error)
+                setError(error as unknown as null) // Conversión a null
             }
         }
 
@@ -64,7 +64,7 @@ export default function ClienteEsperaPage() {
             await addToHistorial({
                 accion: 'Contacto con administrador',
                 descripcion: 'Cliente en espera contactó al administrador vía WhatsApp',
-                usuarioId: clienteInfo.id,
+                usuarioId: (clienteInfo as any)?.id, // Utiliza el operador de encadenamiento opcional
             });
         } catch (error) {
             console.error('Error al agregar al historial:', error);
@@ -77,7 +77,7 @@ export default function ClienteEsperaPage() {
             await addToHistorial({
                 accion: 'Cierre de sesión',
                 descripcion: 'Cliente en espera cerró sesión',
-                usuarioId: clienteInfo.id,
+                usuarioId: (clienteInfo as any)?.id,
             });
         } catch (error) {
             console.error('Error al agregar al historial:', error);
@@ -141,7 +141,7 @@ export default function ClienteEsperaPage() {
                 <div className="text-center max-w-2xl mx-auto">
                     <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-gray-800 dark:text-gray-100 animate-fade-in-down">
                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#2272FF] to-[#25D366]">
-                            Bienvenido, {clienteInfo.nombre}
+                            Bienvenido, {(clienteInfo as any).nombre}
                         </span>
                     </h1>
                     <p className="text-xl md:text-2xl mb-8 text-gray-600 dark:text-gray-400 animate-fade-in-up leading-relaxed">

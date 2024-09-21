@@ -14,8 +14,11 @@ import axios from 'axios'
 import React from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ClientType } from '@/types/client';
+import { Booking } from '@/types/booking';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
+
 
 // Confirmation Dialog Component
 const ConfirmationDialog = ({ isOpen, onClose, onConfirm, message }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; message: string; }) => {
@@ -46,16 +49,17 @@ const ConfirmationDialog = ({ isOpen, onClose, onConfirm, message }: { isOpen: b
 
 export default function AdminDashboard() {
     const [sortBy, setSortBy] = useState('')
-    const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: null, type: '' })
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; id: number | null; type: string }>({ isOpen: false, id: null, type: '' })
     const [trainers, setTrainers] = useState([])
-    const [editingClient, setEditingClient] = useState(null)
-    const [clientes, setClientes] = useState([])
-    const [clientesEspera, setClientesEspera] = useState([]);
+    const [editingClient, setEditingClient] = useState<{ id: string; nombre: string; telefono: string; entrenadorAsignadoId: string | null } | null>(null)
+    const [clientes, setClientes] = useState<ClientType[]>([]); // Definir el tipo de estado
+    const [clientesEspera, setClientesEspera] = useState([])
     const [isDarkMode, setIsDarkMode] = useState(false)
     const [activeTab, setActiveTab] = useState('dashboard')
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const [bookings, setBookings] = useState([])
-    const [users, setUsers] = useState([])
+    const [bookings, setBookings] = useState<Booking[]>([]); // Asegúrate de que 'bookings' sea un array de 'Booking'
+    type User = { id: number; rol: string; /* otros campos */ };
+    const [users, setUsers] = useState<User[]>([]); // Define el tipo aquí
     const [historiales, setHistoriales] = useState([])
     const [clientesConMembresia, setClientesConMembresia] = useState([])
     const [searchClients, setSearchClients] = useState('');
@@ -66,10 +70,10 @@ export default function AdminDashboard() {
     const [previousIngresosMensuales, setPreviousIngresosMensuales] = useState(0);
     const [previousTotalClientes, setPreviousTotalClientes] = useState(0);
 
-    const filteredClients = clientes.filter((client: { nombre: string; carnetIdentidad: string; telefono: string }) =>
-        client.nombre.toLowerCase().includes(searchClients.toLowerCase()) ||
-        client.carnetIdentidad.toLowerCase().includes(searchClients.toLowerCase()) ||
-        client.telefono.toLowerCase().includes(searchClients.toLowerCase())
+    const filteredClients = clientes.filter((client: ClientType) =>
+    (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
+        client.carnetIdentidad?.toLowerCase().includes(searchClients.toLowerCase()) ||
+        client.telefono?.toLowerCase().includes(searchClients.toLowerCase()))
     );
 
     const filteredNewClients = clientesEspera.filter((client: { nombre: string; username: string; carnetIdentidad: string }) =>
@@ -78,26 +82,27 @@ export default function AdminDashboard() {
         client.carnetIdentidad.toLowerCase().includes(searchNewClients.toLowerCase())
     );
 
-    const filteredMemberships = clientesConMembresia.filter(client =>
+    // Asegúrate de que 'clientesConMembresia' tenga un tipo definido
+    const filteredMemberships = clientesConMembresia.filter((client: { nombre: string; membresiaActual: { tipo: string } }) =>
         client.nombre.toLowerCase().includes(searchMemberships.toLowerCase()) ||
         client.membresiaActual.tipo.toLowerCase().includes(searchMemberships.toLowerCase())
     );
 
-    const filteredHistory = historiales.filter(item =>
+    const filteredHistory = historiales.filter((item: { accion: string; descripcion: string; usuario: { nombre: string } }) =>
         item.accion.toLowerCase().includes(searchHistory.toLowerCase()) ||
         item.descripcion.toLowerCase().includes(searchHistory.toLowerCase()) ||
         item.usuario.nombre.toLowerCase().includes(searchHistory.toLowerCase())
     );
 
     // Filtrar usuarios según la búsqueda
-    const filteredUsers = users.filter(user =>
+    const filteredUsers = users.filter((user: any) => // Cambiar el tipo de user a any
         user.nombre.toLowerCase().includes(searchUsers.toLowerCase()) ||
         user.rol.toLowerCase().includes(searchUsers.toLowerCase())
     );
 
     // Calcular ingresos mensuales: 2000 pesos por cada cliente con membresía activa
     const ingresosMensuales = clientesConMembresia.length * 2000;
-    const totalClientes = users.filter(user => user.rol === 'CLIENTE').length;
+    const totalClientes = users.filter((user: { rol: string }) => user.rol === 'CLIENTE').length;
 
     // Calcular porcentajes
     const ingresosPorcentaje = previousIngresosMensuales ? ((ingresosMensuales - previousIngresosMensuales) / previousIngresosMensuales) * 100 : 0;
@@ -121,8 +126,8 @@ export default function AdminDashboard() {
                 console.log('Reservas obtenidas:', data);
                 setBookings(data); // Actualizado para asignar data directamente
             } catch (error) {
-                console.error('Error al obtener las reservas:', error);
-                toast.error(`Error al cargar las reservas: ${error.message}`);
+                console.error('Error al obtener las reservas:', error as Error);
+                toast.error(`Error al cargar las reservas: ${(error as Error).message}`);
             }
         };
 
@@ -159,7 +164,7 @@ export default function AdminDashboard() {
                 setClientesConMembresia(data);
             } catch (error) {
                 console.error('Error al obtener las membresías:', error);
-                toast.error(`Error al cargar las membresías: ${error.message}`);
+                toast.error(`Error al cargar las membresías: ${(error as Error).message}`);
             }
         };
 
@@ -181,17 +186,19 @@ export default function AdminDashboard() {
                 }
 
                 if (deleteConfirmation.type === 'client') {
-                    setClientes(prevClientes => prevClientes.filter(client => client.id !== deleteConfirmation.id));
+                    setClientes(prevClientes => prevClientes.filter((client: ClientType) => Number(client.id) !== deleteConfirmation.id));
                     toast.success('Cliente eliminado con éxito');
                 } else if (deleteConfirmation.type === 'booking') {
-                    setBookings(prevBookings => prevBookings.filter(booking => booking.id !== deleteConfirmation.id));
+                    setBookings(prevBookings =>
+                        prevBookings.filter((booking: { id: number }) => booking.id !== deleteConfirmation.id)
+                    );
                     toast.success('Reserva eliminada con éxito');
                 }
 
                 setDeleteConfirmation({ isOpen: false, id: null, type: '' });
             } catch (error) {
                 console.error(`Error al eliminar el ${deleteConfirmation.type}:`, error);
-                toast.error(`Error al eliminar el ${deleteConfirmation.type}: ${error.message}`);
+                toast.error(`Error al eliminar el ${deleteConfirmation.type}: ${(error as Error).message}`);
             }
         }
     };
@@ -207,7 +214,7 @@ export default function AdminDashboard() {
                 setClientesEspera(data); // Asegúrate de que los datos se están asignando correctamente
             } catch (error) {
                 console.error('Error al obtener los nuevos clientes:', error);
-                toast.error(`Error al cargar los nuevos clientes: ${error.message}`);
+                toast.error(`Error al cargar los nuevos clientes: ${(error as Error).message}`);
             }
         };
 
@@ -230,7 +237,7 @@ export default function AdminDashboard() {
         fetchData();
     }, []);
 
-    const handleConvertToClient = async (id) => {
+    const handleConvertToClient = async (id: string) => { // Especificar el tipo de 'id'
         try {
             const response = await fetch(`/api/admin/newClients`, {
                 method: 'PUT',
@@ -247,12 +254,12 @@ export default function AdminDashboard() {
 
             const updatedUser = await response.json();
             setClientesEspera(prevClientes =>
-                prevClientes.filter(c => c.id !== updatedUser.id)
+                prevClientes.filter((c: { id: number }) => c.id !== updatedUser.id)
             );
             toast.success('Cliente convertido con éxito');
         } catch (error) {
             console.error('Error al convertir el cliente:', error);
-            toast.error(`Error al convertir el cliente: ${error.message}`);
+            toast.error(`Error al convertir el cliente: ${(error as Error).message}`);
         }
     };
 
@@ -304,11 +311,11 @@ export default function AdminDashboard() {
         return items;
     }
 
-    const handleDelete = (id: number, type: string) => {
+    const handleDelete = (id: number | null, type: string) => { // Cambiado a 'number | null'
         setDeleteConfirmation({ isOpen: true, id, type });
     };
 
-    const handleEditClient = (client) => {
+    const handleEditClient = (client: { id: string; nombre: string; telefono: string; entrenadorAsignadoId: string | null } | null) => {
         setEditingClient(client);
     };
 
@@ -338,16 +345,16 @@ export default function AdminDashboard() {
             }
 
             const updatedClient = await response.json();
-            setClientes((prevClientes) =>
+            setClientes((prevClientes: ClientType[]) =>
                 prevClientes.map((c) => (c.id === updatedClient.id ? updatedClient : c))
             );
             setEditingClient(null);
             toast.success('Cliente editado con éxito');
             // Cerrar el diálogo de edición
-            document.querySelector('[data-state="open"]')?.click();
+            (document.querySelector('[data-state="open"]') as HTMLElement)?.click();
         } catch (error) {
             console.error('Error al guardar el cliente:', error);
-            toast.error(`Error al guardar el cliente: ${error.message}`);
+            toast.error(`Error al guardar el cliente: ${(error as Error).message}`);
         }
     };
 
@@ -438,9 +445,9 @@ export default function AdminDashboard() {
     console.log('Clientes con membresía:', clientesConMembresia);
 
     // Calcular la distribución de membresías
-    const totalMensual = clientesConMembresia.filter(client => client.membresiaActual?.tipo === 'MENSUAL').length;
-    const totalTrimestral = clientesConMembresia.filter(client => client.membresiaActual?.tipo === 'TRIMESTRAL').length;
-    const totalAnual = clientesConMembresia.filter(client => client.membresiaActual?.tipo === 'ANUAL').length;
+    const totalMensual = clientesConMembresia.filter((client: { membresiaActual?: { tipo: string } }) => client.membresiaActual?.tipo === 'MENSUAL').length;
+    const totalTrimestral = clientesConMembresia.filter((client: { membresiaActual?: { tipo: string } }) => client.membresiaActual?.tipo === 'TRIMESTRAL').length;
+    const totalAnual = clientesConMembresia.filter((client: { membresiaActual?: { tipo: string } }) => client.membresiaActual?.tipo === 'ANUAL').length;
 
     // Verifica los totales calculados
     console.log('Distribución de membresías:', { totalMensual, totalTrimestral, totalAnual });
@@ -627,7 +634,12 @@ export default function AdminDashboard() {
                                     <div className="flex justify-end">
                                         <Dialog>
                                             <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditClient(client)}>
+                                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditClient({
+                                                    id: client.id,
+                                                    nombre: client.nombre,
+                                                    telefono: client.telefono,
+                                                    entrenadorAsignadoId: client.entrenadorAsignadoId
+                                                })}>
                                                     <Edit size={18} />
                                                 </Button>
                                             </DialogTrigger>
@@ -643,7 +655,13 @@ export default function AdminDashboard() {
                                                         <Input
                                                             id="name"
                                                             value={editingClient?.nombre || ''}
-                                                            onChange={(e) => setEditingClient({ ...editingClient, nombre: e.target.value })}
+                                                            onChange={(e) => setEditingClient({
+                                                                ...editingClient,
+                                                                nombre: e.target.value,
+                                                                id: editingClient?.id || '',
+                                                                telefono: editingClient?.telefono || '',
+                                                                entrenadorAsignadoId: editingClient?.entrenadorAsignadoId || ''
+                                                            })}
                                                             className="col-span-3"
                                                         />
                                                     </div>
@@ -654,7 +672,12 @@ export default function AdminDashboard() {
                                                         <Input
                                                             id="phone"
                                                             value={editingClient?.telefono || ''}
-                                                            onChange={(e) => setEditingClient({ ...editingClient, telefono: e.target.value })}
+                                                            onChange={(e) => setEditingClient({
+                                                                id: editingClient?.id || '',
+                                                                nombre: editingClient?.nombre || '',
+                                                                telefono: e.target.value,
+                                                                entrenadorAsignadoId: editingClient?.entrenadorAsignadoId || ''
+                                                            })}
                                                             className="col-span-3"
                                                         />
                                                     </div>
@@ -663,15 +686,20 @@ export default function AdminDashboard() {
                                                             Entrenador
                                                         </Label>
                                                         <Select
-                                                            value={editingClient?.entrenadorAsignadoId?.toString() || 'Sin entrenador'}
-                                                            onValueChange={(value) => setEditingClient({ ...editingClient, entrenadorAsignadoId: value === 'Sin entrenador' ? null : parseInt(value) })}
-                                                        >
+                                                            value={editingClient?.entrenadorAsignadoId?.toString() || ''} // Cambiado a string
+                                                            onValueChange={(value) => setEditingClient({
+                                                                ...editingClient,
+                                                                entrenadorAsignadoId: value === 'Sin entrenador' ? null : value,
+                                                                id: editingClient?.id || '',
+                                                                nombre: editingClient?.nombre || '',
+                                                                telefono: editingClient?.telefono || ''
+                                                            })}>
                                                             <SelectTrigger className="col-span-3">
                                                                 <SelectValue placeholder="Seleccionar entrenador" />
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 <SelectItem value="Sin entrenador">Sin entrenador</SelectItem>
-                                                                {trainers.map((trainer) => (
+                                                                {trainers.map((trainer: { id: number; nombre: string }) => (
                                                                     <SelectItem key={trainer.id} value={trainer.id.toString()}>
                                                                         {trainer.nombre}
                                                                     </SelectItem>

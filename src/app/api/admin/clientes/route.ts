@@ -91,7 +91,8 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url);
-    const clienteId = parseInt(searchParams.get('id'));
+    const idParam = searchParams.get('id');
+    const clienteId = idParam ? parseInt(idParam) : NaN;
 
     if (isNaN(clienteId)) {
         return NextResponse.json({ error: 'ID de cliente inválido' }, { status: 400 });
