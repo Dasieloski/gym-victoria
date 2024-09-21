@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  directUrl         = env("DIRECT_URL")
 }
 
 model Usuario {
@@ -46,7 +47,7 @@ model Entrenador {
   reservas    Reserva[]   @relation("EntrenadorReservas")
   historiales Historial[]
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  updatedAt   DateTime    @default(now())
 
   @@map("Entrenador") // Especificamos que el nombre de la tabla será "Entrenador"
 }
@@ -62,7 +63,7 @@ model Membresia {
   usuarioActual Usuario?      @relation("MembresiaActual")
   historiales   Historial[]
   createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  updatedAt     DateTime      @default(now())
 }
 
 enum TipoMembresia {
