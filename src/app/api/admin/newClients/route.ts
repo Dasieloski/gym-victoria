@@ -33,9 +33,10 @@ export async function GET() {
 export async function PUT(req: Request) {
   try {
     console.log('PUT /api/admin/newClients - Iniciando');
-    const { id } = await req.json();
-    console.log('PUT /api/admin/newClients - ID recibido:', id);
+    const body = await req.json();
+    console.log('PUT /api/admin/newClients - Datos recibidos:', body);
 
+    const { id } = body;
     if (!id) {
       return NextResponse.json({ error: 'El id es requerido' }, { status: 400 });
     }
