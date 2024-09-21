@@ -37,7 +37,7 @@ export async function GET() {
   }
 }
 
-export async function PUT(req: NextRequest) {
+/* export async function PUT(req: NextRequest) {
   try {
     const { id, entrenadorAsignadoId } = await req.json();
 
@@ -55,4 +55,4 @@ export async function PUT(req: NextRequest) {
     console.error('Error al actualizar el cliente:', error);
     return NextResponse.json({ error: 'Error al actualizar el cliente' }, { status: 500 });
   }
-}
+} */
