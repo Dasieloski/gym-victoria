@@ -17,7 +17,7 @@ model Usuario {
   password             String
   carnetIdentidad      String      @unique
   telefono             String
-  visitasEsteMes       Int         @default(0)
+  visitasEsteMes       Int?         @default(0)
   rol                  Rol
   membresias           Membresia[]
   membresiaActualId    Int?        @unique
