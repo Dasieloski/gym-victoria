@@ -205,7 +205,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchNewClients = async () => {
             try {
-                const response = await fetch('/api/admin/newClients');
+                const response = await fetch('/api/newClients');
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Error al obtener los nuevos clientes');
