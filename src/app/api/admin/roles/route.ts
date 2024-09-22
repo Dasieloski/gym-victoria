@@ -5,6 +5,9 @@ export async function GET() {
   try {
     console.log('GET /api/roles - Iniciando');
     const usuariosroles = await prisma.usuario.findMany({
+      where: {
+        rol: 'CLIENTEESPERA',
+      },
       select: {
         id: true,
         nombre: true,
