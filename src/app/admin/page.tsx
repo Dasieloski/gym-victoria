@@ -275,7 +275,7 @@ export default function AdminDashboard() {
 
     const fetchUserRoles = async () => {
         try {
-            const response = await fetch('/api/roles', { cache: 'no-store' }); // Añadir cache: 'no-store'
+            const response = await fetch('/api/admin/roles', { cache: 'no-store' }); // Añadir cache: 'no-store'
             if (!response.ok) {
                 throw new Error('Error al obtener los roles de usuario');
             }

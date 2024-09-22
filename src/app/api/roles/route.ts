@@ -39,7 +39,5 @@ export async function PUT(req: NextRequest) {
   } catch (error) {
     console.error('Error al actualizar el rol del usuario:', error as Error);
     return NextResponse.json({ error: `Error al actualizar el rol del usuario: ${(error as Error).message}` }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

@@ -1,26 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma'; // Importar el singleton
 
 export async function GET() {
   try {
-    const usuarios = await prisma.usuario.findMany({
+    console.log('GET /api/roles - Iniciando');
+    const usuariosroles = await prisma.usuario.findMany({
       select: {
         id: true,
         nombre: true,
         rol: true,
       },
       orderBy: {
-        nombre: 'asc'
-      }
+        nombre: 'asc',
+      },
     });
-    return NextResponse.json(usuarios);
-  } catch (error) {
+    console.log('Usuarios obtenidos:', usuariosroles);
+    return NextResponse.json(usuariosroles);
+  } catch (error: any) {
     console.error('Error al obtener los datos:', error);
     return NextResponse.json({ error: 'Error al obtener los datos' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -41,7 +39,5 @@ export async function PUT(req: NextRequest) {
   } catch (error) {
     console.error('Error al actualizar el rol del usuario:', error as Error);
     return NextResponse.json({ error: `Error al actualizar el rol del usuario: ${(error as Error).message}` }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

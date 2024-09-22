@@ -25,8 +25,6 @@ export async function GET() {
   } catch (error) {
     console.error('Error al obtener los clientes en espera:', error);
     return NextResponse.json({ error: 'Error al obtener los clientes en espera' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -51,7 +49,5 @@ export async function PATCH(req: NextRequest) {
   } catch (error) {
     console.error('Error al actualizar el rol del usuario:', error);
     return NextResponse.json({ error: 'Error al actualizar el rol del usuario' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
