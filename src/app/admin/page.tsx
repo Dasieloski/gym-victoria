@@ -19,6 +19,12 @@ import { Booking } from '@/types/booking';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
 
+interface User {
+  id: string;
+  rol: string;
+  nombre: string;
+  // ... otros campos necesarios
+}
 
 // Confirmation Dialog Component
 const ConfirmationDialog = ({ isOpen, onClose, onConfirm, message }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; message: string; }) => {
@@ -58,8 +64,7 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('dashboard')
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [bookings, setBookings] = useState<Booking[]>([]); // Asegúrate de que 'bookings' sea un array de 'Booking'
-    type User = { id: number; rol: string; /* otros campos */ };
-    const [users, setUsers] = useState<User[]>([]); // Define el tipo aquí
+    const [userRoles, setUserRoles] = useState<User[]>([]);
     const [historiales, setHistoriales] = useState([])
     const [clientesConMembresia, setClientesConMembresia] = useState([])
     const [searchClients, setSearchClients] = useState('');
@@ -95,14 +100,14 @@ export default function AdminDashboard() {
     );
 
     // Filtrar usuarios según la búsqueda
-    const filteredUsers = users.filter((user: any) => // Cambiar el tipo de user a any
+    const filteredUsers = userRoles.filter((user: User) =>
         user.nombre.toLowerCase().includes(searchUsers.toLowerCase()) ||
         user.rol.toLowerCase().includes(searchUsers.toLowerCase())
     );
 
     // Calcular ingresos mensuales: 2000 pesos por cada cliente con membresía activa
     const ingresosMensuales = clientesConMembresia.length * 2000;
-    const totalClientes = users.filter((user: { rol: string }) => user.rol === 'CLIENTE').length;
+    const totalClientes = userRoles.filter((user: User) => user.rol === 'CLIENTE').length;
 
     // Calcular porcentajes
     const ingresosPorcentaje = previousIngresosMensuales ? ((ingresosMensuales - previousIngresosMensuales) / previousIngresosMensuales) * 100 : 0;
@@ -269,12 +274,14 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchRoles = async () => {
             try {
+                console.log('Iniciando fetchRoles');
                 const response = await fetch('/api/admin/roles');
                 if (!response.ok) {
-                    throw new Error('Error al obtener los roles');
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setUsers(data);
+                console.log('Datos de roles recibidos:', data);
+                setUserRoles(data);
             } catch (error) {
                 console.error('Error al obtener los roles:', error);
                 toast.error('Error al cargar los roles de usuarios');
@@ -881,7 +888,7 @@ export default function AdminDashboard() {
                                                 }
 
                                                 const updatedUser = await response.json();
-                                                setUsers(prevUsers =>
+                                                setUserRoles(prevUsers =>
                                                     prevUsers.map(u =>
                                                         u.id === updatedUser.id ? { ...u, rol: updatedUser.rol } : u
                                                     )
