@@ -5,42 +5,52 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    const usuarios = await prisma.usuario.findMany({
+    console.log('GET /api/admin/newClients - Iniciando');
+    const clientesEspera = await prisma.usuario.findMany({
+      where: {
+        rol: 'CLIENTEESPERA'
+      },
       select: {
         id: true,
         nombre: true,
+        username: true,
+        carnetIdentidad: true,
+        telefono: true,
         rol: true,
-      },
-      orderBy: {
-        nombre: 'asc'
       }
     });
-    return NextResponse.json(usuarios);
+    console.log('GET /api/admin/newClients - Clientes en espera:', clientesEspera);
+
+    return NextResponse.json(clientesEspera);
   } catch (error) {
-    console.error('Error al obtener los datos:', error);
-    return NextResponse.json({ error: 'Error al obtener los datos' }, { status: 500 });
+    console.error('Error al obtener los clientes en espera:', error);
+    return NextResponse.json({ error: 'Error al obtener los clientes en espera' }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
 }
 
-export async function PUT(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
   try {
-    const { id, rol } = await req.json();
+    console.log('PATCH /api/newClients - Iniciando');
+    const body = await req.json();
+    console.log('PATCH /api/newClients - Datos recibidos:', body);
 
-    if (!id || !rol) {
-      return NextResponse.json({ error: 'El id y el rol son requeridos' }, { status: 400 });
+    const { id } = body;
+    if (!id) {
+      return NextResponse.json({ error: 'El id es requerido' }, { status: 400 });
     }
 
     const updatedUser = await prisma.usuario.update({
       where: { id: parseInt(id) },
-      data: { rol },
+      data: { rol: 'CLIENTE' },
     });
+    console.log('PATCH /api/newClients - Usuario actualizado:', updatedUser);
 
-    return NextResponse.json(updatedUser, { status: 200 });
+    return NextResponse.json(updatedUser);
   } catch (error) {
-    console.error('Error al actualizar el rol del usuario:', error as Error);
-    return NextResponse.json({ error: `Error al actualizar el rol del usuario: ${(error as Error).message}` }, { status: 500 });
+    console.error('Error al actualizar el rol del usuario:', error);
+    return NextResponse.json({ error: 'Error al actualizar el rol del usuario' }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
