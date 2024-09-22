@@ -267,17 +267,21 @@ export default function AdminDashboard() {
     };
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchRoles = async () => {
             try {
                 const response = await fetch('/api/admin/roles');
+                if (!response.ok) {
+                    throw new Error('Error al obtener los roles');
+                }
                 const data = await response.json();
                 setUsers(data);
             } catch (error) {
-                console.error('Error al obtener los datos:', error);
+                console.error('Error al obtener los roles:', error);
+                toast.error('Error al cargar los roles de usuarios');
             }
         };
 
-        fetchData();
+        fetchRoles();
     }, []);
 
     useEffect(() => {
