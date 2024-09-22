@@ -283,28 +283,13 @@ export default function AdminDashboard() {
             setUserRoles(data);
         } catch (error) {
             console.error('Error al obtener los roles de usuario:', error);
+            toast.error('Error al cargar los roles de usuario');
         }
     };
 
     useEffect(() => {
         fetchUserRoles();
     }, []);
-
-    const updateRoles = async () => {
-        try {
-            console.log('Actualizando roles');
-            const response = await fetch('/api/admin/roles');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            console.log('Datos de roles actualizados:', data);
-            setUserRoles(data);
-        } catch (error) {
-            console.error('Error al actualizar los roles:', error);
-            toast.error('Error al actualizar los roles de usuarios');
-        }
-    };
 
     const handleRoleChange = async (userId: string, newRole: string) => {
         try {
@@ -321,14 +306,8 @@ export default function AdminDashboard() {
                 throw new Error(errorData.error || 'Error desconocido al actualizar el rol');
             }
 
-            const updatedUser = await response.json();
-            setUserRoles(prevUsers =>
-                prevUsers.map(u =>
-                    u.id === updatedUser.id ? { ...u, rol: updatedUser.rol } : u
-                )
-            );
+            await fetchUserRoles(); // Volver a cargar todos los usuarios después de actualizar
             toast.success('Rol actualizado con éxito');
-            await updateRoles(); // Actualizar la lista de roles después de cambiar un rol
         } catch (error) {
             console.error('Error detallado al actualizar el rol:', error);
             toast.error(`Error al actualizar el rol: ${(error as Error).message}`);
@@ -907,7 +886,6 @@ export default function AdminDashboard() {
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Teléfono: {client.telefono}</p>
                                     <Button className="w-full" onClick={async () => {
                                         await handleConvertToClient(client.id);
-                                        await updateRoles();
                                     }}>
                                         Convertir en Cliente Oficial
                                     </Button>
