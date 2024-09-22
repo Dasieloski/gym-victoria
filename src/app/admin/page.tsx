@@ -20,10 +20,10 @@ import { Booking } from '@/types/booking';
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
 
 interface User {
-  id: string;
-  rol: string;
-  nombre: string;
-  // ... otros campos necesarios
+    id: string;
+    rol: string;
+    nombre: string;
+    // ... otros campos necesarios
 }
 
 // Confirmation Dialog Component
@@ -272,24 +272,24 @@ export default function AdminDashboard() {
     };
 
     useEffect(() => {
-        const fetchRoles = async () => {
-            try {
-                console.log('Iniciando fetchRoles');
-                const response = await fetch('/api/admin/roles');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                console.log('Datos de roles recibidos:', data);
-                setUserRoles(data);
-            } catch (error) {
-                console.error('Error al obtener los roles:', error);
-                toast.error('Error al cargar los roles de usuarios');
-            }
-        };
-
-        fetchRoles();
+        updateRoles();
     }, []);
+
+    const updateRoles = async () => {
+        try {
+            console.log('Actualizando roles');
+            const response = await fetch('/api/admin/roles');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log('Datos de roles actualizados:', data);
+            setUserRoles(data);
+        } catch (error) {
+            console.error('Error al actualizar los roles:', error);
+            toast.error('Error al actualizar los roles de usuarios');
+        }
+    };
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true'
@@ -834,7 +834,10 @@ export default function AdminDashboard() {
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Usuario: {client.username}</p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Carnet: {client.carnetIdentidad}</p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Teléfono: {client.telefono}</p>
-                                    <Button className="w-full" onClick={() => handleConvertToClient(client.id)}>
+                                    <Button className="w-full" onClick={async () => {
+                                        await handleConvertToClient(client.id);
+                                        await updateRoles();
+                                    }}>
                                         Convertir en Cliente Oficial
                                     </Button>
                                 </div>
