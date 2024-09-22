@@ -275,7 +275,7 @@ export default function AdminDashboard() {
 
     const fetchUserRoles = async () => {
         try {
-            const response = await fetch('/api/admin/roles');
+            const response = await fetch('/api/roles');
             if (!response.ok) {
                 throw new Error('Error al obtener los roles de usuario');
             }
@@ -290,53 +290,6 @@ export default function AdminDashboard() {
     useEffect(() => {
         fetchUserRoles();
     }, []);
-
-    const handleRoleChange = async (userId: string, newRole: string) => {
-        try {
-            const response = await fetch('/api/admin/updateRole', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: userId, rol: newRole }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Error desconocido al actualizar el rol');
-            }
-
-            await fetchUserRoles(); // Volver a cargar todos los usuarios después de actualizar
-            toast.success('Rol actualizado con éxito');
-        } catch (error) {
-            console.error('Error detallado al actualizar el rol:', error);
-            toast.error(`Error al actualizar el rol: ${(error as Error).message}`);
-        }
-    };
-
-    const handleNewUserRegistration = async (newUserData: any) => {
-        try {
-            const response = await fetch('/api/admin/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newUserData),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Error desconocido al registrar el usuario');
-            }
-
-            const newUser = await response.json();
-            toast.success('Usuario registrado con éxito');
-            await fetchUserRoles(); // Actualizar la lista de roles después de registrar un nuevo usuario
-        } catch (error) {
-            console.error('Error al registrar el usuario:', error);
-            toast.error(`Error al registrar el usuario: ${(error as Error).message}`);
-        }
-    };
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true'
