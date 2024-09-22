@@ -1,4 +1,5 @@
 "use client"
+
 import { useState, useEffect } from 'react'
 import { Dumbbell, Users, CreditCard, Calendar, BarChart, Sun, Moon, Edit, Trash, Plus, ChevronLeft, ChevronRight, Search, Menu, UserPlus, History, UserCog } from 'lucide-react'
 import Link from 'next/link'
@@ -265,26 +266,27 @@ export default function AdminDashboard() {
                 prevClientes.filter((c: { id: number }) => c.id !== updatedUser.id)
             );
             toast.success('Cliente convertido con éxito');
+            await fetchUserRoles(); // Actualizar la lista de roles después de convertir un cliente
         } catch (error) {
             console.error('Error al convertir el cliente:', error);
             toast.error(`Error al convertir el cliente: ${(error as Error).message}`);
         }
     };
 
-    useEffect(() => {
-        const fetchUserRoles = async () => {
-            try {
-                const response = await fetch('/api/admin/roles');
-                if (!response.ok) {
-                    throw new Error('Error al obtener los roles de usuario');
-                }
-                const data = await response.json();
-                setUserRoles(data);
-            } catch (error) {
-                console.error('Error al obtener los roles de usuario:', error);
+    const fetchUserRoles = async () => {
+        try {
+            const response = await fetch('/api/admin/roles');
+            if (!response.ok) {
+                throw new Error('Error al obtener los roles de usuario');
             }
-        };
+            const data = await response.json();
+            setUserRoles(data);
+        } catch (error) {
+            console.error('Error al obtener los roles de usuario:', error);
+        }
+    };
 
+    useEffect(() => {
         fetchUserRoles();
     }, []);
 
@@ -301,6 +303,59 @@ export default function AdminDashboard() {
         } catch (error) {
             console.error('Error al actualizar los roles:', error);
             toast.error('Error al actualizar los roles de usuarios');
+        }
+    };
+
+    const handleRoleChange = async (userId: string, newRole: string) => {
+        try {
+            const response = await fetch('/api/admin/updateRole', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: userId, rol: newRole }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error desconocido al actualizar el rol');
+            }
+
+            const updatedUser = await response.json();
+            setUserRoles(prevUsers =>
+                prevUsers.map(u =>
+                    u.id === updatedUser.id ? { ...u, rol: updatedUser.rol } : u
+                )
+            );
+            toast.success('Rol actualizado con éxito');
+            await updateRoles(); // Actualizar la lista de roles después de cambiar un rol
+        } catch (error) {
+            console.error('Error detallado al actualizar el rol:', error);
+            toast.error(`Error al actualizar el rol: ${(error as Error).message}`);
+        }
+    };
+
+    const handleNewUserRegistration = async (newUserData: any) => {
+        try {
+            const response = await fetch('/api/admin/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newUserData),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error desconocido al registrar el usuario');
+            }
+
+            const newUser = await response.json();
+            toast.success('Usuario registrado con éxito');
+            await fetchUserRoles(); // Actualizar la lista de roles después de registrar un nuevo usuario
+        } catch (error) {
+            console.error('Error al registrar el usuario:', error);
+            toast.error(`Error al registrar el usuario: ${(error as Error).message}`);
         }
     };
 
