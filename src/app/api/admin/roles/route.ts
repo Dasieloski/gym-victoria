@@ -7,6 +7,11 @@ export async function GET() {
   try {
     console.log('GET /api/admin/roles - Iniciando');
     const usuarios = await prisma.usuario.findMany({
+      where: {
+        rol: {
+          in: ['ADMIN', 'CLIENTE', 'CLIENTEESPERA', 'ENTRENADOR']
+        }
+      },
       select: {
         id: true,
         nombre: true,
