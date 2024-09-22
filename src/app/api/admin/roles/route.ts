@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    console.log('GET /api/admin/roles - Iniciando');
     const usuarios = await prisma.usuario.findMany({
       select: {
         id: true,
@@ -16,7 +15,6 @@ export async function GET() {
         nombre: 'asc'
       }
     });
-    console.log('GET /api/admin/roles - Usuarios obtenidos:', usuarios.length);
     return NextResponse.json(usuarios);
   } catch (error) {
     console.error('Error al obtener los datos:', error);

@@ -13,10 +13,9 @@ export async function GET() {
         rol: true,
       },
       orderBy: {
-        nombre: 'asc'
-      }
+        nombre: 'asc',
+      },
     });
-    console.log('GET /api/admin/roles - Usuarios obtenidos:', usuarios.length);
     return NextResponse.json(usuarios);
   } catch (error) {
     console.error('Error al obtener los datos:', error);

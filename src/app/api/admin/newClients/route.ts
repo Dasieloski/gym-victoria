@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    console.log('GET /api/admin/newClients - Iniciando');
     const clientesEspera = await prisma.usuario.findMany({
       where: {
         rol: 'CLIENTEESPERA'
@@ -19,7 +18,6 @@ export async function GET() {
         rol: true,
       }
     });
-    console.log('GET /api/admin/newClients - Clientes en espera:', clientesEspera);
 
     return NextResponse.json(clientesEspera);
   } catch (error) {
