@@ -272,7 +272,20 @@ export default function AdminDashboard() {
     };
 
     useEffect(() => {
-        updateRoles();
+        const fetchUserRoles = async () => {
+            try {
+                const response = await fetch('/api/admin/roles');
+                if (!response.ok) {
+                    throw new Error('Error al obtener los roles de usuario');
+                }
+                const data = await response.json();
+                setUserRoles(data);
+            } catch (error) {
+                console.error('Error al obtener los roles de usuario:', error);
+            }
+        };
+
+        fetchUserRoles();
     }, []);
 
     const updateRoles = async () => {
@@ -870,7 +883,7 @@ export default function AdminDashboard() {
                             </Select>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(filteredUsers).map((user) => ( // Usar filteredUsers aquí
+                            {sortItems(filteredUsers).map((user) => (
                                 <div key={user.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <h3 className="text-lg font-semibold mb-2">{user.nombre}</h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Rol actual: {user.rol}</p>
@@ -897,14 +910,9 @@ export default function AdminDashboard() {
                                                     )
                                                 );
                                                 toast.success('Rol actualizado con éxito');
-                                            } catch (error: unknown) {
-                                                if (error instanceof Error) {
-                                                    console.error('Error detallado al actualizar el rol:', error);
-                                                    toast.error(`Error al actualizar el rol: ${error.message}`);
-                                                } else {
-                                                    console.error('Error desconocido al actualizar el rol:', error);
-                                                    toast.error('Error al actualizar el rol: error desconocido');
-                                                }
+                                            } catch (error) {
+                                                console.error('Error detallado al actualizar el rol:', error);
+                                                toast.error(`Error al actualizar el rol: ${(error as Error).message}`);
                                             }
                                         }}
                                         defaultValue={user.rol}
@@ -919,46 +927,6 @@ export default function AdminDashboard() {
                                             <SelectItem value="CLIENTEESPERA">CLIENTEESPERA</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* History */}
-                {activeTab === 'history' && (
-                    <div>
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
-                            <div className="relative w-full sm:w-auto">
-                                <Input
-                                    type="text"
-                                    placeholder="Buscar en historial..."
-                                    className="w-full sm:w-64 pl-10 pr-4"
-                                    onChange={(e) => setSearchHistory(e.target.value)}
-                                />
-                                <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
-                            </div>
-                            <Select onValueChange={(value) => setSortBy(value)}>
-                                <SelectTrigger className="w-full sm:w-auto">
-                                    <SelectValue placeholder="Ordenar por" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="fecha">Fecha</SelectItem>
-                                    <SelectItem value="accion">Acción</SelectItem>
-                                    <SelectItem value="usuario">Usuario</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(filteredHistory).map((item) => (
-                                <div key={item.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{item.accion}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Descripción: {item.descripcion}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Usuario: {item.usuario.nombre}</p>
-                                    {item.entrenador && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Entrenador: {item.entrenador.usuario.nombre}</p>}
-                                    {item.membresia && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Membresía: {item.membresia.tipo}</p>}
-                                    {item.reserva && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Reserva: {new Date(item.reserva.fecha).toLocaleString()}</p>}
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Fecha: {new Date(item.fecha).toLocaleString()}</p>
                                 </div>
                             ))}
                         </div>
