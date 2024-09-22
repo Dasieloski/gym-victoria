@@ -30,11 +30,11 @@ export async function GET() {
   }
 }
 
-export async function PUT(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
   try {
-    console.log('PUT /api/admin/newClients - Iniciando');
+    console.log('PATCH /api/newClients - Iniciando');
     const body = await req.json();
-    console.log('PUT /api/admin/newClients - Datos recibidos:', body);
+    console.log('PATCH /api/newClients - Datos recibidos:', body);
 
     const { id } = body;
     if (!id) {
@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest) {
       where: { id: parseInt(id) },
       data: { rol: 'CLIENTE' },
     });
-    console.log('PUT /api/admin/newClients - Usuario actualizado:', updatedUser);
+    console.log('PATCH /api/newClients - Usuario actualizado:', updatedUser);
 
     return NextResponse.json(updatedUser);
   } catch (error) {

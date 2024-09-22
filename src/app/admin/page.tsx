@@ -237,7 +237,7 @@ export default function AdminDashboard() {
         fetchData();
     }, []);
 
-           const handleConvertToClient = async (id: string) => {
+    const handleConvertToClient = async (id: string) => {
         try {
             console.log('handleConvertToClient - Iniciando con ID:', id);
             const response = await fetch(`/api/newClients`, {
