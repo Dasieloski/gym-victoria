@@ -266,22 +266,22 @@ export default function AdminDashboard() {
                 prevClientes.filter((c: { id: number }) => c.id !== updatedUser.id)
             );
             toast.success('Cliente convertido con éxito');
-            await fetchUserRoles(); // Actualizar la lista de roles después de convertir un cliente
-        } catch (error) {
+            await fetchUserRoles(); // Asegurar que se actualicen los roles
+        } catch (error: any) {
             console.error('Error al convertir el cliente:', error);
-            toast.error(`Error al convertir el cliente: ${(error as Error).message}`);
+            toast.error(`Error al convertir el cliente: ${error.message}`);
         }
     };
 
     const fetchUserRoles = async () => {
         try {
-            const response = await fetch('/api/roles');
+            const response = await fetch('/api/roles', { cache: 'no-store' }); // Añadir cache: 'no-store'
             if (!response.ok) {
                 throw new Error('Error al obtener los roles de usuario');
             }
             const data = await response.json();
             setUserRoles(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error al obtener los roles de usuario:', error);
             toast.error('Error al cargar los roles de usuario');
         }
