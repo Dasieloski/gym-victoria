@@ -266,28 +266,29 @@ export default function AdminDashboard() {
                 prevClientes.filter((c: { id: number }) => c.id !== updatedUser.id)
             );
             toast.success('Cliente convertido con éxito');
-            await fetchUserRoles(); // Asegurar que se actualicen los roles
+            // await fetchUserRoles(); // Asegurar que se actualicen los roles
         } catch (error: any) {
             console.error('Error al convertir el cliente:', error);
             toast.error(`Error al convertir el cliente: ${error.message}`);
         }
     };
 
-    const fetchUserRoles = async () => {
-        try {
-            const response = await fetch('/api/admin/roles', { cache: 'no-store' }); // Añadir cache: 'no-store'
-            if (!response.ok) {
-                throw new Error('Error al obtener los roles de usuario');
-            }
-            const data = await response.json();
-            setUserRoles(data);
-        } catch (error: any) {
-            console.error('Error al obtener los roles de usuario:', error);
-            toast.error('Error al cargar los roles de usuario');
-        }
-    };
+
 
     useEffect(() => {
+        const fetchUserRoles = async () => {
+            try {
+                const response = await fetch('/api/admin/roles', { cache: 'no-store' }); // Añadir cache: 'no-store'
+                if (!response.ok) {
+                    throw new Error('Error al obtener los roles de usuario');
+                }
+                const data = await response.json();
+                setUserRoles(data);
+            } catch (error: any) {
+                console.error('Error al obtener los roles de usuario:', error);
+                toast.error('Error al cargar los roles de usuario');
+            }
+        }
         fetchUserRoles();
     }, []);
 
@@ -312,7 +313,7 @@ export default function AdminDashboard() {
         setActiveTab(tab);
         setIsMobileMenuOpen(false);
         if (tab === 'roles') {
-            fetchUserRoles(); // Actualizar la lista de roles al cambiar a la pestaña de roles
+            // fetchUserRoles(); // Actualizar la lista de roles al cambiar a la pestaña de roles
         }
     };
 
