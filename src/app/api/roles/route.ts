@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma'; // Importar el singleton
 export async function GET() {
   try {
     console.log('GET /api/roles - Iniciando');
-    const usuarios = await prisma.usuario.findMany({
+    const usuariosroles = await prisma.usuario.findMany({
       select: {
         id: true,
         nombre: true,
@@ -14,8 +14,8 @@ export async function GET() {
         nombre: 'asc',
       },
     });
-    console.log('Usuarios obtenidos:', usuarios);
-    return NextResponse.json(usuarios);
+    console.log('Usuarios obtenidos:', usuariosroles);
+    return NextResponse.json(usuariosroles);
   } catch (error: any) {
     console.error('Error al obtener los datos:', error);
     return NextResponse.json({ error: 'Error al obtener los datos' }, { status: 500 });
