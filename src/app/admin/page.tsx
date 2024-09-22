@@ -379,6 +379,9 @@ export default function AdminDashboard() {
     const handleTabChange = (tab: string) => {
         setActiveTab(tab)
         setIsMobileMenuOpen(false)
+        if (tab === 'roles') {
+            fetchUserRoles(); // Actualizar la lista de roles al cambiar a la pestaña de roles
+        }
     }
 
     const sortItems = (items: { [key: string]: any }[]) => {
