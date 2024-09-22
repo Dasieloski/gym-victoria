@@ -205,7 +205,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchNewClients = async () => {
             try {
-                const response = await fetch('/api/newClients');
+                const response = await fetch('/api/admin/newClients');
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Error al obtener los nuevos clientes');
@@ -240,8 +240,8 @@ export default function AdminDashboard() {
            const handleConvertToClient = async (id: string) => {
         try {
             console.log('handleConvertToClient - Iniciando con ID:', id);
-            const response = await fetch(`/api/admin/newClients`, {
-                method: 'PUT',
+            const response = await fetch(`/api/newClients`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                 },
