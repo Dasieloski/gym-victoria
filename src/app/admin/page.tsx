@@ -266,7 +266,7 @@ export default function AdminDashboard() {
                 prevClientes.filter((c: { id: number }) => c.id !== updatedUser.id)
             );
             toast.success('Cliente convertido con éxito');
-            // await fetchUserRoles(); // Asegurar que se actualicen los roles
+            fetchUserRoles(); // Asegurar que se actualicen los roles
         } catch (error: any) {
             console.error('Error al convertir el cliente:', error);
             toast.error(`Error al convertir el cliente: ${error.message}`);
@@ -274,14 +274,14 @@ export default function AdminDashboard() {
     };
 
     useEffect(() => {
-
-
         fetchUserRoles();
     }, []);
+
     const fetchUserRoles = async () => {
         try {
             const response = await fetch("/api/admin/roles");
             const data = await response.json();
+            console.log('Roles obtenidos:', data); // Añade este log para verificar los datos
             setUserRoles(data);
         } catch (error) {
             console.error('Error al obtener los roles de usuario:', error);
@@ -289,6 +289,33 @@ export default function AdminDashboard() {
         }
     };
 
+    useEffect(() => {
+        console.log('Estado actualizado de userRoles:', userRoles);
+    }, [userRoles]);
+
+    const handleUpdateRole = async (id: string, newRole: string) => {
+        try {
+            const response = await fetch(`/api/admin/roles`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id, rol: newRole }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error desconocido al actualizar el rol');
+            }
+
+            const updatedUser = await response.json();
+            toast.success('Rol actualizado con éxito');
+            fetchUserRoles(); // Refresca la lista de roles
+        } catch (error) {
+            console.error('Error al actualizar el rol del usuario:', error);
+            toast.error(`Error al actualizar el rol: ${(error as Error).message}`);
+        }
+    };
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true'
@@ -311,7 +338,7 @@ export default function AdminDashboard() {
         setActiveTab(tab);
         setIsMobileMenuOpen(false);
         if (tab === 'roles') {
-            fetchUserRoles(); // Actualizar la lista de roles al cambiar a la pestaña de roles
+            fetchUserRoles(); // Ahora puedes llamar a fetchUserRoles aquí
         }
     };
 
