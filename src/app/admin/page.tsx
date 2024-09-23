@@ -280,7 +280,7 @@ export default function AdminDashboard() {
     }, []);
     const fetchUserRoles = async () => {
         try {
-            const response = await fetch('/api/admin/roles?_=' + new Date().getTime());
+            const response = await fetch("/api/admin/roles");
             const data = await response.json();
             setUserRoles(data);
         } catch (error) {
