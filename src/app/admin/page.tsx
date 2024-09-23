@@ -273,22 +273,22 @@ export default function AdminDashboard() {
         }
     };
 
-
-
     useEffect(() => {
-        const fetchUserRoles = async () => {
-            try {
-                const response = await fetch('/api/admin/roles');
-                const data = await response.json();
-                setUserRoles(Array.isArray(data) ? data : []);
-            } catch (error) {
-                console.error('Error al obtener los roles de usuario:', error);
-                toast.error('Error al cargar los roles de usuario');
-            }
-        };
+
 
         fetchUserRoles();
     }, []);
+    const fetchUserRoles = async () => {
+        try {
+            const response = await fetch('/api/admin/roles?_=' + new Date().getTime());
+            const data = await response.json();
+            setUserRoles(data);
+        } catch (error) {
+            console.error('Error al obtener los roles de usuario:', error);
+            toast.error('Error al cargar los roles de usuario');
+        }
+    };
+
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true'
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
         setActiveTab(tab);
         setIsMobileMenuOpen(false);
         if (tab === 'roles') {
-            // fetchUserRoles(); // Actualizar la lista de roles al cambiar a la pestaña de roles
+            fetchUserRoles(); // Actualizar la lista de roles al cambiar a la pestaña de roles
         }
     };
 
@@ -900,6 +900,7 @@ export default function AdminDashboard() {
                                                 toast.success('Rol actualizado con éxito');
                                             } catch (error) {
                                                 console.error('Error detallado al actualizar el rol:', error);
+                                                await fetchUserRoles();
                                                 toast.error(`Error al actualizar el rol: ${(error as Error).message}`);
                                             }
                                         }}
