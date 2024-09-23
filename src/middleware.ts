@@ -18,7 +18,11 @@ export async function middleware(req : NextRequest) {
     if (pathname.startsWith('/admin') || 
         pathname.startsWith('/cliente-espera') || 
         pathname.startsWith('/cliente') || 
-        pathname.startsWith('/entrenador')) {
+        pathname.startsWith('/entrenador') ||
+        pathname.startsWith('/api/cliente') ||
+        pathname.startsWith('/api/entrenador') ||
+        pathname.startsWith('/api/admin') ||
+        pathname.startsWith('/api/cliente-espera')) {
       return NextResponse.redirect(new URL('/login', req.url));
     }
     // Para otras rutas, permitir acceso
@@ -26,19 +30,19 @@ export async function middleware(req : NextRequest) {
   }
 
   // Protecciones por rol
-  if (pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
     if (token.rol !== 'ADMIN') {
       return NextResponse.redirect(new URL('/404', req.url));
     }
-  } else if (pathname.startsWith('/cliente-espera')) {
+  } else if (pathname.startsWith('/cliente-espera') || pathname.startsWith('/api/cliente-espera')) {
     if (token.rol !== 'CLIENTEESPERA') {
       return NextResponse.redirect(new URL('/404', req.url));
     }
-  } else if (pathname.startsWith('/cliente')) {
+  } else if (pathname.startsWith('/cliente') || pathname.startsWith('/api/cliente')) {
     if (token.rol !== 'CLIENTE') {
       return NextResponse.redirect(new URL('/404', req.url));
     }
-  } else if (pathname.startsWith('/entrenador')) {
+  } else if (pathname.startsWith('/entrenador') || pathname.startsWith('/api/entrenador')) {
     if (token.rol !== 'ENTRENADOR') {
       return NextResponse.redirect(new URL('/404', req.url));
     }
