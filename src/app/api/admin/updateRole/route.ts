@@ -21,7 +21,5 @@ export async function PUT(req: NextRequest) {
         console.error('Error detallado al actualizar el rol del usuario:', error);
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
         return NextResponse.json({ error: `Error al actualizar el rol del usuario: ${errorMessage}` }, { status: 500 });
-    } finally {
-        await prisma.$disconnect();
     }
 }

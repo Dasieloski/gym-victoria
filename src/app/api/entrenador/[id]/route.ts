@@ -167,7 +167,5 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     } catch (error) {
         console.error('Error al cancelar la reserva:', error);
         return NextResponse.json({ error: 'Error al cancelar la reserva' }, { status: 500 });
-    } finally {
-        await prisma.$disconnect();
     }
 }

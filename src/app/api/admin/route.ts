@@ -32,8 +32,6 @@ export async function GET() {
   } catch (error) {
     console.error('Error al obtener los datos:', error);
     return NextResponse.json({ error: 'Error al obtener los datos' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

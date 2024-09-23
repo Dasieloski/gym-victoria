@@ -40,8 +40,6 @@ export async function GET() {
   } catch (error) {
     console.error('Error al obtener las reservas:', error);
     return NextResponse.json({ error: 'Error al obtener las reservas' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -61,7 +59,5 @@ export async function DELETE(req: NextRequest) {
   } catch (error) {
     console.error('Error al eliminar la reserva:', error);
     return NextResponse.json({ error: 'Error al eliminar la reserva' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

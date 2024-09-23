@@ -105,8 +105,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
   } catch (error) {
     console.error('Error al obtener información del usuario:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -157,8 +155,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
   } catch (error) {
     console.error('Error creating reservation:', error);
     return NextResponse.json({ error: 'Error creating reservation' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -180,7 +176,5 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   } catch (error) {
     console.error('Error al eliminar la reserva:', error);
     return NextResponse.json({ error: 'Error al eliminar la reserva' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
