@@ -38,7 +38,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Protecciones por rol
-  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')|| pathname.startsWith('/api/historial')) {
     if (token.rol !== 'ADMIN') {
       return isApiRoute
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
@@ -74,6 +74,7 @@ export const config = {
     '/api/cliente/:path*',
     '/api/entrenador/:path*',
     '/api/cliente-espera/:path*',
+    '/api/historial/:path*',
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
