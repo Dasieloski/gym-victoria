@@ -978,15 +978,15 @@ export default function AdminDashboard() {
                             </Select>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {Array.isArray(filteredHistory) && filteredHistory.map((item: { id: string; accion: string; description: string; user: string; trainer?: string; membership?: string; booking?: string; date: string }) => (
+                            {Array.isArray(filteredHistory) && filteredHistory.map((item: { id: string; accion: string; descripcion: string; usuario: { nombre: string }; entrenador?: { usuario: { nombre: string } }; membresia?: { tipo: string }; reserva?: { fecha: string }; fecha: string }) => (
                                 <div key={item.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <h3 className="text-lg font-semibold mb-2">{item.accion}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Descripción: {item.description}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Usuario: {item.user}</p>
-                                    {item.trainer && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Entrenador: {item.trainer}</p>}
-                                    {item.membership && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Membresía: {item.membership}</p>}
-                                    {item.booking && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Reserva: {item.booking}</p>}
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Fecha: {item.date}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Descripción: {item.descripcion}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Usuario: {item.usuario.nombre}</p>
+                                    {item.entrenador && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Entrenador: {item.entrenador.usuario.nombre}</p>}
+                                    {item.membresia && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Membresía: {item.membresia.tipo}</p>}
+                                    {item.reserva && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Reserva: {new Date(item.reserva.fecha).toLocaleString()}</p>}
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Fecha: {new Date(item.fecha).toLocaleString()}</p>
                                 </div>
                             ))}
                         </div>
