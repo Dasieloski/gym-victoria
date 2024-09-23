@@ -228,19 +228,19 @@ export default function AdminDashboard() {
     }, []);
 
     useEffect(() => {
-        const fetchClientes = async () => {
+        const fetchData = async () => {
             try {
                 const response = await fetch('/api/admin/clientes');
                 const data = await response.json();
-                setClientes(Array.isArray(data.clientes) ? data.clientes : []);
-                setTrainers(Array.isArray(data.entrenadores) ? data.entrenadores : []);
+                setClientes(data.clientes);
+                setTrainers(data.entrenadores);
             } catch (error) {
                 console.error('Error al obtener los datos:', error);
                 toast.error('Error al cargar los clientes');
             }
         };
 
-        fetchClientes();
+        fetchData();
     }, []);
 
     const handleConvertToClient = async (id: string) => {
@@ -275,20 +275,22 @@ export default function AdminDashboard() {
 
 
 
-   useEffect(() => {
-    const fetchUserRoles = async () => {
-        try {
-            const response = await fetch('/api/admin/roles');
-            const data = await response.json();
-            setUserRoles(Array.isArray(data) ? data : []);
-        } catch (error) {
-            console.error('Error al obtener los roles de usuario:', error);
-            toast.error('Error al cargar los roles de usuario');
+    useEffect(() => {
+        const fetchUserRoles = async () => {
+            try {
+                const response = await fetch('/api/admin/roles', { cache: 'no-store' }); // Añadir cache: 'no-store'
+                if (!response.ok) {
+                    throw new Error('Error al obtener los roles de usuario');
+                }
+                const data = await response.json();
+                setUserRoles(data);
+            } catch (error: any) {
+                console.error('Error al obtener los roles de usuario:', error);
+                toast.error('Error al cargar los roles de usuario');
+            }
         }
-    };
-
-    fetchUserRoles();
-}, []);
+        fetchUserRoles();
+    }, []);
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true'
