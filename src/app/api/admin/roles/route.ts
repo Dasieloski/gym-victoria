@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma'; // Importar el singleton
 
+// Forzar comportamiento dinámico y desactivar la revalidación
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
-    console.log('GET /api/roles - Iniciando');
+    console.log('GET /api/admin/roles - Iniciando');
     const usuariosroles = await prisma.usuario.findMany({
       select: {
         id: true,

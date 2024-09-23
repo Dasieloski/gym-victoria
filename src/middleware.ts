@@ -28,19 +28,19 @@ export async function middleware(req : NextRequest) {
   // Protecciones por rol
   if (pathname.startsWith('/admin')) {
     if (token.rol !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/403', req.url));
+      return NextResponse.redirect(new URL('/404', req.url));
     }
   } else if (pathname.startsWith('/cliente-espera')) {
     if (token.rol !== 'CLIENTEESPERA') {
-      return NextResponse.redirect(new URL('/403', req.url));
+      return NextResponse.redirect(new URL('/404', req.url));
     }
   } else if (pathname.startsWith('/cliente')) {
     if (token.rol !== 'CLIENTE') {
-      return NextResponse.redirect(new URL('/403', req.url));
+      return NextResponse.redirect(new URL('/404', req.url));
     }
   } else if (pathname.startsWith('/entrenador')) {
     if (token.rol !== 'ENTRENADOR') {
-      return NextResponse.redirect(new URL('/403', req.url));
+      return NextResponse.redirect(new URL('/404', req.url));
     }
   }
 

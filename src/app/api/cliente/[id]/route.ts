@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // Función para convertir hora de formato 12 horas a 24 horas
 function convertirHora12a24(hora12: string): string {

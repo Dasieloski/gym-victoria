@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 
-// Eliminar la declaración del tipo local
-// type TipoMembresia = 'ANUAL' | 'TRIMESTRAL' | 'MENSUAL';
-
-const prisma = new PrismaClient();
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     const { id } = params;

@@ -1,5 +1,4 @@
-import { PrismaClient } from '@prisma/client'; // Importa el cliente de Prisma
-const prisma = new PrismaClient(); // Crea una instancia del cliente
+import prisma from '@/lib/prisma'; // Crea una instancia del cliente
 import dayjs from 'dayjs';
 
 export async function deleteOldReservations() {

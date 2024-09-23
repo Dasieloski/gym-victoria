@@ -1,10 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween'; // Importar el plugin isBetween
 
 dayjs.extend(isBetween); // Extender dayjs con el plugin
 
-const prisma = new PrismaClient();
+
 
 export async function updateVisits() {
   const today = dayjs().startOf('day'); // Obtener el inicio del día actual
