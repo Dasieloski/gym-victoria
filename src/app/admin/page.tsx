@@ -76,35 +76,33 @@ export default function AdminDashboard() {
     const [previousIngresosMensuales, setPreviousIngresosMensuales] = useState(0);
     const [previousTotalClientes, setPreviousTotalClientes] = useState(0);
 
-    const filteredClients = clientes.filter((client: ClientType) =>
-    (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
-        client.carnetIdentidad?.toLowerCase().includes(searchClients.toLowerCase()) ||
-        client.telefono?.toLowerCase().includes(searchClients.toLowerCase()))
-    );
+    const filteredClients = Array.isArray(clientes) ? clientes.filter((client: ClientType) =>
+        (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
+            client.carnetIdentidad?.toLowerCase().includes(searchClients.toLowerCase()) ||
+            client.telefono?.toLowerCase().includes(searchClients.toLowerCase()))
+    ) : [];
 
-    const filteredNewClients = clientesEspera.filter((client: { nombre: string; username: string; carnetIdentidad: string }) =>
+    const filteredNewClients = Array.isArray(clientesEspera) ? clientesEspera.filter((client: { nombre: string; username: string; carnetIdentidad: string }) =>
         client.nombre.toLowerCase().includes(searchNewClients.toLowerCase()) ||
         client.username.toLowerCase().includes(searchNewClients.toLowerCase()) ||
         client.carnetIdentidad.toLowerCase().includes(searchNewClients.toLowerCase())
-    );
+    ) : [];
 
-    // Asegúrate de que 'clientesConMembresia' tenga un tipo definido
-    const filteredMemberships = clientesConMembresia.filter((client: { nombre: string; membresiaActual: { tipo: string } }) =>
+    const filteredMemberships = Array.isArray(clientesConMembresia) ? clientesConMembresia.filter((client: { nombre: string; membresiaActual: { tipo: string } }) =>
         client.nombre.toLowerCase().includes(searchMemberships.toLowerCase()) ||
         client.membresiaActual.tipo.toLowerCase().includes(searchMemberships.toLowerCase())
-    );
+    ) : [];
 
-    const filteredHistory = historiales.filter((item: { accion: string; descripcion: string; usuario: { nombre: string } }) =>
+    const filteredHistory = Array.isArray(historiales) ? historiales.filter((item: { accion: string; descripcion: string; usuario: { nombre: string } }) =>
         item.accion.toLowerCase().includes(searchHistory.toLowerCase()) ||
         item.descripcion.toLowerCase().includes(searchHistory.toLowerCase()) ||
         item.usuario.nombre.toLowerCase().includes(searchHistory.toLowerCase())
-    );
+    ) : [];
 
-    // Filtrar usuarios según la búsqueda
-    const filteredUsers = userRoles.filter((user: User) =>
+    const filteredUsers = Array.isArray(userRoles) ? userRoles.filter((user: User) =>
         user.nombre.toLowerCase().includes(searchUsers.toLowerCase()) ||
         user.rol.toLowerCase().includes(searchUsers.toLowerCase())
-    );
+    ) : [];
 
     // Calcular ingresos mensuales: 2000 pesos por cada cliente con membresía activa
     const ingresosMensuales = clientesConMembresia.length * 2000;
@@ -177,8 +175,6 @@ export default function AdminDashboard() {
         fetchMemberships();
     }, []);
 
-
-
     const confirmDelete = async () => {
         if (deleteConfirmation.id && deleteConfirmation.type) {
             try {
@@ -208,6 +204,7 @@ export default function AdminDashboard() {
             }
         }
     };
+
     useEffect(() => {
         const fetchNewClients = async () => {
             try {
