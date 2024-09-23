@@ -15,7 +15,9 @@ export async function GET() {
       },
     });
     console.log('Usuarios obtenidos:', usuariosroles);
-    return NextResponse.json(usuariosroles);
+    const response = NextResponse.json(usuariosroles);
+    response.headers.set('Cache-Control', 'no-store'); // Desactivar la caché
+    return response;
   } catch (error: any) {
     console.error('Error al obtener los datos:', error);
     return NextResponse.json({ error: 'Error al obtener los datos' }, { status: 500 });

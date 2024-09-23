@@ -280,6 +280,9 @@ export default function AdminDashboard() {
     const fetchUserRoles = async () => {
         try {
             const response = await fetch("/api/admin/roles");
+            if (!response.ok) {
+                throw new Error('Error al obtener los roles de usuario');
+            }
             const data = await response.json();
             console.log('Roles obtenidos:', data); // Añade este log para verificar los datos
             setUserRoles(data);
