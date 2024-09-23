@@ -6,7 +6,13 @@ export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+
     const historiales = await prisma.historial.findMany({
+      skip: (page - 1) * pageSize,
+      take: pageSize,
       include: {
         usuario: true,
         entrenador: {
@@ -16,9 +22,19 @@ export async function GET(req: NextRequest) {
         },
         membresia: true,
         reserva: true
+      },
+      orderBy: {
+        fecha: 'desc'
       }
     });
-    return NextResponse.json(historiales, { status: 200 });
+
+    const totalHistoriales = await prisma.historial.count();
+
+    return NextResponse.json({
+      historiales,
+      totalPages: Math.ceil(totalHistoriales / pageSize),
+      currentPage: page
+    }, { status: 200 });
   } catch (error) {
     console.error('Error al obtener el historial:', error);
     return NextResponse.json({ error: 'Error al obtener el historial' }, { status: 500 });
