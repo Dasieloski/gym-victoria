@@ -27,6 +27,15 @@ interface User {
     // ... otros campos necesarios
 }
 
+interface Historial {
+    accion: string;
+    descripcion: string;
+    usuario: {
+        nombre: string;
+    };
+    // otros campos si es necesario
+}
+
 // Confirmation Dialog Component
 const ConfirmationDialog = ({ isOpen, onClose, onConfirm, message }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; message: string; }) => {
     if (!isOpen) return null;
@@ -77,9 +86,9 @@ export default function AdminDashboard() {
     const [previousTotalClientes, setPreviousTotalClientes] = useState(0);
 
     const filteredClients = Array.isArray(clientes) ? clientes.filter((client: ClientType) =>
-        (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
-            client.carnetIdentidad?.toLowerCase().includes(searchClients.toLowerCase()) ||
-            client.telefono?.toLowerCase().includes(searchClients.toLowerCase()))
+    (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
+        client.carnetIdentidad?.toLowerCase().includes(searchClients.toLowerCase()) ||
+        client.telefono?.toLowerCase().includes(searchClients.toLowerCase()))
     ) : [];
 
     const filteredNewClients = Array.isArray(clientesEspera) ? clientesEspera.filter((client: { nombre: string; username: string; carnetIdentidad: string }) =>
@@ -93,7 +102,7 @@ export default function AdminDashboard() {
         client.membresiaActual.tipo.toLowerCase().includes(searchMemberships.toLowerCase())
     ) : [];
 
-    const filteredHistory = Array.isArray(historiales) ? historiales.filter((item: { accion: string; descripcion: string; usuario: { nombre: string } }) =>
+    const filteredHistory = Array.isArray(historiales) ? historiales.filter((item: Historial) =>
         item.accion.toLowerCase().includes(searchHistory.toLowerCase()) ||
         item.descripcion.toLowerCase().includes(searchHistory.toLowerCase()) ||
         item.usuario.nombre.toLowerCase().includes(searchHistory.toLowerCase())
@@ -146,10 +155,10 @@ export default function AdminDashboard() {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
+                console.log('Historiales obtenidos:', data); // Verifica los datos aquí
                 setHistoriales(data);
             } catch (error) {
                 console.error('Error al obtener los historiales:', error);
-                // Puedes manejar el error aquí, por ejemplo, mostrando un mensaje al usuario
             }
         };
 
@@ -949,7 +958,7 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
-                 {/* History */}
+                {/* History */}
                 {activeTab === 'history' && (
                     <div>
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
@@ -968,11 +977,10 @@ export default function AdminDashboard() {
                                 </SelectContent>
                             </Select>
                         </div>
-                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {Array.isArray(history) && sortItems(history).map((item: any) => (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {Array.isArray(filteredHistory) && filteredHistory.map((item: { id: string; accion: string; description: string; user: string; trainer?: string; membership?: string; booking?: string; date: string }) => (
                                 <div key={item.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{item.action}</h3>
-                                    <h3 className="text-lg font-semibold mb-2">{item.action}</h3>
+                                    <h3 className="text-lg font-semibold mb-2">{item.accion}</h3>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Descripción: {item.description}</p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Usuario: {item.user}</p>
                                     {item.trainer && <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Entrenador: {item.trainer}</p>}
