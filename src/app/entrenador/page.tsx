@@ -1,11 +1,12 @@
 "use client"
 import { useState, useEffect } from 'react'
-import { Dumbbell, Calendar, Sun, Moon, X, Menu, MessageSquare, DollarSign, Users, Clock, CreditCard, CheckCircle, ArrowUpDown, Phone, IdCard, Award } from 'lucide-react'
+import { Dumbbell, Calendar, Sun, Moon, X, Menu, MessageSquare, DollarSign, Users, Clock, CreditCard, CheckCircle, ArrowUpDown, Phone, IdCard, Award, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { signOut, useSession } from "next-auth/react";
 import { addToHistorial } from '@/services/historialService';
+import Image from 'next/image';
 
 interface Client {
     id: number;
@@ -53,7 +54,9 @@ interface Client {
         fecha: string;
         estado: string;
     }[];
+    profileImage?: string; // Nueva propiedad para la imagen de perfil
 }
+
 type MiTipo = {
     accion: string;
     descripcion: string;
@@ -61,8 +64,9 @@ type MiTipo = {
     entrenadorId?: number;
     membresiaId?: number;
     reservaId?: number;
-    clienteId?: number; // Agrega clienteId al tipo
+    clienteId?: number;
 };
+
 export default function TrainerPage() {
     const { data: session } = useSession();
     const [isDarkMode, setIsDarkMode] = useState(false)
@@ -308,6 +312,18 @@ export default function TrainerPage() {
         }
     };
 
+    const ProfileImage = ({ src, alt }: { src?: string; alt: string }) => (
+        <div className="w-16 h-16 rounded-full overflow-hidden mb-4">
+            {src ? (
+                <Image src={src} alt={alt} width={64} height={64} className="object-cover" />
+            ) : (
+                <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                    <User size={32} className="text-gray-400" />
+                </div>
+            )}
+        </div>
+    );
+
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''} transition-colors duration-300`}>
             {/* Header */}
@@ -404,7 +420,10 @@ export default function TrainerPage() {
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {sortedClients.map((client, index) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                    <h3 className="text-xl font-semibold mb-2">{client.nombre}</h3>
+                                    <div className="flex flex-col items-center">
+                                        <ProfileImage src={client.profileImage} alt={client.nombre} />
+                                        <h3 className="text-xl font-semibold mb-2">{client.nombre}</h3>
+                                    </div>
                                     <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center">
                                         <IdCard className="inline-block mr-2" size={16} />
                                         ID: {client.carnetIdentidad}
@@ -443,26 +462,32 @@ export default function TrainerPage() {
                             ]}
                         />
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            {sortedSchedules.map((schedule, index) => (
-                                <div key={schedule.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                    <h3 className="text-lg font-semibold mb-2">{schedule.clientName}</h3>
-                                    <p className="text-gray-600 dark:text-gray-400 mb-1">
-                                        <Calendar className="inline-block mr-1" size={16} />
-                                        {schedule.date}
-                                    </p>
-                                    <p className="text-gray-600 dark:text-gray-400 mb-3">
-                                        <Clock className="inline-block mr-1" size={16} />
-                                        {schedule.time}
-                                    </p>
-                                    <button
-                                        className="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105"
-                                        onClick={() => handleCancelReservation(schedule.id)}
-                                    >
-                                        <X size={18} className="mr-2" />
-                                        Cancelar
-                                    </button>
-                                </div>
-                            ))}
+                            {sortedSchedules.map((schedule, index) => {
+                                const client = clients.find(c => c.nombre === schedule.clientName);
+                                return (
+                                    <div key={schedule.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
+                                        <div className="flex items-center mb-2">
+                                            <ProfileImage src={client?.profileImage} alt={schedule.clientName} />
+                                            <h3 className="text-lg font-semibold ml-2">{schedule.clientName}</h3>
+                                        </div>
+                                        <p className="text-gray-600 dark:text-gray-400 mb-1">
+                                            <Calendar className="inline-block mr-1" size={16} />
+                                            {schedule.date}
+                                        </p>
+                                        <p className="text-gray-600 dark:text-gray-400 mb-3">
+                                            <Clock className="inline-block mr-1" size={16} />
+                                            {schedule.time}
+                                        </p>
+                                        <button
+                                            className="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105"
+                                            onClick={() => handleCancelReservation(schedule.id)}
+                                        >
+                                            <X size={18} className="mr-2" />
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -483,7 +508,10 @@ export default function TrainerPage() {
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {sortedPayments.map((client, index) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
-                                    <h3 className="text-xl font-semibold mb-2">{client.nombre}</h3>
+                                    <div className="flex flex-col items-center mb-4">
+                                        <ProfileImage src={client.profileImage} alt={client.nombre} />
+                                        <h3 className="text-xl font-semibold">{client.nombre}</h3>
+                                    </div>
                                     <p className="text-gray-600 dark:text-gray-400 mb-1">ID: {client.id}</p>
                                     <div className="mb-2">
                                         <label htmlFor={`membership-${client.id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

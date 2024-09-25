@@ -199,7 +199,7 @@ export default function LandingPage() {
             ].map((testimonial, index) => (
               <div key={index} className="bg-gray-100 dark:bg-gray-700 p-6 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl animate-fadeIn" style={{ animationDelay: `${index * 200}ms` }}>
                 <Star className="w-8 h-8 text-yellow-400 mb-4" />
-       <p className="text-gray-600 dark:text-gray-300 mb-4">&ldquo;{testimonial.comment}&rdquo;</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">&ldquo;{testimonial.comment}&rdquo;</p>
                 <p className="font-semibold text-gray-800 dark:text-gray-100">{testimonial.name}</p>
               </div>
             ))}
@@ -218,15 +218,15 @@ export default function LandingPage() {
               </h3>
               <p className="flex items-center mb-2">
                 <MapPin className="mr-2" size={16} />
-                Calle Fitness 123, Ciudad Deportiva
+                Avenida 5ta entre calle 84 y 86 (bajos del banco), La Habana, Cuba.
               </p>
               <p className="flex items-center mb-2">
                 <Phone className="mr-2" size={16} />
-                (123) 456-7890
+                (+53) 5 283-3021
               </p>
               <p className="flex items-center">
                 <Mail className="mr-2" size={16} />
-                info@gymvictoria.com
+                jairapi@yahoo.com
               </p>
             </div>
             <div>
@@ -255,20 +255,20 @@ export default function LandingPage() {
             <div>
               <h3 className="text-xl font-semibold mb-4">Síguenos</h3>
               <div className="flex space-x-4">
-                <a href="#" className="hover:text-[#2272FF] transition-colors duration-300">
+                <a href="https://www.facebook.com/andres.gymvictoria" className="hover:text-[#2272FF] transition-colors duration-300">
                   <Facebook size={24} />
                 </a>
-                <a href="#" className="hover:text-[#2272FF] transition-colors duration-300">
+                <a href="https://www.instagram.com/gymvictoria2/" className="hover:text-[#2272FF] transition-colors duration-300">
                   <Instagram size={24} />
                 </a>
-                <a href="#" className="hover:text-[#2272FF] transition-colors duration-300">
+                {/* <a href="#" className="hover:text-[#2272FF] transition-colors duration-300">
                   <Twitter size={24} />
-                </a>
+                </a> */}
               </div>
             </div>
           </div>
           <div className="mt-8 text-center">
-            <p>&copy; 2023 GYM-VICTORIA. Todos los derechos reservados.</p>
+            <p>&copy; {new Date().getFullYear()} GYM-VICTORIA. Todos los derechos reservados. Designed by <a href="https://www.instagram.com/dasieloski" target="_blank" rel="noopener noreferrer">Dasieloski</a></p>
           </div>
         </div>
       </footer>

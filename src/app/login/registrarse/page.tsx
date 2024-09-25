@@ -1,38 +1,60 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Dumbbell, User, Mail, Lock, Eye, EyeOff, Sun, Moon, ArrowLeft, Phone, SquareUserRound, UserRoundCheck } from 'lucide-react';
+import { Dumbbell, User, Mail, Lock, Eye, EyeOff, Sun, Moon, ArrowLeft, Phone, SquareUserRound, UserRoundCheck, Camera } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function RegisterPage() {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
     const { register, handleSubmit, formState: { errors } } = useForm();
     const router = useRouter();
+
     const onSubmit = handleSubmit(async (data) => {
         try {
+            const file = data.profileImage[0];
+            if (file.size > 1048576) { // 1 MB en bytes
+                alert("La foto debe ser menor de 1 megabyte.");
+                return;
+            }
+
+            const { data: uploadData, error: uploadError } = await supabase
+                .storage
+                .from('profile-images')
+                .upload(`public/${data.username}-${Date.now()}`, file);
+
+            if (uploadError) {
+                throw uploadError;
+            }
+
+            const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${uploadData.path}`;
+
+            const formData = {
+                ...data,
+                profileImage: imageUrl
+            };
+
             const res = await fetch("/api/auth/register", {
                 method: "POST",
+                body: JSON.stringify(formData),
                 headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
+                    'Content-Type': 'application/json'
+                }
             });
+
             if (res.ok) {
                 router.push('/login/inicio');
-            }
-            if (!res.ok) {
+            } else {
                 const errorData = await res.json();
                 throw new Error(errorData.message || "Error en el registro");
             }
-            const resJSON = await res.json();
-            console.log(resJSON);
-            // Manejar el éxito aquí
         } catch (error) {
             console.error("Error al registrar:", error);
-            // Mostrar el error al usuario
         }
     });
 
@@ -62,6 +84,17 @@ export default function RegisterPage() {
         document.documentElement.classList.toggle('dark', newDarkMode);
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col justify-center items-center px-4 transition-colors duration-300`}>
             <div className="w-full max-w-md">
@@ -81,6 +114,29 @@ export default function RegisterPage() {
                     <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">Registrarse</h2>
                     <form className="space-y-6" onSubmit={onSubmit}>
                         <div>
+                            <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto de perfil</label>
+                            <div className="flex items-center justify-center">
+                                <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                                    {previewImage ? (
+                                        <Image src={previewImage} alt="Preview" layout="fill" objectFit="cover" />
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full">
+                                            <Camera className="text-gray-400" size={40} />
+                                        </div>
+                                    )}
+                                    <input
+                                        id="profileImage"
+                                        type="file"
+                                        accept="image/*"
+                                        {...register("profileImage", { required: "La foto de perfil es obligatoria" })}
+                                        onChange={handleImageChange}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    />
+                                </div>
+                            </div>
+                            {errors.profileImage && <p className="text-red-500 text-sm text-center mt-2">{errors.profileImage.message as string}</p>}
+                        </div>
+                        <div>
                             <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre completo</label>
                             <div className="relative">
                                 <input
@@ -92,7 +148,7 @@ export default function RegisterPage() {
                                 />
                                 <User className="absolute right-3 top-2.5 text-gray-400" size={20} />
                             </div>
-                            {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message as string}</p>} {/* Mensaje de error */}
+                            {errors.nombre && <p className="text-red-500 text-sm">{errors.nombre.message as string}</p>}
                         </div>
                         <div>
                             <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
@@ -119,7 +175,7 @@ export default function RegisterPage() {
                                 />
                                 <UserRoundCheck className="absolute right-3 top-2.5 text-gray-400" size={20} />
                             </div>
-                            {errors.carnetIdentidad && <p className="text-red-500 text-sm">{errors.carnetIdentidad.message as string}</p>} {/* Mensaje de error */}
+                            {errors.carnetIdentidad && <p className="text-red-500 text-sm">{errors.carnetIdentidad.message as string}</p>}
                         </div>
                         <div>
                             <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
@@ -133,7 +189,7 @@ export default function RegisterPage() {
                                 />
                                 <Phone className="absolute right-3 top-2.5 text-gray-400" size={20} />
                             </div>
-                            {errors.telefono && <p className="text-red-500 text-sm">{errors.telefono.message as string}</p>} {/* Mensaje de error */}
+                            {errors.telefono && <p className="text-red-500 text-sm">{errors.telefono.message as string}</p>}
                         </div>
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña</label>

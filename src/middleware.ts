@@ -44,19 +44,19 @@ export async function middleware(req: NextRequest) {
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
     }
-  } else if (pathname.startsWith('/cliente-espera') || pathname.startsWith('/api/cliente-espera')) {
+  } else if (pathname.startsWith('/cliente-espera') || pathname.startsWith('/api/cliente-espera')|| pathname.startsWith('/api/historial')) {
     if (token.rol !== 'CLIENTEESPERA') {
       return isApiRoute
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
     }
-  } else if (pathname.startsWith('/cliente') || pathname.startsWith('/api/cliente')) {
+  } else if (pathname.startsWith('/cliente') || pathname.startsWith('/api/cliente')|| pathname.startsWith('/api/historial')) {
     if (token.rol !== 'CLIENTE') {
       return isApiRoute
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
     }
-  } else if (pathname.startsWith('/entrenador') || pathname.startsWith('/api/entrenador')) {
+  } else if (pathname.startsWith('/entrenador') || pathname.startsWith('/api/entrenador')|| pathname.startsWith('/api/historial')) {
     if (token.rol !== 'ENTRENADOR') {
       return isApiRoute
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })

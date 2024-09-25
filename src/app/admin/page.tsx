@@ -12,11 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import axios from 'axios'
-import React from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { ClientType } from '@/types/client';
-import { Booking } from '@/types/booking';
+import React from 'react'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { ClientType } from '@/types/client'
+import { Booking } from '@/types/booking'
+import Image from 'next/image'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
 
@@ -24,6 +25,7 @@ interface User {
     id: string;
     rol: string;
     nombre: string;
+    profileImage?: string;
     // ... otros campos necesarios
 }
 
@@ -63,6 +65,18 @@ const ConfirmationDialog = ({ isOpen, onClose, onConfirm, message }: { isOpen: b
     );
 };
 
+const ProfileImage = ({ src, alt }: { src?: string; alt: string }) => (
+    <div className="w-16 h-16 rounded-full overflow-hidden mb-4">
+        {src ? (
+            <Image src={src} alt={alt} width={64} height={64} className="object-cover" />
+        ) : (
+            <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                <Users size={32} className="text-gray-400" />
+            </div>
+        )}
+    </div>
+);
+
 export default function AdminDashboard() {
     const [sortBy, setSortBy] = useState('')
     const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; id: number | null; type: string }>({ isOpen: false, id: null, type: '' })
@@ -84,6 +98,8 @@ export default function AdminDashboard() {
     const [searchUsers, setSearchUsers] = useState(''); // Agregar estado para búsqueda de usuarios
     const [previousIngresosMensuales, setPreviousIngresosMensuales] = useState(0);
     const [previousTotalClientes, setPreviousTotalClientes] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
 
     const filteredClients = Array.isArray(clientes) ? clientes.filter((client: ClientType) =>
     (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
@@ -410,31 +426,25 @@ export default function AdminDashboard() {
         }
     };
 
-    // Calcular asistencia semanal
-    const asistenciaSemanal = [0, 0, 0, 0, 0, 0, 0]; // Array para almacenar la asistencia de cada día
+    // Función para calcular la asistencia mensual
+    const calcularAsistenciaMensual = () => {
+        const asistenciaMensual = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Un array para cada mes
+        bookings.forEach(booking => {
+            const fecha = new Date(booking.fecha);
+            const mes = fecha.getMonth(); // 0 = Enero, 1 = Febrero, ..., 11 = Diciembre
+            asistenciaMensual[mes] += 1;
+        });
+        return asistenciaMensual;
+    };
 
-    // Verifica si hoy es domingo
-    const today = new Date();
-    if (today.getDay() === 0) {
-        // Reinicia el conteo si es domingo
-        asistenciaSemanal.fill(0);
-    }
-
-    // Iterar sobre las reservas y contar los clientes por día
-    bookings.forEach(booking => {
-        const fecha = new Date(booking.fecha);
-        const dia = fecha.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-        if (dia >= 0 && dia <= 6) {
-            asistenciaSemanal[dia] += 1; // Incrementar el contador para el día correspondiente
-        }
-    });
+    const asistenciaMensual = calcularAsistenciaMensual();
 
     const barChartData = {
-        labels: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+        labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
         datasets: [
             {
-                label: 'Asistencia Semanal',
-                data: asistenciaSemanal,
+                label: 'Asistencia Mensual',
+                data: asistenciaMensual,
                 backgroundColor: 'rgba(34, 114, 255, 0.6)',
                 borderColor: 'rgba(34, 114, 255, 1)',
                 borderWidth: 1,
@@ -458,7 +468,7 @@ export default function AdminDashboard() {
             },
             title: {
                 display: true,
-                text: 'Asistencia Semanal',
+                text: 'Asistencia Mensual',
                 font: {
                     size: 18,
                     weight: 'bold' as const,
@@ -541,6 +551,34 @@ export default function AdminDashboard() {
             },
         },
     }
+
+    // Calcular el índice de los elementos a mostrar
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentHistorial = filteredHistory.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Calcular el total de páginas
+    const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(prev => prev + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(prev => prev - 1);
+        }
+    };
+
+    const handlePageSelect = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchHistory, sortBy]);
 
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''}`}>
@@ -673,8 +711,13 @@ export default function AdminDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {sortItems(filteredClients).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{client.nombre}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">ID: {client.id}</p>
+                                    <div className="flex items-center mb-4">
+                                        <ProfileImage src={client.profileImage} alt={client.nombre} />
+                                        <div className="ml-4">
+                                            <h3 className="text-lg font-semibold">{client.nombre}</h3>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
+                                        </div>
+                                    </div>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Teléfono: {client.telefono}</p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Carnet: {client.carnetIdentidad}</p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
@@ -802,8 +845,13 @@ export default function AdminDashboard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {sortItems(filteredMemberships).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{client.nombre}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tipo: {client.membresiaActual.tipo}</p>
+                                    <div className="flex items-center mb-4">
+                                        <ProfileImage src={client.profileImage} alt={client.nombre} />
+                                        <div className="ml-4">
+                                            <h3 className="text-lg font-semibold">{client.nombre}</h3>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Tipo: {client.membresiaActual.tipo}</p>
+                                        </div>
+                                    </div>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Inicio: {new Date(client.membresiaActual.fechaInicio).toLocaleDateString()}</p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Fin: {new Date(client.membresiaActual.fechaFin).toLocaleDateString()}</p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Estado: {client.membresiaActual.estadoPago}</p>
@@ -817,13 +865,18 @@ export default function AdminDashboard() {
                 {activeTab === 'bookings' && (
                     <div>
                         {/* ...otros componentes como el buscador y select de ordenación... */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {sortItems(bookings || []).map((booking) => (
                                 <div key={booking.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{booking.cliente.nombre}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                        Fecha: {new Date(booking.fecha).toLocaleString()} {/* Muestra la fecha completa */}
-                                    </p>
+                                    <div className="flex items-center mb-4">
+                                        <ProfileImage src={booking.cliente.profileImage} alt={booking.cliente.nombre} />
+                                        <div className="ml-4">
+                                            <h3 className="text-lg font-semibold">{booking.cliente.nombre}</h3>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                Fecha: {new Date(booking.fecha).toLocaleString()}
+                                            </p>
+                                        </div>
+                                    </div>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                                         Entrenador: {booking.entrenadorNombre}
                                     </p>
@@ -865,11 +918,16 @@ export default function AdminDashboard() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {sortItems(filteredNewClients).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{client.nombre}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Usuario: {client.username}</p>
+                                    <div className="flex items-center mb-4">
+                                        <ProfileImage src={client.profileImage} alt={client.nombre} />
+                                        <div className="ml-4">
+                                            <h3 className="text-lg font-semibold">{client.nombre}</h3>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Usuario: {client.username}</p>
+                                        </div>
+                                    </div>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Carnet: {client.carnetIdentidad}</p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Teléfono: {client.telefono}</p>
                                     <Button className="w-full" onClick={async () => {
@@ -906,11 +964,16 @@ export default function AdminDashboard() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {sortItems(filteredUsers).map((user) => (
                                 <div key={user.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold mb-2">{user.nombre}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Rol actual: {user.rol}</p>
+                                    <div className="flex items-center mb-4">
+                                        <ProfileImage src={user.profileImage} alt={user.nombre} />
+                                        <div className="ml-4">
+                                            <h3 className="text-lg font-semibold">{user.nombre}</h3>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">Rol actual: {user.rol}</p>
+                                        </div>
+                                    </div>
                                     <Select
                                         onValueChange={async (value) => {
                                             try {

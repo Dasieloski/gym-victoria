@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Dumbbell, Sun, Moon, ChevronRight, ChevronLeft, X, Menu, MessageSquare, Activity, User, CreditCard, Phone, Calendar } from 'lucide-react';
+import { Dumbbell, Sun, Moon, ChevronRight, ChevronLeft, X, Menu, MessageSquare, Activity, User, CreditCard, Phone, Calendar, Camera } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { signOut } from "next-auth/react";
 import { motion } from 'framer-motion';
-import { addToHistorial } from '@/services/historialService';
+import Image from 'next/image';
 
 interface ClientInfo {
     id: number;
@@ -39,6 +39,7 @@ interface ClientInfo {
         id: number;
         nombre: string;
     } | null; // Nuevo campo para el nombre del entrenador
+    profileImage?: string; // Nuevo campo para la imagen de perfil
 }
 
 interface Booking {
@@ -416,6 +417,84 @@ export default function ClientPage({ params }: { params: PageParams }) {
             <main className="container mx-auto px-4 py-8">
                 {activeTab === 'personal' && clientInfo && (
                     <>
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+                            <div className="flex flex-col md:flex-row items-center md:items-start mb-6">
+                                <div className="w-32 h-32 rounded-full overflow-hidden mb-4 md:mb-0 md:mr-6 relative">
+                                    {clientInfo.profileImage ? (
+                                        <Image
+                                            src={clientInfo.profileImage}
+                                            alt="Profile"
+                                            layout="fill"
+                                            objectFit="cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                                            <Camera size={40} className="text-gray-400" />
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold mb-2 text-gray-800 dark:text-gray-100">{clientInfo.nombre}</h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="flex items-center">
+                                            <CreditCard className="w-5 h-5 mr-2 text-[#2272FF]" />
+                                            <div>
+                                                <p className="text-gray-600 dark:text-gray-400">Carnet de Identidad:</p>
+                                                <p className="font-semibold">{clientInfo.carnetIdentidad}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Phone className="w-5 h-5 mr-2 text-[#2272FF]" />
+                                            <div>
+                                                <p className="text-gray-600 dark:text-gray-400">Teléfono:</p>
+                                                <p className="font-semibold">{clientInfo.telefono}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center">
+                                            <Activity className="w-5 h-5 mr-2 text-[#2272FF]" />
+                                            <div>
+                                                <p className="text-gray-600 dark:text-gray-400">Rol:</p>
+                                                <p className="font-semibold">{clientInfo.rol}</p>
+                                            </div>
+                                        </div>
+                                        {clientInfo.entrenadorAsignado && (
+                                            <div className="flex items-start">
+                                                <MessageSquare className="w-5 h-5 mr-2 text-[#2272FF]" />
+                                                <div className="flex flex-col">
+                                                    <p className="text-gray-600 dark:text-gray-400">Entrenador:</p>
+                                                    <div className="flex items-center">
+                                                        <p className="font-semibold mr-2">{clientInfo.entrenadorAsignado.nombre}</p>
+                                                        <a
+                                                            href={`https://wa.me/${clientInfo.entrenadorAsignado.telefono}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="p-1 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors duration-200"
+                                                            aria-label="Enviar mensaje a WhatsApp"
+                                                        >
+                                                            <MessageSquare size={16} />
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            {clientInfo.membresia && (
+                                <div className="flex items-center mt-4">
+                                    <Calendar className="w-5 h-5 mr-2 text-[#2272FF]" />
+                                    <div>
+                                        <p className="text-gray-600 dark:text-gray-400">Membresía Actual:</p>
+                                        <p className="font-semibold">{clientInfo.membresia.tipo} - {clientInfo.membresia.estadoPago}</p>
+                                        <p className="text-sm text-gray-500">
+                                            {new Date(clientInfo.membresia.fechaInicio).toLocaleDateString()} -
+                                            {new Date(clientInfo.membresia.fechaFin).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         {/* Visitas este mes */}
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
                             <div className="flex items-center justify-between">
@@ -428,75 +507,6 @@ export default function ClientPage({ params }: { params: PageParams }) {
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
                             <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Frase del día</h2>
                             <p className="text-lg italic text-gray-600 dark:text-gray-400">&ldquo;{motivationalQuote}&rdquo;</p>
-                        </div>
-
-                        {/* Personal Information */}
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                            <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Información Personal</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="flex items-center">
-                                    <User className="w-5 h-5 mr-2 text-[#2272FF]" />
-                                    <div>
-                                        <p className="text-gray-600 dark:text-gray-400">Nombre:</p>
-                                        <p className="font-semibold">{clientInfo.nombre}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center">
-                                    <CreditCard className="w-5 h-5 mr-2 text-[#2272FF]" />
-                                    <div>
-                                        <p className="text-gray-600 dark:text-gray-400">Carnet de Identidad:</p>
-                                        <p className="font-semibold">{clientInfo.carnetIdentidad}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center">
-                                    <Phone className="w-5 h-5 mr-2 text-[#2272FF]" />
-                                    <div>
-                                        <p className="text-gray-600 dark:text-gray-400">Teléfono:</p>
-                                        <p className="font-semibold">{clientInfo.telefono}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center">
-                                    <Activity className="w-5 h-5 mr-2 text-[#2272FF]" />
-                                    <div>
-                                        <p className="text-gray-600 dark:text-gray-400">Rol:</p>
-                                        <p className="font-semibold">{clientInfo.rol}</p>
-                                    </div>
-                                </div>
-                                {clientInfo.entrenadorAsignado && (
-                                    <div className="flex items-start">
-                                        <MessageSquare className="w-5 h-5 mr-2 text-[#2272FF]" />
-                                        <div className="flex flex-col">
-                                            <p className="text-gray-600 dark:text-gray-400">Entrenador:</p>
-                                            <div className="flex items-center">
-                                                <p className="font-semibold mr-2">{clientInfo.entrenadorAsignado.nombre}</p>
-                                                {/* Botón de WhatsApp */}
-                                                <a
-                                                    href={`https://wa.me/${clientInfo.entrenadorAsignado.telefono}`} // Asegúrate de que el número esté en formato internacional
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="p-1 rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors duration-200"
-                                                    aria-label="Enviar mensaje a WhatsApp"
-                                                >
-                                                    <MessageSquare size={16} />
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                                {clientInfo.membresia && (
-                                    <div className="flex items-center">
-                                        <Calendar className="w-5 h-5 mr-2 text-[#2272FF]" />
-                                        <div>
-                                            <p className="text-gray-600 dark:text-gray-400">Membresía Actual:</p>
-                                            <p className="font-semibold">{clientInfo.membresia.tipo} - {clientInfo.membresia.estadoPago}</p>
-                                            <p className="text-sm text-gray-500">
-                                                {new Date(clientInfo.membresia.fechaInicio).toLocaleDateString()} -
-                                                {new Date(clientInfo.membresia.fechaFin).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </>
                 )}

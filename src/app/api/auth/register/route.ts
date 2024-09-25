@@ -28,7 +28,8 @@ export async function POST(request: Request) {
                 carnetIdentidad: data.carnetIdentidad,
                 telefono: data.telefono,
                 password: hashedPassword,
-                rol: 'CLIENTEESPERA'
+                rol: 'CLIENTEESPERA',
+                foto: data.profileImage // Guardar la URL de la imagen de perfil
             }
         })
 
