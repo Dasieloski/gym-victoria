@@ -264,7 +264,7 @@ export default function ClientPage({ params }: { params: PageParams }) {
                 const newBooking = await response.json();
                 setBookings(prevBookings => [...prevBookings, newBooking.reserva]);
 
-                // Agregar al historial
+               /*  // Agregar al historial
                 const historialResponse = await fetch('/api/historial', {
                     method: 'POST',
                     headers: {
@@ -280,7 +280,7 @@ export default function ClientPage({ params }: { params: PageParams }) {
 
                 if (!historialResponse.ok) {
                     console.error('Error al agregar al historial:', await historialResponse.text());
-                }
+                } */
 
             } catch (error) {
                 console.error('Error al crear la reserva:', error);

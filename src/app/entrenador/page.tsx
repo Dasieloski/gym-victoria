@@ -100,12 +100,12 @@ export default function TrainerPage() {
                     const data = await response.json()
                     setClients(data)
 
-                    // Agregar al historial
+                 /*    // Agregar al historial
                     await addToHistorial({
                         accion: 'Acceso a página de entrenador',
                         descripcion: 'Entrenador accedió a su página',
                         usuarioId: parseInt(session.user.id),
-                    });
+                    }); */
                 }
             } catch (error) {
                 console.error('Error:', error)
@@ -254,7 +254,7 @@ export default function TrainerPage() {
 
     const handleSignOut = async () => {
         // Agregar al historial antes de cerrar sesión
-        try {
+       /*  try {
             if (session && session.user) {
                 await addToHistorial({
                     accion: 'Cierre de sesión',
@@ -266,7 +266,7 @@ export default function TrainerPage() {
             }
         } catch (error) {
             console.error('Error al agregar al historial:', error);
-        }
+        } */
 
         // Eliminar todas las cookies
         Object.keys(Cookies.get()).forEach(cookieName => {
@@ -296,7 +296,7 @@ export default function TrainerPage() {
             setSchedules(schedules.filter(schedule => schedule.id !== reservationId));
 
             // Agregar al historial
-            if (session && session.user) {
+         /*    if (session && session.user) {
                 await addToHistorial({
                     accion: 'Cancelación de reserva',
                     descripcion: `Reserva cancelada para el cliente ${updatedReservation.cliente.nombre}`,
@@ -305,7 +305,7 @@ export default function TrainerPage() {
                 });
             } else {
                 console.error('Error: sesión no encontrada.');
-            }
+            } */
         } catch (error) {
             console.error('Error al cancelar la reserva:', error);
             alert('Error al cancelar la reserva. Por favor, intenta de nuevo.');

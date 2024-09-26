@@ -33,11 +33,11 @@ export default function ClienteEsperaPage() {
                 setClienteInfo(data)
 
                 // Agregar al historial
-                await addToHistorial({
+             /*    await addToHistorial({
                     accion: 'Acceso a página de espera',
                     descripcion: 'Cliente en espera accedió a su página',
                     usuarioId: data.id,
-                });
+                }); */
             } catch (error) {
                 console.error('Error:', error as Error)
                 setError(error as unknown as null) // Conversión a null
@@ -60,7 +60,7 @@ export default function ClienteEsperaPage() {
         window.open(`https://wa.me/${adminWhatsApp}?text=${message}`, '_blank')
 
         // Agregar al historial
-        try {
+      /*   try {
             await addToHistorial({
                 accion: 'Contacto con administrador',
                 descripcion: 'Cliente en espera contactó al administrador vía WhatsApp',
@@ -68,12 +68,12 @@ export default function ClienteEsperaPage() {
             });
         } catch (error) {
             console.error('Error al agregar al historial:', error);
-        }
+        } */
     }
 
     const handleSignOut = async () => {
         // Agregar al historial antes de cerrar sesión
-        try {
+      /*   try {
             await addToHistorial({
                 accion: 'Cierre de sesión',
                 descripcion: 'Cliente en espera cerró sesión',
@@ -81,7 +81,7 @@ export default function ClienteEsperaPage() {
             });
         } catch (error) {
             console.error('Error al agregar al historial:', error);
-        }
+        } */
 
         Object.keys(Cookies.get()).forEach(cookieName => {
             Cookies.remove(cookieName)
