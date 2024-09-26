@@ -25,7 +25,7 @@ interface User {
     id: string;
     rol: string;
     nombre: string;
-    profileImage?: string;
+    foto: string;
     // ... otros campos necesarios
 }
 
@@ -712,7 +712,7 @@ export default function AdminDashboard() {
                             {sortItems(filteredClients).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
-                                        <ProfileImage src={client.profileImage} alt={client.nombre} />
+                                        <ProfileImage src={client.foto} alt={client.nombre} />
                                         <div className="ml-4">
                                             <h3 className="text-lg font-semibold">{client.nombre}</h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
@@ -846,7 +846,7 @@ export default function AdminDashboard() {
                             {sortItems(filteredMemberships).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
-                                        <ProfileImage src={client.profileImage} alt={client.nombre} />
+                                        <ProfileImage src={client.foto} alt={client.nombre} />
                                         <div className="ml-4">
                                             <h3 className="text-lg font-semibold">{client.nombre}</h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">Tipo: {client.membresiaActual.tipo}</p>
@@ -869,7 +869,7 @@ export default function AdminDashboard() {
                             {sortItems(bookings || []).map((booking) => (
                                 <div key={booking.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
-                                        <ProfileImage src={booking.cliente.profileImage} alt={booking.cliente.nombre} />
+                                        <ProfileImage src={booking.cliente.foto} alt={booking.cliente.nombre} />
                                         <div className="ml-4">
                                             <h3 className="text-lg font-semibold">{booking.cliente.nombre}</h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -922,7 +922,7 @@ export default function AdminDashboard() {
                             {sortItems(filteredNewClients).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
-                                        <ProfileImage src={client.profileImage} alt={client.nombre} />
+                                        <ProfileImage src={client.foto} alt={client.nombre} />
                                         <div className="ml-4">
                                             <h3 className="text-lg font-semibold">{client.nombre}</h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">Usuario: {client.username}</p>
@@ -968,7 +968,7 @@ export default function AdminDashboard() {
                             {sortItems(filteredUsers).map((user) => (
                                 <div key={user.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
-                                        <ProfileImage src={user.profileImage} alt={user.nombre} />
+                                        <ProfileImage src={user.foto} alt={user.nombre} />
                                         <div className="ml-4">
                                             <h3 className="text-lg font-semibold">{user.nombre}</h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">Rol actual: {user.rol}</p>
