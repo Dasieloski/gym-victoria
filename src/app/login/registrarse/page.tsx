@@ -15,6 +15,21 @@ export default function RegisterPage() {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const router = useRouter();
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 1048576) { // 1 MB en bytes
+                alert("La foto debe ser menor de 1 megabyte.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const onSubmit = handleSubmit(async (data) => {
         try {
             const file = data.profileImage[0];
@@ -23,40 +38,45 @@ export default function RegisterPage() {
                 return;
             }
 
-            const { data: uploadData } = await supabase
+            const { data: uploadData, error: uploadError } = await supabase
                 .storage
                 .from('profile-images')
                 .upload(`public/${data.username}-${Date.now()}`, file);
 
+            if (uploadError) {
+                throw uploadError;
+            }
+
             // Obtener la URL pública correctamente
-            const { data: publicUrlData } = supabase
+            const { data: publicUrlData, error: publicUrlError } = supabase
                 .storage
                 .from('profile-images')
-                .getPublicUrl(uploadData?.path ?? "");
+                .getPublicUrl(uploadData.path);
 
-            if (publicUrlData) {
-                const imageUrl = publicUrlData.publicUrl;
-                const formData = {
-                    ...data,
-                    profileImage: imageUrl
-                };
+            if (publicUrlError) {
+                throw publicUrlError;
+            }
 
-                const res = await fetch("/api/auth/register", {
-                    method: "POST",
-                    body: JSON.stringify(formData),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+            const imageUrl = publicUrlData.publicUrl;
 
-                if (res.ok) {
-                    router.push('/login/inicio');
-                } else {
-                    const errorData = await res.json();
-                    throw new Error(errorData.message || "Error en el registro");
+            const formData = {
+                ...data,
+                profileImage: imageUrl
+            };
+
+            const res = await fetch("/api/auth/register", {
+                method: "POST",
+                body: JSON.stringify(formData),
+                headers: {
+                    'Content-Type': 'application/json'
                 }
+            });
+
+            if (res.ok) {
+                router.push('/login/inicio');
             } else {
-                // Maneja el caso cuando no se obtiene la URL
+                const errorData = await res.json();
+                throw new Error(errorData.message || "Error en el registro");
             }
         } catch (error) {
             console.error("Error al registrar:", error);
@@ -89,18 +109,8 @@ export default function RegisterPage() {
         document.documentElement.classList.toggle('dark', newDarkMode);
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviewImage(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+      // src/app/login/registrarse/page.tsx
+   console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
 
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col justify-center items-center px-4 transition-colors duration-300`}>
