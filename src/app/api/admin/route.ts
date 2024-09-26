@@ -16,6 +16,7 @@ export async function GET() {
         id: true,
         nombre: true,
         rol: true,
+        foto: true, // Añadir el campo foto
       }
     });
 
@@ -26,6 +27,7 @@ export async function GET() {
       select: {
         id: true,
         nombre: true,
+        foto: true, // Añadir el campo foto
       }
     });
 

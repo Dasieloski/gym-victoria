@@ -10,7 +10,8 @@ export async function GET() {
             include: {
                 cliente: {
                     select: {
-                        nombre: true
+                        nombre: true,
+                        foto: true
                     }
                 },
                 entrenador: {
