@@ -105,7 +105,6 @@ export default function RegisterPage() {
         document.documentElement.classList.toggle('dark', newDarkMode);
     };
 
-    // src/app/login/registrarse/page.tsx
     console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
 
     return (
