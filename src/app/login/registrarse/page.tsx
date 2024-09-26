@@ -48,14 +48,10 @@ export default function RegisterPage() {
             }
 
             // Obtener la URL pública correctamente
-            const { data: publicUrlData, error: publicUrlError } = supabase
+            const { data: publicUrlData } = supabase
                 .storage
                 .from('profile-images')
                 .getPublicUrl(uploadData.path);
-
-            if (publicUrlError) {
-                throw publicUrlError;
-            }
 
             const imageUrl = publicUrlData.publicUrl;
 
@@ -109,8 +105,8 @@ export default function RegisterPage() {
         document.documentElement.classList.toggle('dark', newDarkMode);
     };
 
-      // src/app/login/registrarse/page.tsx
-   console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+    // src/app/login/registrarse/page.tsx
+    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
 
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col justify-center items-center px-4 transition-colors duration-300`}>
