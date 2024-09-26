@@ -23,35 +23,40 @@ export default function RegisterPage() {
                 return;
             }
 
-            const { data: uploadData, error: uploadError } = await supabase
+            const { data: uploadData } = await supabase
                 .storage
                 .from('profile-images')
                 .upload(`public/${data.username}-${Date.now()}`, file);
 
-            if (uploadError) {
-                throw uploadError;
-            }
+            // Obtener la URL pública correctamente
+            const { data: publicUrlData } = supabase
+                .storage
+                .from('profile-images')
+                .getPublicUrl(uploadData?.path ?? "");
 
-            const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${uploadData.path}`;
+            if (publicUrlData) {
+                const imageUrl = publicUrlData.publicUrl;
+                const formData = {
+                    ...data,
+                    profileImage: imageUrl
+                };
 
-            const formData = {
-                ...data,
-                profileImage: imageUrl
-            };
+                const res = await fetch("/api/auth/register", {
+                    method: "POST",
+                    body: JSON.stringify(formData),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-            const res = await fetch("/api/auth/register", {
-                method: "POST",
-                body: JSON.stringify(formData),
-                headers: {
-                    'Content-Type': 'application/json'
+                if (res.ok) {
+                    router.push('/login/inicio');
+                } else {
+                    const errorData = await res.json();
+                    throw new Error(errorData.message || "Error en el registro");
                 }
-            });
-
-            if (res.ok) {
-                router.push('/login/inicio');
             } else {
-                const errorData = await res.json();
-                throw new Error(errorData.message || "Error en el registro");
+                // Maneja el caso cuando no se obtiene la URL
             }
         } catch (error) {
             console.error("Error al registrar:", error);
