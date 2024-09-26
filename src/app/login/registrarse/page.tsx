@@ -100,6 +100,8 @@ export default function RegisterPage() {
         }
     };
 
+    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col justify-center items-center px-4 transition-colors duration-300`}>
             <div className="w-full max-w-md">
