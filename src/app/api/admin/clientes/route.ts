@@ -13,6 +13,7 @@ export async function GET() {
         carnetIdentidad: true,
         telefono: true,
         rol: true, // Asegúrate de que este campo está incluido
+        foto: true,
         entrenadorAsignado: {
           select: {
             id: true,

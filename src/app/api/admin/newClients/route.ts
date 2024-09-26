@@ -18,6 +18,7 @@ export async function GET() {
         carnetIdentidad: true,
         telefono: true,
         rol: true,
+         foto: true,
       }
     });
     console.log('GET /api/admin/newClients - Clientes en espera:', clientesEspera);

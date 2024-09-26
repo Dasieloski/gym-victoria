@@ -19,6 +19,7 @@ export async function GET() {
             nombre: true,
             telefono: true,
             carnetIdentidad: true,
+             foto: true,
           },
         },
         entrenador: {

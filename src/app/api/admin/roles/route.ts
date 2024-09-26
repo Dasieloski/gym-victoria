@@ -13,6 +13,7 @@ export async function GET() {
         id: true,
         nombre: true,
         rol: true,
+         foto: true,
       },
       orderBy: {
         id: 'desc',
