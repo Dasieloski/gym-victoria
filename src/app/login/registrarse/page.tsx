@@ -32,16 +32,20 @@ export default function RegisterPage() {
 
     const onSubmit = handleSubmit(async (data) => {
         try {
-            const file = data.profileImage[0];
+            const file = data.foto[0]; // Asegúrate de que el campo se llama 'foto'
             if (file.size > 1048576) { // 1 MB en bytes
                 alert("La foto debe ser menor de 1 megabyte.");
                 return;
             }
 
+            // Obtener la extensión del archivo
+            const extension = file.name.split('.').pop();
+            const path = `public/${data.username}-${Date.now()}.${extension}`;
+
             const { data: uploadData, error: uploadError } = await supabase
                 .storage
                 .from('profile-images')
-                .upload(`public/${data.username}-${Date.now()}`, file);
+                .upload(path, file);
 
             if (uploadError) {
                 throw uploadError;
@@ -57,7 +61,7 @@ export default function RegisterPage() {
 
             const formData = {
                 ...data,
-                profileImage: imageUrl
+                foto: imageUrl // Asegúrate de enviar 'foto' en lugar de 'profileImage'
             };
 
             const res = await fetch("/api/auth/register", {

@@ -29,7 +29,7 @@ export async function POST(request: Request) {
                 telefono: data.telefono,
                 password: hashedPassword,
                 rol: 'CLIENTEESPERA',
-                foto: data.profileImage // Guardar la URL de la imagen de perfil
+                foto: data.foto // Guardar la URL de la imagen de perfil
             }
         })
 

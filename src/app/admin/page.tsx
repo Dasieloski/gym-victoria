@@ -38,6 +38,11 @@ interface Historial {
     // otros campos si es necesario
 }
 
+interface ProfileImageProps {
+    src?: string;
+    alt: string;
+}
+
 // Confirmation Dialog Component
 const ConfirmationDialog = ({ isOpen, onClose, onConfirm, message }: { isOpen: boolean; onClose: () => void; onConfirm: () => void; message: string; }) => {
     if (!isOpen) return null;
@@ -65,7 +70,7 @@ const ConfirmationDialog = ({ isOpen, onClose, onConfirm, message }: { isOpen: b
     );
 };
 
-const ProfileImage = ({ src, alt }: { src?: string; alt: string }) => (
+const ProfileImage: React.FC<ProfileImageProps> = ({ src, alt }) => (
     <div className="w-16 h-16 rounded-full overflow-hidden mb-4">
         {src ? (
             <Image src={src} alt={alt} width={64} height={64} className="object-cover" />
@@ -865,7 +870,7 @@ export default function AdminDashboard() {
                 {activeTab === 'bookings' && (
                     <div>
                         {/* ...otros componentes como el buscador y select de ordenación... */}
-                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {sortItems(bookings || []).map((booking) => (
                                 <div key={booking.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
@@ -918,7 +923,7 @@ export default function AdminDashboard() {
                                 </SelectContent>
                             </Select>
                         </div>
-                                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {sortItems(filteredNewClients).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
@@ -964,7 +969,7 @@ export default function AdminDashboard() {
                                 </SelectContent>
                             </Select>
                         </div>
-                                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {sortItems(filteredUsers).map((user) => (
                                 <div key={user.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
