@@ -32,7 +32,7 @@ export default function RegisterPage() {
 
     const onSubmit = handleSubmit(async (data) => {
         try {
-            const file = data.foto[0]; // Asegúrate de que el campo se llama 'foto'
+            const file = data.foto[0]; // Cambiado de 'profileImage' a 'foto'
             if (file.size > 1048576) { // 1 MB en bytes
                 alert("La foto debe ser menor de 1 megabyte.");
                 return;
@@ -61,7 +61,7 @@ export default function RegisterPage() {
 
             const formData = {
                 ...data,
-                foto: imageUrl // Asegúrate de enviar 'foto' en lugar de 'profileImage'
+                foto: imageUrl // Enviar 'foto' en lugar de 'profileImage'
             };
 
             const res = await fetch("/api/auth/register", {
@@ -130,7 +130,7 @@ export default function RegisterPage() {
                     <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">Registrarse</h2>
                     <form className="space-y-6" onSubmit={onSubmit}>
                         <div>
-                            <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto de perfil</label>
+                            <label htmlFor="foto" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto de perfil</label>
                             <div className="flex items-center justify-center">
                                 <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                                     {previewImage ? (
@@ -141,16 +141,16 @@ export default function RegisterPage() {
                                         </div>
                                     )}
                                     <input
-                                        id="profileImage"
+                                        id="foto"
                                         type="file"
                                         accept="image/*"
-                                        {...register("profileImage", { required: "La foto de perfil es obligatoria" })}
+                                        {...register("foto", { required: "La foto de perfil es obligatoria" })}
                                         onChange={handleImageChange}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                     />
                                 </div>
                             </div>
-                            {errors.profileImage && <p className="text-red-500 text-sm text-center mt-2">{errors.profileImage.message as string}</p>}
+                            {errors.foto && <p className="text-red-500 text-sm text-center mt-2">{errors.foto.message as string}</p>}
                         </div>
                         <div>
                             <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre completo</label>
