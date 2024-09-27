@@ -76,6 +76,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       id: usuario.id,
       nombre: usuario.nombre,
       carnetIdentidad: usuario.carnetIdentidad,
+      foto: usuario.foto,
       telefono: usuario.telefono,
       rol: usuario.rol,
       visitasEsteMes, // Agregar el conteo de visitas

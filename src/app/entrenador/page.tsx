@@ -101,12 +101,12 @@ export default function TrainerPage() {
                     const data = await response.json()
                     setClients(data)
 
-                 /*    // Agregar al historial
-                    await addToHistorial({
-                        accion: 'Acceso a página de entrenador',
-                        descripcion: 'Entrenador accedió a su página',
-                        usuarioId: parseInt(session.user.id),
-                    }); */
+                    /*    // Agregar al historial
+                       await addToHistorial({
+                           accion: 'Acceso a página de entrenador',
+                           descripcion: 'Entrenador accedió a su página',
+                           usuarioId: parseInt(session.user.id),
+                       }); */
                 }
             } catch (error) {
                 console.error('Error:', error)
@@ -152,8 +152,8 @@ export default function TrainerPage() {
             // Agregar al historial
             await addToHistorial({
                 accion: 'Actualización de membresía',
-                   descripcion: `Membresía actualizada para el cliente ${updatedClient.nombre}`,
-                   usuarioId: parseInt(session?.user?.id ?? '0'), // Maneja el caso donde session es null
+                descripcion: `Membresía actualizada para el cliente ${updatedClient.nombre}`,
+                usuarioId: parseInt(session?.user?.id ?? '0'), // Maneja el caso donde session es null
             });
         } catch (error) {
             console.error('Error updating membership:', error);
@@ -196,7 +196,7 @@ export default function TrainerPage() {
         }
     })
 
-    const sortedSchedules = clients.flatMap(client => 
+    const sortedSchedules = clients.flatMap(client =>
         client.reservasCliente.map(reserva => {
             const [date, time] = reserva.fecha.split('T');
             return {
@@ -223,7 +223,7 @@ export default function TrainerPage() {
         switch (sortCriteria.payments) {
             case 'name':
                 return a.nombre.localeCompare(b.nombre)
-           case 'membershipType':
+            case 'membershipType':
                 return (a.membresia?.tipo || '').localeCompare(b.membresia?.tipo || '')
             case 'nextPayment':
                 return new Date(a.nextPayment || '').getTime() - new Date(b.nextPayment || '').getTime()
@@ -255,19 +255,19 @@ export default function TrainerPage() {
 
     const handleSignOut = async () => {
         // Agregar al historial antes de cerrar sesión
-       /*  try {
-            if (session && session.user) {
-                await addToHistorial({
-                    accion: 'Cierre de sesión',
-                    descripcion: 'Entrenador cerró sesión',
-                    usuarioId: parseInt(session.user.id),
-                });
-            } else {
-                console.error('Error: sesión no encontrada.');
-            }
-        } catch (error) {
-            console.error('Error al agregar al historial:', error);
-        } */
+        /*  try {
+             if (session && session.user) {
+                 await addToHistorial({
+                     accion: 'Cierre de sesión',
+                     descripcion: 'Entrenador cerró sesión',
+                     usuarioId: parseInt(session.user.id),
+                 });
+             } else {
+                 console.error('Error: sesión no encontrada.');
+             }
+         } catch (error) {
+             console.error('Error al agregar al historial:', error);
+         } */
 
         // Eliminar todas las cookies
         Object.keys(Cookies.get()).forEach(cookieName => {
@@ -297,33 +297,45 @@ export default function TrainerPage() {
             setSchedules(schedules.filter(schedule => schedule.id !== reservationId));
 
             // Agregar al historial
-         /*    if (session && session.user) {
-                await addToHistorial({
-                    accion: 'Cancelación de reserva',
-                    descripcion: `Reserva cancelada para el cliente ${updatedReservation.cliente.nombre}`,
-                    usuarioId: parseInt(session.user.id),
-                    reservaId: reservationId,
-                });
-            } else {
-                console.error('Error: sesión no encontrada.');
-            } */
+            /*    if (session && session.user) {
+                   await addToHistorial({
+                       accion: 'Cancelación de reserva',
+                       descripcion: `Reserva cancelada para el cliente ${updatedReservation.cliente.nombre}`,
+                       usuarioId: parseInt(session.user.id),
+                       reservaId: reservationId,
+                   });
+               } else {
+                   console.error('Error: sesión no encontrada.');
+               } */
         } catch (error) {
             console.error('Error al cancelar la reserva:', error);
             alert('Error al cancelar la reserva. Por favor, intenta de nuevo.');
         }
     };
 
-    const ProfileImage = ({ src, alt }: { src?: string; alt: string }) => (
-        <div className="w-16 h-16 rounded-full overflow-hidden mb-4">
-            {src ? (
-                <Image src={src} alt={alt} width={64} height={64} className="object-cover" />
-            ) : (
-                <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                    <User size={32} className="text-gray-400" />
-                </div>
-            )}
-        </div>
-    );
+    const ProfileImage = ({ src, alt }: { src?: string; alt: string }) => {
+        const [imgSrc, setImgSrc] = useState(src);
+
+        return (
+            <div className="w-16 h-16 rounded-full overflow-hidden mb-4">
+                {imgSrc ? (
+                    <Image
+                        src={imgSrc}
+                        alt={alt}
+                        width={64}
+                        height={64}
+                        className="object-cover"
+                        onError={() => setImgSrc('/default-profile.jpg')}
+                        unoptimized
+                    />
+                ) : (
+                    <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                        <User size={32} className="text-gray-400" />
+                    </div>
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''} transition-colors duration-300`}>
