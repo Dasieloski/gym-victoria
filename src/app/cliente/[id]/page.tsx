@@ -10,6 +10,7 @@ import Image from 'next/image';
 
 interface ClientInfo {
     id: number;
+    foto: string;
     nombre: string;
     carnetIdentidad: string;
     telefono: string;
@@ -420,11 +421,11 @@ export default function ClientPage({ params }: { params: PageParams }) {
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
                             <div className="flex flex-col md:flex-row items-center md:items-start mb-6">
                                 <div className="w-32 h-32 rounded-full overflow-hidden mb-4 md:mb-0 md:mr-6 relative">
-                                    {clientInfo.profileImage ? (
+                                    {clientInfo.foto ? (
                                         <Image
-                                            src={clientInfo.profileImage}
-                                            alt="Profile"
-                                            layout="fill"
+                                            src={clientInfo.foto}
+                                            alt="foto"
+                                            fill
                                             objectFit="cover"
                                         />
                                     ) : (
