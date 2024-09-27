@@ -73,7 +73,7 @@ const ConfirmationDialog = ({ isOpen, onClose, onConfirm, message }: { isOpen: b
 const ProfileImage: React.FC<ProfileImageProps> = ({ src, alt }) => (
     <div className="w-16 h-16 rounded-full overflow-hidden mb-4">
         {src ? (
-            <Image src={src} alt={alt} width={64} height={64} className="object-cover" />
+            <Image src={src} alt={alt} width={64} height={64} className="object-cover" unoptimized />
         ) : (
             <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
                 <Users size={32} className="text-gray-400" />

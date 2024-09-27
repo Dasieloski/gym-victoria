@@ -32,14 +32,21 @@ export default function RegisterPage() {
 
     const onSubmit = handleSubmit(async (data) => {
         try {
-            const file = data.foto[0]; // Cambiado de 'profileImage' a 'foto'
+            const file = data.foto[0];
             if (file.size > 1048576) { // 1 MB en bytes
                 alert("La foto debe ser menor de 1 megabyte.");
                 return;
             }
 
-            // Obtener la extensión del archivo
-            const extension = file.name.split('.').pop();
+            // Obtener la extensión del archivo de manera más robusta
+            const extension = file.name.split('.').pop()?.toLowerCase();
+            const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif'];
+
+            if (!extension || !extensionesPermitidas.includes(extension)) {
+                alert("El archivo debe ser una imagen con extensión jpg, jpeg, png o gif.");
+                return;
+            }
+
             const path = `public/${data.username}-${Date.now()}.${extension}`;
 
             const { data: uploadData, error: uploadError } = await supabase
@@ -58,6 +65,11 @@ export default function RegisterPage() {
                 .getPublicUrl(uploadData.path);
 
             const imageUrl = publicUrlData.publicUrl;
+
+            if (!imageUrl) {
+                alert("No se pudo obtener la URL de la imagen.");
+                return;
+            }
 
             const formData = {
                 ...data,
@@ -80,6 +92,7 @@ export default function RegisterPage() {
             }
         } catch (error) {
             console.error("Error al registrar:", error);
+            alert("Ocurrió un error al registrar el usuario. Por favor, intenta nuevamente.");
         }
     });
 

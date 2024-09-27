@@ -19,6 +19,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
                 carnetIdentidad: true,
                 telefono: true,
                 rol: true,
+                foto: true,
                 entrenador: {
                     select: {
                         id: true,

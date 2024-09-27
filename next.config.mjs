@@ -14,7 +14,7 @@ const nextConfig = {
     ];
   },
   images: {
-    domains: ['yrhjeqezlmzpckjyhhuf.supabase.co'], // Reemplaza con tu dominio real de Supabase
+    domains: ['yrhjeqezlmzpckjyhhuf.supabase.co'], // Asegúrate de que este sea el dominio correcto
   },
 };
 

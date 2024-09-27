@@ -14,6 +14,7 @@ interface Client {
     carnetIdentidad: string;
     telefono: string;
     rol: string;
+    foto: string;
     entrenadorId: number | null;
     entrenadorAsignado?: {
         id: number;
@@ -421,7 +422,7 @@ export default function TrainerPage() {
                             {sortedClients.map((client, index) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
                                     <div className="flex flex-col items-center">
-                                        <ProfileImage src={client.profileImage} alt={client.nombre} />
+                                        <ProfileImage src={client.foto} alt={client.nombre} />
                                         <h3 className="text-xl font-semibold mb-2">{client.nombre}</h3>
                                     </div>
                                     <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center">
@@ -467,7 +468,7 @@ export default function TrainerPage() {
                                 return (
                                     <div key={schedule.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
                                         <div className="flex items-center mb-2">
-                                            <ProfileImage src={client?.profileImage} alt={schedule.clientName} />
+                                            <ProfileImage src={client?.foto} alt={schedule.clientName} />
                                             <h3 className="text-lg font-semibold ml-2">{schedule.clientName}</h3>
                                         </div>
                                         <p className="text-gray-600 dark:text-gray-400 mb-1">
@@ -509,7 +510,7 @@ export default function TrainerPage() {
                             {sortedPayments.map((client, index) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
                                     <div className="flex flex-col items-center mb-4">
-                                        <ProfileImage src={client.profileImage} alt={client.nombre} />
+                                        <ProfileImage src={client.foto} alt={client.nombre} />
                                         <h3 className="text-xl font-semibold">{client.nombre}</h3>
                                     </div>
                                     <p className="text-gray-600 dark:text-gray-400 mb-1">ID: {client.id}</p>
