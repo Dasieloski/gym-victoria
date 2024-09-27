@@ -15,6 +15,14 @@ const nextConfig = {
   },
   images: {
     domains: ['yrhjeqezlmzpckjyhhuf.supabase.co'], // Asegúrate de que este sea el dominio correcto
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'yrhjeqezlmzpckjyhhuf.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
 };
 
