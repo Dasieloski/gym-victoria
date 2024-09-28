@@ -10,12 +10,6 @@ export async function GET() {
             include: {
                 membresiaActual: true,
                 membresias: true,
-                entrenadorAsignado: {
-                    select: {
-                        nombre: true,
-                        id: true,
-                    },
-                },
             },
         });
 
