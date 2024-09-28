@@ -889,6 +889,43 @@ export default function AdminDashboard() {
                     <div>
                         <h2 className="text-2xl font-bold mb-4">Gestionar Membresías</h2>
 
+                        {/* Carrusel de clientes próximos a pagar */}
+                        {clientesProximosPagos.length > 0 && (
+                            <div className="mb-8">
+                                <h3 className="text-xl font-semibold mb-4">Clientes Próximos a Pagar</h3>
+                                <Carousel className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
+                                    <CarouselContent>
+                                        {clientesProximosPagos.map((client) => (
+                                            <CarouselItem key={client.id} className="pl-1 md:basis-1/2 lg:basis-1/3">
+                                                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                                                    <div className="flex items-center mb-4">
+                                                        <Image
+                                                            src={client.foto || '/default-profile.png'}
+                                                            alt={client.nombre}
+                                                            width={64}
+                                                            height={64}
+                                                            className="w-16 h-16 rounded-full object-cover"
+                                                        />
+                                                        <div className="ml-4">
+                                                            <h3 className="text-lg font-semibold">{client.nombre}</h3>
+                                                            <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                                        Próximo Pago: {formatDate(client.membresiaActual?.fechaFin || '')}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                                        Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual?.fechaFin || '')}
+                                                    </p>
+                                                </div>
+                                            </CarouselItem>
+                                        ))}
+                                    </CarouselContent>
+                                    <CarouselPrevious />
+                                    <CarouselNext />
+                                </Carousel>
+                            </div>
+                        )}
 
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
                             <div className="relative w-full sm:w-auto">
@@ -910,46 +947,8 @@ export default function AdminDashboard() {
                                     <SelectItem value="id">ID de Cliente</SelectItem>
                                 </SelectContent>
                             </Select>
-
-                            {/* Carrusel de clientes próximos a pagar */}
-                            {clientesProximosPagos.length > 0 && (
-                                <div className="mb-8">
-                                    <h3 className="text-xl font-semibold mb-4">Clientes Próximos a Pagar</h3>
-                                    <Carousel className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
-                                        <CarouselContent>
-                                            {clientesProximosPagos.map((client) => (
-                                                <CarouselItem key={client.id} className="pl-1 md:basis-1/2 lg:basis-1/3">
-                                                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                                        <div className="flex items-center mb-4">
-                                                            <Image
-                                                                src={client.foto || '/default-profile.png'}
-                                                                alt={client.nombre}
-                                                                width={64}
-                                                                height={64}
-                                                                className="w-16 h-16 rounded-full object-cover"
-                                                            />
-                                                            <div className="ml-4">
-                                                                <h3 className="text-lg font-semibold">{client.nombre}</h3>
-                                                                <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
-                                                            </div>
-                                                        </div>
-                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                                            Próximo Pago: {formatDate(client.membresiaActual?.fechaFin || '')}
-                                                        </p>
-                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                                            Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual?.fechaFin || '')}
-                                                        </p>
-                                                    </div>
-                                                </CarouselItem>
-                                            ))}
-                                        </CarouselContent>
-                                        <CarouselPrevious />
-                                        <CarouselNext />
-                                    </Carousel>
-                                </div>
-                            )}
-
                         </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredMemberships.map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
@@ -1001,15 +1000,6 @@ export default function AdminDashboard() {
                                             No se le ha asignado ninguna membresía
                                         </p>
                                     )}
-                                    {/*       <div className="flex justify-end">
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            onClick={() => handleDelete(client.id)}
-                                        >
-                                            <Trash size={16} />
-                                        </Button>
-                                    </div> */}
                                 </div>
                             ))}
                         </div>
