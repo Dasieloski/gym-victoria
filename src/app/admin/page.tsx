@@ -18,6 +18,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import { ClientType } from '@/types/client'
 import { Booking } from '@/types/booking'
 import Image from 'next/image'
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
 
@@ -104,6 +105,7 @@ export default function AdminDashboard() {
     const [previousIngresosMensuales, setPreviousIngresosMensuales] = useState(0);
     const [previousTotalClientes, setPreviousTotalClientes] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
+    const [clientesProximosPagos, setClientesProximosPagos] = useState<ClientType[]>([]);
     const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
 
     const filteredClients = Array.isArray(clientes) ? clientes.filter((client: ClientType) =>
@@ -133,6 +135,20 @@ export default function AdminDashboard() {
         user.nombre.toLowerCase().includes(searchUsers.toLowerCase()) ||
         user.rol.toLowerCase().includes(searchUsers.toLowerCase())
     ) : [];
+
+    const filtrarClientesProximosPagos = (clientes: ClientType[]) => {
+        return clientes.filter(cliente => {
+            if (cliente.membresiaActual) {
+                const diasParaPagar = calculateDaysUntilPayment(cliente.membresiaActual.fechaFin);
+                return diasParaPagar <= 7 && diasParaPagar > 0;
+            }
+            return false;
+        });
+    };
+    useEffect(() => {
+        const clientesFiltrados = filtrarClientesProximosPagos(clientesConMembresia);
+        setClientesProximosPagos(clientesFiltrados);
+    }, [clientesConMembresia]);
 
     // Calcular ingresos mensuales: 2000 pesos por cada cliente con membresía activa
     const ingresosMensuales = clientesConMembresia.length * 2000;
@@ -383,6 +399,7 @@ export default function AdminDashboard() {
             fetchUserRoles(); // Ahora puedes llamar a fetchUserRoles aquí
         }
     };
+
 
     const sortItems = (items: { [key: string]: any }[]) => {
         if (!items) return [];
@@ -871,6 +888,8 @@ export default function AdminDashboard() {
                 {activeTab === 'memberships' && (
                     <div>
                         <h2 className="text-2xl font-bold mb-4">Gestionar Membresías</h2>
+
+
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
                             <div className="relative w-full sm:w-auto">
                                 <Input
@@ -885,6 +904,45 @@ export default function AdminDashboard() {
                                 <SelectTrigger className="w-full sm:w-auto">
                                     <SelectValue placeholder="Ordenar por" />
                                 </SelectTrigger>
+
+                                {/* Carrusel de clientes próximos a pagar */}
+                                {clientesProximosPagos.length > 0 && (
+                                    <div className="mb-8">
+                                        <h3 className="text-xl font-semibold mb-4">Clientes Próximos a Pagar</h3>
+                                        <Carousel className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
+                                            <CarouselContent>
+                                                {clientesProximosPagos.map((client) => (
+                                                    <CarouselItem key={client.id} className="pl-1 md:basis-1/2 lg:basis-1/3">
+                                                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                                                            <div className="flex items-center mb-4">
+                                                                <Image
+                                                                    src={client.foto || '/default-profile.png'}
+                                                                    alt={client.nombre}
+                                                                    width={64}
+                                                                    height={64}
+                                                                    className="w-16 h-16 rounded-full object-cover"
+                                                                />
+                                                                <div className="ml-4">
+                                                                    <h3 className="text-lg font-semibold">{client.nombre}</h3>
+                                                                    <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                                                Próximo Pago: {formatDate(client.membresiaActual?.fechaFin || '')}
+                                                            </p>
+                                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                                                Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual?.fechaFin || '')}
+                                                            </p>
+                                                        </div>
+                                                    </CarouselItem>
+                                                ))}
+                                            </CarouselContent>
+                                            <CarouselPrevious />
+                                            <CarouselNext />
+                                        </Carousel>
+                                    </div>
+                                )}
+
                                 <SelectContent>
                                     <SelectItem value="nombre">Nombre</SelectItem>
                                     <SelectItem value="membresia">Tipo de Membresía</SelectItem>
@@ -943,7 +1001,7 @@ export default function AdminDashboard() {
                                             No se le ha asignado ninguna membresía
                                         </p>
                                     )}
-                              {/*       <div className="flex justify-end">
+                                    {/*       <div className="flex justify-end">
                                         <Button
                                             variant="destructive"
                                             size="sm"
