@@ -95,7 +95,7 @@ export default function AdminDashboard() {
     const [bookings, setBookings] = useState<Booking[]>([]); // Asegúrate de que 'bookings' sea un array de 'Booking'
     const [userRoles, setUserRoles] = useState<User[]>([]);
     const [historiales, setHistoriales] = useState([])
-    const [clientesConMembresia, setClientesConMembresia] = useState([])
+    const [clientesConMembresia, setClientesConMembresia] = useState<ClientType[]>([])
     const [searchClients, setSearchClients] = useState('');
     const [searchNewClients, setSearchNewClients] = useState('');
     const [searchMemberships, setSearchMemberships] = useState('');
@@ -118,9 +118,9 @@ export default function AdminDashboard() {
         client.carnetIdentidad.toLowerCase().includes(searchNewClients.toLowerCase())
     ) : [];
 
-    const filteredMemberships = Array.isArray(clientesConMembresia) ? clientesConMembresia.filter((client: { nombre: string; membresiaActual: { tipo: string } }) =>
+    const filteredMemberships = Array.isArray(clientesConMembresia) ? clientesConMembresia.filter((client: ClientType) =>
         client.nombre.toLowerCase().includes(searchMemberships.toLowerCase()) ||
-        client.membresiaActual.tipo.toLowerCase().includes(searchMemberships.toLowerCase())
+        client.membresiaActual?.tipo.toLowerCase().includes(searchMemberships.toLowerCase())
     ) : [];
 
     const filteredHistory = Array.isArray(historiales) ? historiales.filter((item: Historial) =>
@@ -585,6 +585,38 @@ export default function AdminDashboard() {
         setCurrentPage(1);
     }, [searchHistory, sortBy]);
 
+    const handleMembershipChange = async (clientId: number, newMembershipType: string) => {
+        try {
+            const response = await fetch('/api/admin/updateMembership', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ clientId, tipo: newMembershipType }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error desconocido al actualizar la membresía');
+            }
+
+            const updatedClient: ClientType = await response.json();
+            setClientesConMembresia(prev =>
+                prev.map((client: ClientType) =>
+                    client.id === updatedClient.id ? updatedClient : client
+                )
+            );
+            toast.success('Membresía actualizada con éxito');
+        } catch (error) {
+            console.error('Error al actualizar la membresía:', error);
+            toast.error(`Error al actualizar la membresía: ${(error as Error).message}`);
+        }
+    }
+
+    const handleDeleteM = (id: number, type: string) => {
+        setDeleteConfirmation({ isOpen: true, id, type });
+    }
+
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''}`}>
             {/* Sidebar */}
@@ -826,6 +858,7 @@ export default function AdminDashboard() {
                 {/* Memberships Management */}
                 {activeTab === 'memberships' && (
                     <div>
+                        <h2 className="text-2xl font-bold mb-4">Gestionar Membresías</h2>
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
                             <div className="relative w-full sm:w-auto">
                                 <Input
@@ -841,25 +874,55 @@ export default function AdminDashboard() {
                                     <SelectValue placeholder="Ordenar por" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="clientName">Nombre del Cliente</SelectItem>
-                                    <SelectItem value="type">Tipo de Membresía</SelectItem>
-                                    <SelectItem value="startDate">Fecha de Inicio</SelectItem>
+                                    <SelectItem value="nombre">Nombre</SelectItem>
+                                    <SelectItem value="membresia">Tipo de Membresía</SelectItem>
+                                    <SelectItem value="id">ID de Cliente</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(filteredMemberships).map((client) => (
+                            {filteredMemberships.map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
-                                        <ProfileImage src={client.foto} alt={client.nombre} />
+                                        <Image
+                                            src={client.foto || '/default-profile.png'}
+                                            alt={client.nombre}
+                                            width={64}
+                                            height={64}
+                                            className="w-16 h-16 rounded-full object-cover"
+                                        />
                                         <div className="ml-4">
                                             <h3 className="text-lg font-semibold">{client.nombre}</h3>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">Tipo: {client.membresiaActual.tipo}</p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
                                         </div>
                                     </div>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Inicio: {new Date(client.membresiaActual.fechaInicio).toLocaleDateString()}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Fin: {new Date(client.membresiaActual.fechaFin).toLocaleDateString()}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Estado: {client.membresiaActual.estadoPago}</p>
+                                    <div className="mb-2">
+                                        <label htmlFor={`membership-${client.id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            Tipo de Membresía
+                                        </label>
+                                        <select
+                                            id={`membership-${client.id}`}
+                                            value={client.membresiaActual?.tipo || ''}
+                                            onChange={(e) => handleMembershipChange(client.id, e.target.value)}
+                                            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
+                                        >
+                                            <option value="MENSUAL">Mensual</option>
+                                            <option value="TRIMESTRAL">Trimestral</option>
+                                            <option value="ANUAL">Anual</option>
+                                        </select>
+                                    </div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Último Pago: {client.membresiaActual?.fechaInicio}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Próximo Pago: {client.membresiaActual?.fechaFin}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Estado de Pago: {client.membresiaActual?.estadoPago}</p>
+                                    <div className="flex justify-end">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleDeleteM(client.id, 'membership')}
+                                        >
+                                            <Trash size={18} />
+                                        </Button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

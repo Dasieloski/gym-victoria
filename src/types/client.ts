@@ -1,8 +1,26 @@
-export type ClientType = {
-  id: string;
-  nombre?: string | null;
-  username?: string | null;
-  rol: string;
-  carnetIdentidad?: string; // Asegúrate de que esta línea esté presente
-  telefono?: string;
+export interface ClientType {
+    id: number;
+    nombre: string;
+    carnetIdentidad: string;
+    telefono: string;
+    rol: string;
+    foto?: string;
+    membresiaActual?: {
+        id: number;
+        tipo: string;
+        fechaInicio: string;
+        fechaFin: string;
+        estadoPago: string;
+    };
+    membresias: {
+        id: number;
+        tipo: string;
+        fechaInicio: string;
+        fechaFin: string;
+        estadoPago: string;
+    }[];
+    entrenadorAsignado?: {
+        id: number;
+        nombre: string;
+    };
 }
