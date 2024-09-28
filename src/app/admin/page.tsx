@@ -149,7 +149,7 @@ export default function AdminDashboard() {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays;
     };
-      const formatDate = (dateString: string): string => {
+    const formatDate = (dateString: string): string => {
         const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: '2-digit' };
         return new Date(dateString).toLocaleDateString('es-ES', options);
     };
@@ -923,25 +923,35 @@ export default function AdminDashboard() {
                                             <option value="ANUAL">Anual</option>
                                         </select>
                                     </div>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                        Último Pago: {formatDate(client.membresiaActual?.fechaInicio || '')}
-                                    </p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                        Próximo Pago: {formatDate(client.membresiaActual?.fechaFin || '')}
-                                    </p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                        Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual?.fechaFin || '')}
-                                    </p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Estado de Pago: {client.membresiaActual?.estadoPago}</p>
-                                    <div className="flex justify-end">
-                                        {/*  <Button
-                                            variant="outline"
+                                    {client.membresiaActual ? (
+                                        <>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                                Último Pago: {formatDate(client.membresiaActual.fechaInicio)}
+                                            </p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                                Próximo Pago: {formatDate(client.membresiaActual.fechaFin)}
+                                            </p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                                Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual.fechaFin)}
+                                            </p>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                                Estado de Pago: {client.membresiaActual.estadoPago}
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+                                            No se le ha asignado ninguna membresía
+                                        </p>
+                                    )}
+                              {/*       <div className="flex justify-end">
+                                        <Button
+                                            variant="destructive"
                                             size="sm"
-                                            onClick={() => handleDeleteM(client.id, 'membership')}
+                                            onClick={() => handleDelete(client.id)}
                                         >
-                                            <Trash size={18} />
-                                        </Button> */}
-                                    </div>
+                                            <Trash size={16} />
+                                        </Button>
+                                    </div> */}
                                 </div>
                             ))}
                         </div>
