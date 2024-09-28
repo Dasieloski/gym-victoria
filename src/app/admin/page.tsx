@@ -889,14 +889,36 @@ export default function AdminDashboard() {
                     <div>
                         <h2 className="text-2xl font-bold mb-4">Gestionar Membresías</h2>
 
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+                            <div className="relative w-full sm:w-auto">
+                                <Input
+                                    type="text"
+                                    placeholder="Buscar membresías..."
+                                    className="w-full sm:w-64 pl-10 pr-4"
+                                    onChange={(e) => setSearchMemberships(e.target.value)}
+                                />
+                                <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
+                            </div>
+                            <Select onValueChange={(value) => setSortBy(value)}>
+                                <SelectTrigger className="w-full sm:w-auto">
+                                    <SelectValue placeholder="Ordenar por" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="nombre">Nombre</SelectItem>
+                                    <SelectItem value="membresia">Tipo de Membresía</SelectItem>
+                                    <SelectItem value="id">ID de Cliente</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
                         {/* Carrusel de clientes próximos a pagar */}
                         {clientesProximosPagos.length > 0 && (
-                            <div className="mb-8">
-                                <h3 className="text-xl font-semibold mb-4">Clientes Próximos a Pagar</h3>
-                                <Carousel className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
-                                    <CarouselContent>
+                            <div className="mb-8 w-full">
+                                <h3 className="text-xl font-semibold mb-4">Clientes Próximos a Pagar:</h3>
+                                <Carousel className="w-full">
+                                    <CarouselContent className="flex flex-wrap justify-center">
                                         {clientesProximosPagos.map((client) => (
-                                            <CarouselItem key={client.id} className="pl-1 md:basis-1/2 lg:basis-1/3">
+                                            <CarouselItem key={client.id} className="w-full md:w-1/2 lg:w-1/3 xl:w-1/4 p-2">
                                                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                                     <div className="flex items-center mb-4">
                                                         <Image
@@ -926,28 +948,6 @@ export default function AdminDashboard() {
                                 </Carousel>
                             </div>
                         )}
-
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
-                            <div className="relative w-full sm:w-auto">
-                                <Input
-                                    type="text"
-                                    placeholder="Buscar membresías..."
-                                    className="w-full sm:w-64 pl-10 pr-4"
-                                    onChange={(e) => setSearchMemberships(e.target.value)}
-                                />
-                                <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
-                            </div>
-                            <Select onValueChange={(value) => setSortBy(value)}>
-                                <SelectTrigger className="w-full sm:w-auto">
-                                    <SelectValue placeholder="Ordenar por" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="nombre">Nombre</SelectItem>
-                                    <SelectItem value="membresia">Tipo de Membresía</SelectItem>
-                                    <SelectItem value="id">ID de Cliente</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredMemberships.map((client) => (
