@@ -142,6 +142,18 @@ export default function AdminDashboard() {
     const ingresosPorcentaje = previousIngresosMensuales ? ((ingresosMensuales - previousIngresosMensuales) / previousIngresosMensuales) * 100 : 0;
     const clientesPorcentaje = previousTotalClientes ? ((totalClientes - previousTotalClientes) / previousTotalClientes) * 100 : 0;
 
+    const calculateDaysUntilPayment = (fechaFin: string): number => {
+        const today = new Date();
+        const fin = new Date(fechaFin);
+        const diffTime = fin.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    };
+      const formatDate = (dateString: string): string => {
+        const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: '2-digit' };
+        return new Date(dateString).toLocaleDateString('es-ES', options);
+    };
+
     // Actualizar valores anteriores al final del efecto
     useEffect(() => {
         setPreviousIngresosMensuales(ingresosMensuales);
@@ -911,17 +923,24 @@ export default function AdminDashboard() {
                                             <option value="ANUAL">Anual</option>
                                         </select>
                                     </div>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Último Pago: {client.membresiaActual?.fechaInicio}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Próximo Pago: {client.membresiaActual?.fechaFin}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                        Último Pago: {formatDate(client.membresiaActual?.fechaInicio || '')}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                        Próximo Pago: {formatDate(client.membresiaActual?.fechaFin || '')}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                        Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual?.fechaFin || '')}
+                                    </p>
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Estado de Pago: {client.membresiaActual?.estadoPago}</p>
                                     <div className="flex justify-end">
-                                        <Button
+                                        {/*  <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => handleDeleteM(client.id, 'membership')}
                                         >
                                             <Trash size={18} />
-                                        </Button>
+                                        </Button> */}
                                     </div>
                                 </div>
                             ))}
