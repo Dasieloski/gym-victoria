@@ -1,39 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export async function PUT(request: Request) {
-    const { clientId, tipo } = await request.json();
-
-    try {
-        // Actualizar la membresía actual del cliente
-        const updatedMembership = await prisma.membresia.update({
-            where: { id: clientId }, // Asegúrate de que 'clientId' corresponda al ID correcto
-            data: {
-                tipo: tipo.toUpperCase(),
-                fechaFin: new Date(Date.now() + getDuration(tipo)),
-            },
-        });
-
-        // Obtener el cliente actualizado
-        const cliente = await prisma.usuario.findUnique({
-            where: { id: updatedMembership.clienteId },
-            include: {
-                membresiaActual: true,
-                membresias: true,
-            },
-        });
-
-        if (!cliente) {
-            throw new Error('Cliente no encontrado');
-        }
-
-        return NextResponse.json(cliente);
-    } catch (error) {
-        console.error('Error actualizando membresía:', error);
-        return NextResponse.json({ error: 'Error actualizando membresía' }, { status: 500 });
-    }
-}
-
 // Función auxiliar para determinar la duración de la membresía en milisegundos
 const getDuration = (tipo: string): number => {
     switch (tipo.toUpperCase()) {
@@ -44,6 +11,53 @@ const getDuration = (tipo: string): number => {
         case 'MENSUAL':
             return 30 * 24 * 60 * 60 * 1000;
         default:
-            return 30 * 24 * 60 * 60 * 1000;
+            return 30 * 24 * 60 * 60 * 1000; // Duración por defecto
+    }
+}
+
+export async function PUT(request: Request) {
+    const { clientId, tipo } = await request.json();
+
+    if (!clientId || !tipo) {
+        return NextResponse.json({ error: 'clientId y tipo son requeridos' }, { status: 400 });
+    }
+
+    try {
+        // Buscar al usuario (cliente)
+        const usuario = await prisma.usuario.findUnique({
+            where: { id: clientId },
+        });
+
+        if (!usuario) {
+            return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
+        }
+
+        // Crear una nueva membresía
+        const nuevaMembresia = await prisma.membresia.create({
+            data: {
+                tipo: tipo.toUpperCase(),
+                fechaInicio: new Date(),
+                fechaFin: new Date(Date.now() + getDuration(tipo)),
+                estadoPago: 'PAGADO',
+                clienteId: clientId,
+            },
+        });
+
+        // Actualizar al usuario para que apunte a la nueva membresía
+        const updatedUsuario = await prisma.usuario.update({
+            where: { id: clientId },
+            data: {
+                membresiaActualId: nuevaMembresia.id,
+            },
+            include: {
+                membresiaActual: true,
+                membresias: true,
+            },
+        });
+
+        return NextResponse.json(updatedUsuario);
+    } catch (error) {
+        console.error('Error actualizando membresía:', error);
+        return NextResponse.json({ error: 'Error actualizando membresía' }, { status: 500 });
     }
 }
