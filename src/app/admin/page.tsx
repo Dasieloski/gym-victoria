@@ -884,74 +884,42 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
-                {/* Memberships Management */}
-                {activeTab === 'memberships' && (
-                    <div>
-                        <h2 className="text-2xl font-bold mb-4">Gestionar Membresías</h2>
+               {/* Memberships Management */}
+{activeTab === 'memberships' && (
+    <div>
+        <h2 className="text-2xl font-bold mb-4">Gestionar Membresías</h2>
 
-                        {/* Carrusel de clientes próximos a pagar */}
-                        {clientesProximosPagos.length > 0 && (
-                            <div className="mb-8">
-                                <h3 className="text-xl font-semibold mb-4">Clientes Próximos a Pagar:</h3>
-                                <Carousel className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
-                                    <CarouselContent>
-                                        {clientesProximosPagos.map((client) => (
-                                            <CarouselItem key={client.id} className="pl-1 md:basis-1/2 lg:basis-1/3">
-                                                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                                    <div className="flex items-center mb-4">
-                                                        <Image
-                                                            src={client.foto || '/default-profile.png'}
-                                                            alt={client.nombre}
-                                                            width={64}
-                                                            height={64}
-                                                            className="w-16 h-16 rounded-full object-cover"
-                                                        />
-                                                        <div className="ml-4">
-                                                            <h3 className="text-lg font-semibold">{client.nombre}</h3>
-                                                            <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                                        Próximo Pago: {formatDate(client.membresiaActual?.fechaFin || '')}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                                        Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual?.fechaFin || '')}
-                                                    </p>
-                                                </div>
-                                            </CarouselItem>
-                                        ))}
-                                    </CarouselContent>
-                                    <CarouselPrevious />
-                                    <CarouselNext />
-                                </Carousel>
-                            </div>
-                        )}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+            <div className="relative w-full sm:w-auto">
+                <Input
+                    type="text"
+                    placeholder="Buscar membresías..."
+                    className="w-full sm:w-64 pl-10 pr-4"
+                    onChange={(e) => setSearchMemberships(e.target.value)}
+                />
+                <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
+            </div>
+            <Select onValueChange={(value) => setSortBy(value)}>
+                <SelectTrigger className="w-full sm:w-auto">
+                    <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="nombre">Nombre</SelectItem>
+                    <SelectItem value="membresia">Tipo de Membresía</SelectItem>
+                    <SelectItem value="id">ID de Cliente</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
 
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
-                            <div className="relative w-full sm:w-auto">
-                                <Input
-                                    type="text"
-                                    placeholder="Buscar membresías..."
-                                    className="w-full sm:w-64 pl-10 pr-4"
-                                    onChange={(e) => setSearchMemberships(e.target.value)}
-                                />
-                                <Search className="absolute left-3 top-2.5 text-gray-400" size={20} />
-                            </div>
-                            <Select onValueChange={(value) => setSortBy(value)}>
-                                <SelectTrigger className="w-full sm:w-auto">
-                                    <SelectValue placeholder="Ordenar por" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="nombre">Nombre</SelectItem>
-                                    <SelectItem value="membresia">Tipo de Membresía</SelectItem>
-                                    <SelectItem value="id">ID de Cliente</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {filteredMemberships.map((client) => (
-                                <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+        {/* Carrusel de clientes próximos a pagar */}
+        {clientesProximosPagos.length > 0 && (
+            <div className="mb-8 w-full">
+                <h3 className="text-xl font-semibold mb-4">Clientes Próximos a Pagar:</h3>
+                <Carousel className="w-full">
+                    <CarouselContent className="flex flex-wrap justify-center">
+                        {clientesProximosPagos.map((client) => (
+                            <CarouselItem key={client.id} className="w-full md:w-1/2 lg:w-1/3 xl:w-1/4 p-2">
+                                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
                                         <Image
                                             src={client.foto || '/default-profile.png'}
@@ -965,46 +933,78 @@ export default function AdminDashboard() {
                                             <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
                                         </div>
                                     </div>
-                                    <div className="mb-2">
-                                        <label htmlFor={`membership-${client.id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Tipo de Membresía
-                                        </label>
-                                        <select
-                                            id={`membership-${client.id}`}
-                                            value={client.membresiaActual?.tipo || ''}
-                                            onChange={(e) => handleMembershipChange(client.id, e.target.value)}
-                                            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
-                                        >
-                                            <option value="MENSUAL">Mensual</option>
-                                            <option value="TRIMESTRAL">Trimestral</option>
-                                            <option value="ANUAL">Anual</option>
-                                        </select>
-                                    </div>
-                                    {client.membresiaActual ? (
-                                        <>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                                Último Pago: {formatDate(client.membresiaActual.fechaInicio)}
-                                            </p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                                Próximo Pago: {formatDate(client.membresiaActual.fechaFin)}
-                                            </p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                                Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual.fechaFin)}
-                                            </p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                                                Estado de Pago: {client.membresiaActual.estadoPago}
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-                                            No se le ha asignado ninguna membresía
-                                        </p>
-                                    )}
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                        Próximo Pago: {formatDate(client.membresiaActual?.fechaFin || '')}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                        Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual?.fechaFin || '')}
+                                    </p>
                                 </div>
-                            ))}
+                            </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious />
+                    <CarouselNext />
+                </Carousel>
+            </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredMemberships.map((client) => (
+                <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                    <div className="flex items-center mb-4">
+                        <Image
+                            src={client.foto || '/default-profile.png'}
+                            alt={client.nombre}
+                            width={64}
+                            height={64}
+                            className="w-16 h-16 rounded-full object-cover"
+                        />
+                        <div className="ml-4">
+                            <h3 className="text-lg font-semibold">{client.nombre}</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
                         </div>
                     </div>
-                )}
+                    <div className="mb-2">
+                        <label htmlFor={`membership-${client.id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Tipo de Membresía
+                        </label>
+                        <select
+                            id={`membership-${client.id}`}
+                            value={client.membresiaActual?.tipo || ''}
+                            onChange={(e) => handleMembershipChange(client.id, e.target.value)}
+                            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
+                        >
+                            <option value="MENSUAL">Mensual</option>
+                            <option value="TRIMESTRAL">Trimestral</option>
+                            <option value="ANUAL">Anual</option>
+                        </select>
+                    </div>
+                    {client.membresiaActual ? (
+                        <>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                Último Pago: {formatDate(client.membresiaActual.fechaInicio)}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                Próximo Pago: {formatDate(client.membresiaActual.fechaFin)}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                                Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual.fechaFin)}
+                            </p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                Estado de Pago: {client.membresiaActual.estadoPago}
+                            </p>
+                        </>
+                    ) : (
+                        <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+                            No se le ha asignado ninguna membresía
+                        </p>
+                    )}
+                </div>
+            ))}
+        </div>
+    </div>
+)}
 
                 {/* Bookings Management */}
                 {activeTab === 'bookings' && (
