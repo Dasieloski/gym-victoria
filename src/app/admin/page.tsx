@@ -151,16 +151,15 @@ export default function AdminDashboard() {
     }, [clientesConMembresia]);
 
     const totalClientes = userRoles.filter((user: User) => user.rol === 'CLIENTE').length;
-
     // Calcular ingresos mensuales: 2000 pesos por cada cliente con membresía activa
     const ingresosMensuales = clientesConMembresia.reduce((sum, client) => {
         const membresia = client.membresiaActual;
         if (!membresia) return sum;
 
-        const fin = new Date(membresia.fechaFin);
+        const inicio = new Date(membresia.fechaInicio);
         const hoy = new Date();
-        const mismoMes = fin.getMonth() === hoy.getMonth();
-        const mismoAnio = fin.getFullYear() === hoy.getFullYear();
+        const mismoMes = inicio.getMonth() === hoy.getMonth();
+        const mismoAnio = inicio.getFullYear() === hoy.getFullYear();
 
         if (membresia.tipo === 'MENSUAL') {
             return sum + 2000;
@@ -181,8 +180,6 @@ export default function AdminDashboard() {
         setPreviousIngresosMensuales(ingresosMensuales);
         setPreviousTotalClientes(totalClientes);
     }, [ingresosMensuales, totalClientes]);
-
-
 
     // Calcular porcentajes
     const ingresosPorcentaje = previousIngresosMensuales ? ((ingresosMensuales - previousIngresosMensuales) / previousIngresosMensuales) * 100 : 0;
