@@ -150,9 +150,39 @@ export default function AdminDashboard() {
         setClientesProximosPagos(clientesFiltrados);
     }, [clientesConMembresia]);
 
-    // Calcular ingresos mensuales: 2000 pesos por cada cliente con membresía activa
-    const ingresosMensuales = clientesConMembresia.length * 2000;
     const totalClientes = userRoles.filter((user: User) => user.rol === 'CLIENTE').length;
+
+    // Calcular ingresos mensuales: 2000 pesos por cada cliente con membresía activa
+    const ingresosMensuales = clientesConMembresia.reduce((sum, client) => {
+        const membresia = client.membresiaActual;
+        if (!membresia) return sum;
+
+        const fin = new Date(membresia.fechaFin);
+        const hoy = new Date();
+        const mismoMes = fin.getMonth() === hoy.getMonth();
+        const mismoAnio = fin.getFullYear() === hoy.getFullYear();
+
+        if (membresia.tipo === 'MENSUAL') {
+            return sum + 2000;
+        } else if (membresia.tipo === 'TRIMESTRAL') {
+            if (mismoMes && mismoAnio) {
+                return sum + 10000;
+            }
+        } else if (membresia.tipo === 'ANUAL') {
+            if (mismoMes && mismoAnio) {
+                return sum + 20000;
+            }
+        }
+        return sum;
+    }, 0);
+
+    // Actualizar ingresos anteriores
+    useEffect(() => {
+        setPreviousIngresosMensuales(ingresosMensuales);
+        setPreviousTotalClientes(totalClientes);
+    }, [ingresosMensuales, totalClientes]);
+
+
 
     // Calcular porcentajes
     const ingresosPorcentaje = previousIngresosMensuales ? ((ingresosMensuales - previousIngresosMensuales) / previousIngresosMensuales) * 100 : 0;
