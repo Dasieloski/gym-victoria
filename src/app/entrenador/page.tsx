@@ -364,13 +364,13 @@ export default function TrainerPage() {
                             <Clock className="inline-block mr-1" size={16} />
                             Horarios
                         </button>
-                        <button
+                     {/*    <button
                             onClick={() => handleTabChange('payments')}
                             className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${activeTab === 'payments' ? 'bg-[#2272FF] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                         >
                             <DollarSign className="inline-block mr-1" size={16} />
                             Pagos
-                        </button>
+                        </button> */}
                     </nav>
                     <div className="flex items-center">
                         <button

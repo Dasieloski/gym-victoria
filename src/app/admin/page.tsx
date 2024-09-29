@@ -140,7 +140,7 @@ export default function AdminDashboard() {
         return clientes.filter(cliente => {
             if (cliente.membresiaActual) {
                 const diasParaPagar = calculateDaysUntilPayment(cliente.membresiaActual.fechaFin);
-                return diasParaPagar <= 31 && diasParaPagar > 0;
+                return diasParaPagar <= 7 && diasParaPagar > 0;
             }
             return false;
         });
@@ -692,12 +692,12 @@ export default function AdminDashboard() {
                                 <span className="ml-3">Gestionar Roles</span>
                             </button>
                         </li>
-                        <li>
+                      {/*   <li>
                             <button onClick={() => handleTabChange('history')} className={`flex items-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 ${activeTab === 'history' ? 'bg-gray-200 dark:bg-gray-700' : ''}`}>
                                 <History className="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
                                 <span className="ml-3">Historial</span>
                             </button>
-                        </li>
+                        </li> */}
                     </ul>
                 </div>
             </aside>
