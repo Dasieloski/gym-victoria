@@ -517,35 +517,59 @@ export default function ClientPage({ params }: { params: PageParams }) {
                 )}
 
                 {/* Membership History */}
-                {activeTab === 'memberships' && clientInfo && (
+                             {activeTab === 'memberships' && clientInfo && (
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+
                         <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Historial de Membresías</h2>
                         {clientInfo.membresias.length > 0 ? (
+
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                       {clientInfo.membresias.map((membresia) => (
+
+                                {clientInfo.membresias.map((membresia) => (
+
                                     <div key={membresia.id} className={`bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow ${clientInfo.membresia?.id === membresia.id ? 'border-2 border-[#2272FF]' : ''}`}>
+
                                         <h3 className="text-lg font-semibold mb-2">
+
                                             Membresía {membresia.tipo === 'mensual' ? 'Mensual' : membresia.tipo === 'trimestral' ? 'Semestral' : 'Anual'}
+
                                         </h3>
+
                                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+
                                             Fecha de Inicio: {new Date(membresia.fechaInicio).toLocaleDateString()}
+
                                         </p>
+
                                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                                             Fecha de Vencimiento: {new Date(membresia.fechaFin).toLocaleDateString()}
+
                                         </p>
+
                                         <p className={`text-sm font-medium ${membresia.estadoPago === 'PAGADO' ? 'text-green-500' : 'text-yellow-500'}`}>
+
                                             Estado: {membresia.estadoPago}
                                         </p>
+
                                         {clientInfo.membresia?.id === membresia.id && (
+
                                             <p className="text-sm font-medium text-[#2272FF]">Membresía Actual</p>
+
                                         )}
+
                                     </div>
+
                                 ))}
+
                             </div>
+
                         ) : (
+
                             <p className="text-gray-600 dark:text-gray-400">No hay historial de membresías disponible.</p>
+
                         )}
                     </div>
+
                 )}
 
                 {/* Bookings */}
