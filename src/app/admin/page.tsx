@@ -140,7 +140,7 @@ export default function AdminDashboard() {
         return clientes.filter(cliente => {
             if (cliente.membresiaActual) {
                 const diasParaPagar = calculateDaysUntilPayment(cliente.membresiaActual.fechaFin);
-                return diasParaPagar <= 31 && diasParaPagar > 0;
+                return diasParaPagar <= 10 && diasParaPagar > 0;
             }
             return false;
         });
