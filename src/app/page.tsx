@@ -160,9 +160,9 @@ export default function LandingPage() {
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-gray-100">Planes de Membresía</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { name: 'Básico', price: 2000, icon: Users, features: ['Acceso a equipos', '2 clases grupales/semana', 'Casillero estándar'] },
-              { name: 'Premium', price: 3000, icon: Star, features: ['Acceso total 24/7', 'Clases ilimitadas', 'Casillero premium', '1 sesión PT/mes'] },
-              { name: 'Elite', price: 4000, icon: Award, features: ['Todo lo de Premium', '3 sesiones PT/mes', 'Acceso a spa', 'Nutricionista'] }
+              { name: 'Básico', price: 2000, icon: Users, features: ['Acceso a equipos','Baño climatizado'] },
+              { name: 'Premium', price: 10000, icon: Star, features: ['Acceso a equipos', 'Baño climatizado', 'Paga 5 meses, asiste 6 meses'] },
+              { name: 'Elite', price: 20000, icon: Award, features:['Acceso a equipos', 'Baño climatizado', 'Paga 10 meses, asiste 12 meses'] }
             ].map((plan, index) => (
               <div key={index} className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 animate-fadeIn" style={{ animationDelay: `${index * 200}ms` }}>
                 <plan.icon className="w-12 h-12 text-[#2272FF] mb-4 mx-auto" />

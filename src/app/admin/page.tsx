@@ -984,7 +984,7 @@ export default function AdminDashboard() {
                                             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
                                         >
                                             <option value="MENSUAL">Mensual</option>
-                                            <option value="TRIMESTRAL">Trimestral</option>
+                                            <option value="TRIMESTRAL">SEMESTRAL</option>
                                             <option value="ANUAL">Anual</option>
                                         </select>
                                     </div>

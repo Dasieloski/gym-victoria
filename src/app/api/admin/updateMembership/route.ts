@@ -7,7 +7,7 @@ const getDuration = (tipo: string): number => {
         case 'ANUAL':
             return 365 * 24 * 60 * 60 * 1000;
         case 'TRIMESTRAL':
-            return 90 * 24 * 60 * 60 * 1000;
+            return 180 * 24 * 60 * 60 * 1000; // Cambiado a 6 meses
         case 'MENSUAL':
             return 30 * 24 * 60 * 60 * 1000;
         default:
