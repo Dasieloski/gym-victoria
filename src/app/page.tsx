@@ -140,9 +140,9 @@ export default function LandingPage() {
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-gray-100">Nuestros Servicios</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { icon: Dumbbell, title: "Entrenamiento", description: "Equipos de última generación" },
+              { icon: Dumbbell, title: "Entrenamiento", description: "Equipos de musculación" },
               { icon: UserPlus, title: "Personal", description: "Entrenadores expertos" },
-              { icon: Coffee, title: "Café", description: "Bebidas energizantes" }
+              { icon: Coffee, title: "Café", description: "Bebidas energizantes, Jugos naturales, Bebidas proteicas, Batidos, Suplementos nutricionales" }
             ].map((service, index) => (
               <div key={index} className="bg-gray-100 dark:bg-gray-700 p-6 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 animate-fadeIn" style={{ animationDelay: `${index * 200}ms` }}>
                 <service.icon className="w-12 h-12 text-[#2272FF] mb-4" />
