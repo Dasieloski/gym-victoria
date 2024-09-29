@@ -462,12 +462,19 @@ export default function AdminDashboard() {
 
     // Función para calcular la asistencia mensual
     const calcularAsistenciaMensual = () => {
-        const asistenciaMensual = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // Un array para cada mes
+        const asistenciaMensual: number[] = Array(12).fill(0);
+        const clientesPorMes: Set<number>[] = Array.from({ length: 12 }, () => new Set());
+
         bookings.forEach(booking => {
             const fecha = new Date(booking.fecha);
             const mes = fecha.getMonth(); // 0 = Enero, 1 = Febrero, ..., 11 = Diciembre
-            asistenciaMensual[mes] += 1;
+            clientesPorMes[mes].add(booking.cliente.id); // Usar cliente.id
         });
+
+        clientesPorMes.forEach((clientesSet, mes) => {
+            asistenciaMensual[mes] = clientesSet.size;
+        });
+
         return asistenciaMensual;
     };
 
@@ -692,7 +699,7 @@ export default function AdminDashboard() {
                                 <span className="ml-3">Gestionar Roles</span>
                             </button>
                         </li>
-                      {/*   <li>
+                        {/*   <li>
                             <button onClick={() => handleTabChange('history')} className={`flex items-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 ${activeTab === 'history' ? 'bg-gray-200 dark:bg-gray-700' : ''}`}>
                                 <History className="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
                                 <span className="ml-3">Historial</span>

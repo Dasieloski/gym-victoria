@@ -47,8 +47,12 @@ interface Booking {
     id: number;
     fecha: string;
     estado: string;
+    cliente: {
+        id: number;
+        nombre: string;
+    };
+    entrenadorNombre?: string; // Opcional, según tus necesidades
 }
-
 interface PageParams {
     id: string;
 }
@@ -110,7 +114,7 @@ export default function ClientPage({ params }: { params: PageParams }) {
         "Tu cuerpo logra lo que tu mente cree.💪",
         "El único entrenamiento malo es el que no hiciste.💪"
     ]
-     
+
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true'
@@ -144,7 +148,7 @@ export default function ClientPage({ params }: { params: PageParams }) {
                 }
             } catch (error) {
                 console.error('Error fetching client info:', error)
-               
+
             }
         }
 
@@ -265,23 +269,23 @@ export default function ClientPage({ params }: { params: PageParams }) {
                 const newBooking = await response.json();
                 setBookings(prevBookings => [...prevBookings, newBooking.reserva]);
 
-               /*  // Agregar al historial
-                const historialResponse = await fetch('/api/historial', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        accion: 'Nueva reserva',
-                        descripcion: `Reserva creada para ${dateTime.toLocaleString()}`,
-                        usuarioId: clientInfo.id,
-                        reservaId: newBooking.reserva.id,
-                    }),
-                });
-
-                if (!historialResponse.ok) {
-                    console.error('Error al agregar al historial:', await historialResponse.text());
-                } */
+                /*  // Agregar al historial
+                 const historialResponse = await fetch('/api/historial', {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                     },
+                     body: JSON.stringify({
+                         accion: 'Nueva reserva',
+                         descripcion: `Reserva creada para ${dateTime.toLocaleString()}`,
+                         usuarioId: clientInfo.id,
+                         reservaId: newBooking.reserva.id,
+                     }),
+                 });
+ 
+                 if (!historialResponse.ok) {
+                     console.error('Error al agregar al historial:', await historialResponse.text());
+                 } */
 
             } catch (error) {
                 console.error('Error al crear la reserva:', error);
