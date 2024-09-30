@@ -951,11 +951,11 @@ export default function AdminDashboard() {
                             <div className="mb-8 w-full">
                                 <h3 className="text-xl font-semibold mb-4">Clientes Próximos a Pagar:</h3>
                                 <Carousel className="w-full">
-                                    <CarouselContent className="flex space-x-2"> {/* Reducir el espacio entre tarjetas */}
+                                    <CarouselContent className="flex space-x-2">
                                         {clientesProximosPagos.map((client) => (
-                                            <CarouselItem key={client.id} className="flex-shrink-0 w-48"> {/* Reducir el ancho de la tarjeta */}
-                                                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow"> {/* Reducir el padding */}
-                                                    <div className="flex items-center mb-3"> {/* Reducir el margen inferior */}
+                                            <CarouselItem key={client.id} className="flex-shrink-0 w-48">
+                                                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow">
+                                                    <div className="flex items-center mb-3">
                                                         <Image
                                                             src={client.foto || '/default-profile.png'}
                                                             alt={client.nombre}
@@ -964,8 +964,8 @@ export default function AdminDashboard() {
                                                             className="w-12 h-12 rounded-full object-cover"
                                                         />
                                                         <div className="ml-3">
-                                                            <h3 className="text-md font-semibold">{client.nombre}</h3> {/* Reducir el tamaño del texto */}
-                                                            <p className="text-xs text-gray-600 dark:text-gray-400">ID: {client.id}</p> {/* Reducir el tamaño del texto */}
+                                                            <h3 className="text-md font-semibold">{client.nombre}</h3>
+                                                            <p className="text-xs text-gray-600 dark:text-gray-400">ID: {client.id}</p>
                                                         </div>
                                                     </div>
                                                     <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
@@ -974,6 +974,14 @@ export default function AdminDashboard() {
                                                     <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
                                                         Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual?.fechaFin || '')}
                                                     </p>
+                                                    <a
+                                                        href={`https://wa.me/${client.telefono}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-xs text-blue-500 hover:underline"
+                                                    >
+                                                        Ir a WhatsApp
+                                                    </a>
                                                 </div>
                                             </CarouselItem>
                                         ))}
