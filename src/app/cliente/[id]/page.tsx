@@ -410,12 +410,12 @@ export default function ClientPage({ params }: { params: PageParams }) {
                             {clientInfo?.entrenadorAsignado && (
                                 <button
                                     onClick={() => handleTabChange('bookings')}
-                                    className={`text-left px-3 py-2 rounded-md text-sm font-medium ${activeTab === 'bookings' ? 'bg-[#2272FF] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                                    className={`text-left px-3 py-2 rounded-md text-sm font-medium ${activeTab === 'bookings' ? 'bg-[#2272FF] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                        }`}
                                 >
                                     Reservas
                                 </button>
                             )}
-
                         </nav>
                     </div>
                 )}
