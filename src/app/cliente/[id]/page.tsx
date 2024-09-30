@@ -407,12 +407,15 @@ export default function ClientPage({ params }: { params: PageParams }) {
                             >
                                 Historial de Membresías
                             </button>
-                            <button
-                                onClick={() => handleTabChange('bookings')}
-                                className={`text-left px-3 py-2 rounded-md text-sm font-medium ${activeTab === 'bookings' ? 'bg-[#2272FF] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-                            >
-                                Reservas
-                            </button>
+                            {clientInfo?.entrenadorAsignado && (
+                                <button
+                                    onClick={() => handleTabChange('bookings')}
+                                    className={`text-left px-3 py-2 rounded-md text-sm font-medium ${activeTab === 'bookings' ? 'bg-[#2272FF] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                                >
+                                    Reservas
+                                </button>
+                            )}
+
                         </nav>
                     </div>
                 )}
@@ -517,7 +520,7 @@ export default function ClientPage({ params }: { params: PageParams }) {
                 )}
 
                 {/* Membership History */}
-                               {activeTab === 'memberships' && clientInfo && (
+                {activeTab === 'memberships' && clientInfo && (
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
 
                         <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Historial de Membresías</h2>
