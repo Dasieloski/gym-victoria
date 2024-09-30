@@ -463,45 +463,71 @@ export default function TrainerPage() {
                 )}
 
                 {/* Schedule Management Section */}
-                {activeTab === 'schedules' && (
+               {activeTab === 'schedules' && session?.user && 'entrenadorId' in session.user && (
                     <div className="animate-fadeIn">
+
+
                         <h2 className="text-2xl font-bold mb-4">Horarios</h2>
+
                         <SortDropdown
+
                             tab="schedules"
+
                             options={[
+
                                 { value: 'date', label: 'Fecha' },
                                 { value: 'clientName', label: 'Nombre del Cliente' },
+
                                 { value: 'time', label: 'Hora' },
+
                             ]}
+
                         />
+
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {sortedSchedules.map((schedule, index) => {
+
                                 const client = clients.find(c => c.nombre === schedule.clientName);
+
                                 return (
                                     <div key={schedule.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
+
                                         <div className="flex items-center mb-2">
                                             <ProfileImage src={client?.foto} alt={schedule.clientName} />
+
                                             <h3 className="text-lg font-semibold ml-2">{schedule.clientName}</h3>
+
                                         </div>
                                         <p className="text-gray-600 dark:text-gray-400 mb-1">
                                             <Calendar className="inline-block mr-1" size={16} />
+
                                             {schedule.date}
+
                                         </p>
                                         <p className="text-gray-600 dark:text-gray-400 mb-3">
+
                                             <Clock className="inline-block mr-1" size={16} />
+
                                             {schedule.time}
                                         </p>
+
                                         <button
                                             className="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105"
                                             onClick={() => handleCancelReservation(schedule.id)}
+
                                         >
                                             <X size={18} className="mr-2" />
+
                                             Cancelar
+
                                         </button>
+
                                     </div>
                                 );
                             })}
+
                         </div>
+
                     </div>
                 )}
 
