@@ -19,6 +19,7 @@ import { ClientType } from '@/types/client'
 import { Booking } from '@/types/booking'
 import Image from 'next/image'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import { MessageCircle } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
 
@@ -978,9 +979,9 @@ export default function AdminDashboard() {
                                                         href={`https://wa.me/${client.telefono}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="text-xs text-blue-500 hover:underline"
+                                                        className="flex items-center justify-center w-10 h-10 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors duration-200"
                                                     >
-                                                        Ir a WhatsApp
+                                                        <MessageCircle size={20} />
                                                     </a>
                                                 </div>
                                             </CarouselItem>
