@@ -96,11 +96,11 @@ export default function RegisterPage() {
         }
     });
 
-const validateNombre = (value: string) => {
+/* const validateNombre = (value: string) => {
     // Expresión regular que incluye letras acentuadas comunes en español
     const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+(\s[A-Za-zÁÉÍÓÚáéíóúÑñ]+){2,}$/;
     return regex.test(value) || "El nombre debe contener un nombre y dos apellidos sin números.";
-};
+}; */
 
     const validateCarnetIdentidad = (value: string) => {
         return /^\d{11}$/.test(value) || "El carnet de identidad debe ser un número de 11 dígitos.";
@@ -171,7 +171,9 @@ const validateNombre = (value: string) => {
                             <div className="relative">
                                 <input
                                     id="nombre"
-                                    {...register("nombre", { required: true, validate: validateNombre })}
+                                    {...register("nombre", { required: true
+                                    //, validate: validateNombre
+                                     })}
                                     type="text"
                                     className="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#2272FF] focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                     placeholder="Juan Pérez"
