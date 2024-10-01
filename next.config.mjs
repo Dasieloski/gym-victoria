@@ -1,4 +1,5 @@
-/** @type {import('next').NextConfig} */
+import { NextRequest, NextResponse } from 'next/server';
+
 const nextConfig = {
   async headers() {
     return [
