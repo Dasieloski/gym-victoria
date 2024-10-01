@@ -369,12 +369,14 @@ export default function ClientPage({ params }: { params: PageParams }) {
                         >
                             Historial de Membresías
                         </button>
-                        <button
-                            onClick={() => setActiveTab('bookings')}
-                            className={`px-3 py-2 rounded-md text-sm font-medium ${activeTab === 'bookings' ? 'bg-[#2272FF] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-                        >
-                            Reservas
-                        </button>
+                        {clientInfo?.entrenadorAsignado && (
+                            <button
+                                onClick={() => setActiveTab('bookings')}
+                                className={`px-3 py-2 rounded-md text-sm font-medium ${activeTab === 'bookings' ? 'bg-[#2272FF] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                            >
+                                Reservas
+                            </button>
+                        )}
                     </nav>
                     <div className="flex items-center">
                         <button
