@@ -1,5 +1,5 @@
 "use client";
-
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { Dumbbell, Sun, Moon, ChevronRight, ChevronLeft, X, Menu, MessageSquare, Activity, User, CreditCard, Phone, Calendar, Camera } from 'lucide-react';
 import { useRouter } from 'next/navigation';
