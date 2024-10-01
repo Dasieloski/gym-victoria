@@ -96,10 +96,11 @@ export default function RegisterPage() {
         }
     });
 
-    const validateNombre = (value: string) => {
-        const regex = /^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+( [A-Za-záéíóúÁÉÍÓÚñÑ]+){2,}$/;
-        return regex.test(value) || "El nombre debe contener un nombre y dos apellidos sin números.";
-    };
+const validateNombre = (value: string) => {
+    // Expresión regular que incluye letras acentuadas comunes en español
+    const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+(\s[A-Za-zÁÉÍÓÚáéíóúÑñ]+){2,}$/;
+    return regex.test(value) || "El nombre debe contener un nombre y dos apellidos sin números.";
+};
 
     const validateCarnetIdentidad = (value: string) => {
         return /^\d{11}$/.test(value) || "El carnet de identidad debe ser un número de 11 dígitos.";
