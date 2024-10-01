@@ -73,7 +73,7 @@ export default function RegisterPage() {
 
             const formData = {
                 ...data,
-                foto: imageUrl // Enviar 'foto' en lugar de 'profileImage'
+                foto: imageUrl // Asegúrate de que imageUrl es una URL válida
             };
 
             const res = await fetch("/api/auth/register", {
@@ -88,7 +88,8 @@ export default function RegisterPage() {
                 router.push('/login/inicio');
             } else {
                 const errorData = await res.json();
-                throw new Error(errorData.message || "Error en el registro");
+                console.error("Error en el registro:", errorData);
+                alert(`Error en el registro: ${errorData.message}`);
             }
         } catch (error) {
             console.error("Error al registrar:", error);
