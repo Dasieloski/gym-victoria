@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
+import * as Sentry from '@sentry/nextjs';
 
 export default function RegisterPage() {
     const [isDarkMode, setIsDarkMode] = useState(false);
@@ -22,6 +23,14 @@ export default function RegisterPage() {
                 alert("La foto debe ser menor de 1 megabyte.");
                 return;
             }
+            const extension = file.name.split('.').pop()?.toLowerCase();
+            const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif'];
+
+            if (!extension || !extensionesPermitidas.includes(extension)) {
+                alert("El archivo debe ser una imagen con extensión jpg, jpeg, png o gif.");
+                return;
+            }
+
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreviewImage(reader.result as string);
@@ -92,15 +101,16 @@ export default function RegisterPage() {
             }
         } catch (error) {
             console.error("Error al registrar:", error);
+            Sentry.captureException(error);
             alert("Ocurrió un error al registrar el usuario. Por favor, intenta nuevamente.");
         }
     });
 
-/* const validateNombre = (value: string) => {
-    // Expresión regular que incluye letras acentuadas comunes en español
-    const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+(\s[A-Za-zÁÉÍÓÚáéíóúÑñ]+){2,}$/;
-    return regex.test(value) || "El nombre debe contener un nombre y dos apellidos sin números.";
-}; */
+    /* const validateNombre = (value: string) => {
+        // Expresión regular que incluye letras acentuadas comunes en español
+        const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+(\s[A-Za-zÁÉÍÓÚáéíóúÑñ]+){2,}$/;
+        return regex.test(value) || "El nombre debe contener un nombre y dos apellidos sin números.";
+    }; */
 
     const validateCarnetIdentidad = (value: string) => {
         return /^\d{11}$/.test(value) || "El carnet de identidad debe ser un número de 11 dígitos.";
@@ -171,9 +181,10 @@ export default function RegisterPage() {
                             <div className="relative">
                                 <input
                                     id="nombre"
-                                    {...register("nombre", { required: true
-                                    //, validate: validateNombre
-                                     })}
+                                    {...register("nombre", {
+                                        required: true
+                                        //, validate: validateNombre
+                                    })}
                                     type="text"
                                     className="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#2272FF] focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                     placeholder="Juan Pérez"
