@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "sentry:deploy": "sentry-cli releases finalize $(npm pkg get name | tr -d '\"')@$(npm pkg get version | tr -d '\"')"
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",

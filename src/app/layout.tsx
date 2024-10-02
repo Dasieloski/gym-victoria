@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import NextTopLoader from 'nextjs-toploader';
 import { Providers } from "@/components/Providers";
+import * as Sentry from '@sentry/nextjs';
 
 const inter = Inter({ subsets: ["latin"] });
 
