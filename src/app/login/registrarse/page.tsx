@@ -7,7 +7,6 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
-import * as Sentry from '@sentry/nextjs';
 
 export default function RegisterPage() {
     const [isDarkMode, setIsDarkMode] = useState(false);
@@ -36,12 +35,24 @@ export default function RegisterPage() {
                 setPreviewImage(reader.result as string);
             };
             reader.readAsDataURL(file);
+        } else {
+            setPreviewImage(null);
         }
     };
 
     const onSubmit = handleSubmit(async (data) => {
         try {
+            if (!data.foto || data.foto.length === 0) {
+                alert("Debe subir una foto de perfil.");
+                return;
+            }
+
             const file = data.foto[0];
+            if (!file) {
+                alert("No se seleccionó ningún archivo.");
+                return;
+            }
+
             if (file.size > 1048576) { // 1 MB en bytes
                 alert("La foto debe ser menor de 1 megabyte.");
                 return;
@@ -82,7 +93,7 @@ export default function RegisterPage() {
 
             const formData = {
                 ...data,
-                foto: imageUrl // Enviar 'foto' en lugar de 'profileImage'
+                foto: imageUrl
             };
 
             const res = await fetch("/api/auth/register", {
@@ -101,7 +112,6 @@ export default function RegisterPage() {
             }
         } catch (error) {
             console.error("Error al registrar:", error);
-            Sentry.captureException(error);
             alert("Ocurrió un error al registrar el usuario. Por favor, intenta nuevamente.");
         }
     });

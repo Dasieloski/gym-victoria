@@ -1,5 +1,3 @@
-import { withSentryConfig } from "@sentry/nextjs";
-
 const nextConfig = {
   async headers() {
     return [
@@ -26,7 +24,3 @@ const nextConfig = {
     ],
   },
 };
-
-export default withSentryConfig(nextConfig, {
-  // Configuración adicional de Sentry si es necesaria
-});

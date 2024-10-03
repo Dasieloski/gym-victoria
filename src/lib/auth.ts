@@ -11,8 +11,14 @@ export const authOptions: NextAuthOptions = {
                 username: { label: "Username", type: "text", placeholder: "Username" },
                 password: { label: "Password", type: "password" },
             },
-            async authorize(credentials: Record<"username" | "password", string> | undefined, req: any) { // Cambiar la firma de la función
-                if (!credentials) return null; // Asegúrate de retornar null si no hay credenciales
+            async authorize(credentials: Record<"username" | "password", string> | undefined, req: any) {
+                console.log("Credenciales recibidas:", credentials); // Agregar este log
+
+                if (!credentials) {
+                    console.log("No se proporcionaron credenciales.");
+                    return null;
+                }
+
                 const { username, password } = credentials;
 
                 const userFound = await prisma.usuario.findUnique({
@@ -20,14 +26,20 @@ export const authOptions: NextAuthOptions = {
                         username: username,
                     }
                 });
+
                 if (!userFound) {
+                    console.log("Usuario no encontrado:", username);
                     throw new Error("El nombre de usuario no está registrado.");
                 }
+
                 const passwordMatch = await bcrypt.compare(password, userFound.password);
                 if (!passwordMatch) {
+                    console.log("Contraseña incorrecta para usuario:", username);
                     throw new Error("La contraseña es incorrecta.");
                 }
-                return { // Asegúrate de retornar un objeto de usuario
+
+                console.log("Autenticación exitosa para usuario:", username);
+                return {
                     id: userFound.id.toString(),
                     username: userFound.username,
                     rol: userFound.rol,

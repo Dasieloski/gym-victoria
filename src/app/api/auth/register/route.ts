@@ -33,13 +33,13 @@ export async function POST(request: Request) {
         const hashedPassword = await bcrypt.hash(data.password, 10)
         const NewUser = await prisma.usuario.create({
             data: {
+                foto: data.foto, // Guardar la URL de la imagen de perfil
                 nombre: data.nombre,
                 username: data.username,
                 carnetIdentidad: data.carnetIdentidad,
                 telefono: data.telefono,
                 password: hashedPassword,
                 rol: 'CLIENTEESPERA',
-                foto: data.foto // Guardar la URL de la imagen de perfil
             }
         })
 
