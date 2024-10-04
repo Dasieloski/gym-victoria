@@ -445,9 +445,13 @@ export default function TrainerPage() {
                                         <Phone className="inline-block mr-2" size={16} />
                                         Teléfono: {client.telefono}
                                     </p>
-                                    <p className="text-gray-600 dark:text-gray-400 mb-4 flex items-center">
+                                    <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center">
                                         <Award className="inline-block mr-2" size={16} />
                                         Membresía: {client.membresiaActual?.tipo}
+                                    </p>
+                                    <p className="text-gray-600 dark:text-gray-400 mb-4 flex items-center">
+                                        <Calendar className="inline-block mr-2" size={16} />
+                                        Próxima Fecha de Pago: {client.nextPayment}
                                     </p>
                                     <button
                                         className="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105"
