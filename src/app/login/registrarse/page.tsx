@@ -12,6 +12,7 @@ export default function RegisterPage() {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const { register, handleSubmit, formState: { errors } } = useForm();
     const router = useRouter();
 
@@ -20,6 +21,8 @@ export default function RegisterPage() {
         if (file) {
             if (file.size > 1048576) { // 1 MB en bytes
                 alert("La foto debe ser menor de 1 megabyte.");
+                setSelectedFile(null);
+                setPreviewImage(null);
                 return;
             }
             const extension = file.name.split('.').pop()?.toLowerCase();
@@ -27,8 +30,12 @@ export default function RegisterPage() {
 
             if (!extension || !extensionesPermitidas.includes(extension)) {
                 alert("El archivo debe ser una imagen con extensión jpg, jpeg, png o gif.");
+                setSelectedFile(null);
+                setPreviewImage(null);
                 return;
             }
+
+            setSelectedFile(file);
 
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -36,37 +43,21 @@ export default function RegisterPage() {
             };
             reader.readAsDataURL(file);
         } else {
+            setSelectedFile(null);
             setPreviewImage(null);
         }
     };
 
     const onSubmit = handleSubmit(async (data) => {
         try {
-            if (!data.foto || data.foto.length === 0) {
+            if (!selectedFile) {
                 alert("Debe subir una foto de perfil.");
                 return;
             }
-
-            const file = data.foto[0];
-            if (!file) {
-                alert("No se seleccionó ningún archivo.");
-                return;
-            }
-
-            if (file.size > 1048576) { // 1 MB en bytes
-                alert("La foto debe ser menor de 1 megabyte.");
-                return;
-            }
+            const file = selectedFile;
 
             // Obtener la extensión del archivo de manera más robusta
             const extension = file.name.split('.').pop()?.toLowerCase();
-            const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif'];
-
-            if (!extension || !extensionesPermitidas.includes(extension)) {
-                alert("El archivo debe ser una imagen con extensión jpg, jpeg, png o gif.");
-                return;
-            }
-
             const path = `public/${data.username}-${Date.now()}.${extension}`;
 
             const { data: uploadData, error: uploadError } = await supabase
@@ -79,10 +70,12 @@ export default function RegisterPage() {
             }
 
             // Obtener la URL pública correctamente
-            const { data: publicUrlData } = supabase
+            const { data: publicUrlData} = supabase
                 .storage
                 .from('profile-images')
                 .getPublicUrl(uploadData.path);
+
+         
 
             const imageUrl = publicUrlData.publicUrl;
 
@@ -115,12 +108,6 @@ export default function RegisterPage() {
             alert("Ocurrió un error al registrar el usuario. Por favor, intenta nuevamente.");
         }
     });
-
-    /* const validateNombre = (value: string) => {
-        // Expresión regular que incluye letras acentuadas comunes en español
-        const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+(\s[A-Za-zÁÉÍÓÚáéíóúÑñ]+){2,}$/;
-        return regex.test(value) || "El nombre debe contener un nombre y dos apellidos sin números.";
-    }; */
 
     const validateCarnetIdentidad = (value: string) => {
         return /^\d{11}$/.test(value) || "El carnet de identidad debe ser un número de 11 dígitos.";
@@ -178,13 +165,12 @@ export default function RegisterPage() {
                                         id="foto"
                                         type="file"
                                         accept="image/*"
-                                        {...register("foto", { required: "La foto de perfil es obligatoria" })}
                                         onChange={handleImageChange}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                     />
                                 </div>
                             </div>
-                            {errors.foto && <p className="text-red-500 text-sm text-center mt-2">{errors.foto.message as string}</p>}
+                            {selectedFile === null && <p className="text-red-500 text-sm text-center mt-2">Debe subir una foto de perfil.</p>}
                         </div>
                         <div>
                             <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre completo</label>
@@ -192,8 +178,7 @@ export default function RegisterPage() {
                                 <input
                                     id="nombre"
                                     {...register("nombre", {
-                                        required: true
-                                        //, validate: validateNombre
+                                        required: "El nombre es obligatorio"
                                     })}
                                     type="text"
                                     className="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#2272FF] focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
@@ -208,21 +193,22 @@ export default function RegisterPage() {
                             <div className="relative">
                                 <input
                                     id="username"
-                                    {...register("username", { required: true })}
+                                    {...register("username", { required: "El username es obligatorio" })}
                                     type="text"
                                     className="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#2272FF] focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                     placeholder="juan23"
                                 />
                                 <SquareUserRound className="absolute right-3 top-2.5 text-gray-400" size={20} />
                             </div>
+                            {errors.username && <p className="text-red-500 text-sm">{errors.username.message as string}</p>}
                         </div>
                         <div>
                             <label htmlFor="carnetIdentidad" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Carnet de identidad</label>
                             <div className="relative">
                                 <input
                                     id="carnetIdentidad"
-                                    {...register("carnetIdentidad", { required: true, validate: validateCarnetIdentidad })}
-                                    type="number"
+                                    {...register("carnetIdentidad", { required: "El carnet de identidad es obligatorio", validate: validateCarnetIdentidad })}
+                                    type="text"
                                     className="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#2272FF] focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                     placeholder="98765432100"
                                 />
@@ -235,7 +221,7 @@ export default function RegisterPage() {
                             <div className="relative">
                                 <input
                                     id="telefono"
-                                    {...register("telefono", { required: true, validate: validateTelefono })}
+                                    {...register("telefono", { required: "El teléfono es obligatorio", validate: validateTelefono })}
                                     type="tel"
                                     className="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#2272FF] focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                     placeholder="+53 54321000"
@@ -249,7 +235,7 @@ export default function RegisterPage() {
                             <div className="relative">
                                 <input
                                     id="password"
-                                    {...register("password", { required: true })}
+                                    {...register("password", { required: "La contraseña es obligatoria" })}
                                     type={showPassword ? "text" : "password"}
                                     className="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-[#2272FF] focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                     placeholder="••••••••"
@@ -262,6 +248,7 @@ export default function RegisterPage() {
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
                             </div>
+                            {errors.password && <p className="text-red-500 text-sm">{errors.password.message as string}</p>}
                         </div>
                         <div>
                             <button
