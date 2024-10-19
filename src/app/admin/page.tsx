@@ -20,6 +20,7 @@ import { Booking } from '@/types/booking'
 import Image from 'next/image'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { MessageCircle } from 'lucide-react';
+import dayjs from 'dayjs'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
 
@@ -108,6 +109,7 @@ export default function AdminDashboard() {
     const [currentPage, setCurrentPage] = useState(1);
     const [clientesProximosPagos, setClientesProximosPagos] = useState<ClientType[]>([]);
     const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
+     const [membresiasHoy, setMembresiasHoy] = useState(0);
 
     const filteredClients = Array.isArray(clientes) ? clientes.filter((client: ClientType) =>
     (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
@@ -149,6 +151,19 @@ export default function AdminDashboard() {
     useEffect(() => {
         const clientesFiltrados = filtrarClientesProximosPagos(clientesConMembresia);
         setClientesProximosPagos(clientesFiltrados);
+    }, [clientesConMembresia]);
+
+     useEffect(() => {
+        const contarMembresiasHoy = () => {
+            const hoy = dayjs().startOf('day');
+            const membresiasHoy = clientesConMembresia.filter(client => {
+                const fechaInicio = dayjs(client.membresiaActual?.fechaInicio);
+                return fechaInicio.isSame(hoy, 'day');
+            }).length;
+            setMembresiasHoy(membresiasHoy);
+        };
+
+        contarMembresiasHoy();
     }, [clientesConMembresia]);
 
     const totalClientes = userRoles.filter((user: User) => user.rol === 'CLIENTE').length;
@@ -781,6 +796,10 @@ export default function AdminDashboard() {
                             <h3 className="text-lg font-semibold mb-2">Ingresos Mensuales</h3>
                             <p className="text-4xl font-bold text-[#2272FF]">{ingresosMensuales} CUP</p>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{ingresosPorcentaje.toFixed(2)}% desde hace 30 días</p>
+                        </div>
+                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                            <h3 className="text-lg font-semibold mb-2">Clientes con membresías pagadas hoy</h3>
+                            <p className="text-4xl font-bold text-[#2272FF]">{membresiasHoy}</p>
                         </div>
                     </div>
                 )}
