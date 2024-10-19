@@ -1,8 +1,5 @@
 import prisma from '@/lib/prisma';
-import dayjs from 'dayjs';
-import isBetween from 'dayjs/plugin/isBetween'; // Importar el plugin isBetween
-
-dayjs.extend(isBetween); // Extender dayjs con el plugin
+import dayjs from '@/lib/dayjs'; // Asegúrate de ajustar la ruta según tu estructura de carpetas
 
 
 
@@ -26,7 +23,7 @@ export async function updateVisits() {
         .filter(r => {
           const fechaReserva = dayjs(r.fecha);
           return fechaReserva.isBefore(now) && // Solo contar reservas pasadas
-                 fechaReserva.isBetween(startOfMonth, endOfMonth, null, '[]'); // Incluir el rango
+            fechaReserva.isBetween(startOfMonth, endOfMonth, null, '[]'); // Incluir el rango
         })
         .map(r => dayjs(r.fecha).format('YYYY-MM-DD')) // Convertir a string para obtener solo la fecha
     );

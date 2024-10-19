@@ -20,8 +20,7 @@ import { Booking } from '@/types/booking'
 import Image from 'next/image'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { MessageCircle } from 'lucide-react';
-import dayjs from 'dayjs'
- import isBetween from 'dayjs/plugin/isBetween'; // Importar el plugin isBetween
+import dayjs from '@/lib/dayjs';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
 
@@ -110,7 +109,7 @@ export default function AdminDashboard() {
     const [currentPage, setCurrentPage] = useState(1);
     const [clientesProximosPagos, setClientesProximosPagos] = useState<ClientType[]>([]);
     const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
-     const [membresiasHoy, setMembresiasHoy] = useState(0);
+    const [membresiasHoy, setMembresiasHoy] = useState(0);
 
     const filteredClients = Array.isArray(clientes) ? clientes.filter((client: ClientType) =>
     (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
@@ -154,19 +153,19 @@ export default function AdminDashboard() {
         setClientesProximosPagos(clientesFiltrados);
     }, [clientesConMembresia]);
 
-       useEffect(() => {
-       const contarMembresiasHoy = () => {
-           const hoyInicio = dayjs().startOf('day');
-           const hoyFin = dayjs().endOf('day');
-           const membresiasHoyCount = clientesConMembresia.filter(client => {
-               const fechaInicio = dayjs(client.membresiaActual?.fechaInicio);
-               return fechaInicio.isBetween(hoyInicio, hoyFin, null, '[]');
-           }).length;
-           setMembresiasHoy(membresiasHoyCount);
-       };
+    useEffect(() => {
+        const contarMembresiasHoy = () => {
+            const hoyInicio = dayjs().startOf('day');
+            const hoyFin = dayjs().endOf('day');
+            const membresiasHoyCount = clientesConMembresia.filter(client => {
+                const fechaInicio = dayjs(client.membresiaActual?.fechaInicio);
+                return fechaInicio.isBetween(hoyInicio, hoyFin, null, '[]');
+            }).length;
+            setMembresiasHoy(membresiasHoyCount);
+        };
 
-       contarMembresiasHoy();
-   }, [clientesConMembresia]);
+        contarMembresiasHoy();
+    }, [clientesConMembresia]);
 
     const totalClientes = userRoles.filter((user: User) => user.rol === 'CLIENTE').length;
     // Calcular ingresos mensuales: 2000 pesos por cada cliente con membresía activa
@@ -799,7 +798,7 @@ export default function AdminDashboard() {
                             <p className="text-4xl font-bold text-[#2272FF]">{ingresosMensuales} CUP</p>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{ingresosPorcentaje.toFixed(2)}% desde hace 30 días</p>
                         </div>
-                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                             <h3 className="text-lg font-semibold mb-2">Clientes con membresías pagadas hoy</h3>
                             <p className="text-4xl font-bold text-[#2272FF]">{membresiasHoy} clientes</p>
                         </div>
@@ -1040,7 +1039,7 @@ export default function AdminDashboard() {
                                             onChange={(e) => handleMembershipChange(client.id, e.target.value)}
                                             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
                                         >
-                                             <option>Seleccione La membresía</option>
+                                            <option>Seleccione La membresía</option>
                                             <option value="MENSUAL">Mensual</option>
                                             <option value="TRIMESTRAL">Semestral</option>
                                             <option value="ANUAL">Anual</option>
