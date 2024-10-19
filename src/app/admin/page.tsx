@@ -154,13 +154,15 @@ export default function AdminDashboard() {
     }, [clientesConMembresia]);
 
     useEffect(() => {
+        console.log('Clientes con membresía actual:', clientesConMembresia);
         const contarMembresiasHoy = () => {
-            const hoyInicio = dayjs().startOf('day');
-            const hoyFin = dayjs().endOf('day');
+            const hoy = dayjs();
             const membresiasHoyCount = clientesConMembresia.filter(client => {
                 const fechaInicio = dayjs(client.membresiaActual?.fechaInicio);
-                return fechaInicio.isBetween(hoyInicio, hoyFin, null, '[]');
+                console.log(`Cliente: ${client.nombre}, Fecha Inicio: ${fechaInicio.format()}`); // Depuración
+                return fechaInicio.isSame(hoy, 'day');
             }).length;
+            console.log(`Membresías asignadas hoy: ${membresiasHoyCount}`); // Depuración
             setMembresiasHoy(membresiasHoyCount);
         };
 

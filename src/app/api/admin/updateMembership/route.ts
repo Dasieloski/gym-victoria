@@ -26,25 +26,43 @@ export async function PUT(request: Request) {
         // Buscar al usuario (cliente)
         const usuario = await prisma.usuario.findUnique({
             where: { id: clientId },
+            include: { membresiaActual: true },
         });
 
         if (!usuario) {
             return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
         }
 
-        // Crear una nueva membresía
+        const today = new Date();
+        const nextPaymentDate = new Date(today.setMonth(today.getMonth() + (tipo === 'ANUAL' ? 12 : tipo === 'TRIMESTRAL' ? 6 : 1)));
+
+        // Mover la membresía actual al historial
+        if (usuario.membresiaActual) {
+            await prisma.membresia.update({
+                where: { id: usuario.membresiaActual.id },
+                data: {
+                    usuarioActual: {
+                        disconnect: true,
+                    },
+                },
+            });
+        }
+
+        // Crear nueva membresía
         const nuevaMembresia = await prisma.membresia.create({
             data: {
-                tipo: tipo.toUpperCase(),
+                tipo: tipo.toUpperCase() as 'ANUAL' | 'TRIMESTRAL' | 'MENSUAL',
                 fechaInicio: new Date(),
-                fechaFin: new Date(Date.now() + getDuration(tipo)),
+                fechaFin: nextPaymentDate,
                 estadoPago: 'PAGADO',
-                clienteId: clientId,
+                cliente: {
+                    connect: { id: clientId },
+                },
             },
         });
 
-        // Actualizar al usuario para que apunte a la nueva membresía
-        const updatedUsuario = await prisma.usuario.update({
+        // Actualizar el cliente con la nueva membresía
+        const updatedClient = await prisma.usuario.update({
             where: { id: clientId },
             data: {
                 membresiaActualId: nuevaMembresia.id,
@@ -52,10 +70,11 @@ export async function PUT(request: Request) {
             include: {
                 membresiaActual: true,
                 membresias: true,
+                reservasCliente: true,
             },
         });
 
-        return NextResponse.json(updatedUsuario);
+        return NextResponse.json(updatedClient);
     } catch (error) {
         console.error('Error actualizando membresía:', error);
         return NextResponse.json({ error: 'Error actualizando membresía' }, { status: 500 });
