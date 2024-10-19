@@ -154,19 +154,19 @@ export default function AdminDashboard() {
         setClientesProximosPagos(clientesFiltrados);
     }, [clientesConMembresia]);
 
-     useEffect(() => {
-        const contarMembresiasHoy = () => {
-            const hoyInicio = dayjs().startOf('day');
-            const hoyFin = dayjs().endOf('day');
-            const membresiasHoyCount = clientesConMembresia.filter(client => {
-                const fechaInicio = dayjs(client.membresiaActual?.fechaInicio);
-                return fechaInicio.isBetween(hoyInicio, hoyFin, null, '[]');
-            }).length;
-            setMembresiasHoy(membresiasHoyCount);
-        };
+       useEffect(() => {
+       const contarMembresiasHoy = () => {
+           const hoyInicio = dayjs().startOf('day');
+           const hoyFin = dayjs().endOf('day');
+           const membresiasHoyCount = clientesConMembresia.filter(client => {
+               const fechaInicio = dayjs(client.membresiaActual?.fechaInicio);
+               return fechaInicio.isBetween(hoyInicio, hoyFin, null, '[]');
+           }).length;
+           setMembresiasHoy(membresiasHoyCount);
+       };
 
-        contarMembresiasHoy();
-    }, [clientesConMembresia]);
+       contarMembresiasHoy();
+   }, [clientesConMembresia]);
 
     const totalClientes = userRoles.filter((user: User) => user.rol === 'CLIENTE').length;
     // Calcular ingresos mensuales: 2000 pesos por cada cliente con membresía activa
