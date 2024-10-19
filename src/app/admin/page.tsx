@@ -155,12 +155,13 @@ export default function AdminDashboard() {
 
      useEffect(() => {
         const contarMembresiasHoy = () => {
-            const hoy = dayjs().startOf('day');
-            const membresiasHoy = clientesConMembresia.filter(client => {
+            const hoyInicio = dayjs().startOf('day');
+            const hoyFin = dayjs().endOf('day');
+            const membresiasHoyCount = clientesConMembresia.filter(client => {
                 const fechaInicio = dayjs(client.membresiaActual?.fechaInicio);
-                return fechaInicio.isSame(hoy, 'day');
+                return fechaInicio.isBetween(hoyInicio, hoyFin, null, '[]');
             }).length;
-            setMembresiasHoy(membresiasHoy);
+            setMembresiasHoy(membresiasHoyCount);
         };
 
         contarMembresiasHoy();
@@ -799,7 +800,7 @@ export default function AdminDashboard() {
                         </div>
                          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                             <h3 className="text-lg font-semibold mb-2">Clientes con membresías pagadas hoy</h3>
-                            <p className="text-4xl font-bold text-[#2272FF]">{membresiasHoy}</p>
+                            <p className="text-4xl font-bold text-[#2272FF]">{membresiasHoy} clientes</p>
                         </div>
                     </div>
                 )}
