@@ -989,13 +989,7 @@ export default function AdminDashboard() {
                                             <CarouselItem key={client.id} className="flex-shrink-0 w-48">
                                                 <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow">
                                                     <div className="flex items-center mb-3">
-                                                        <Image
-                                                            src={client.foto || '/default-profile.png'}
-                                                            alt={client.nombre}
-                                                            width={48}
-                                                            height={48}
-                                                            className="w-12 h-12 rounded-full object-cover"
-                                                        />
+                                                        <ProfileImage src={client.foto || '/default-profile.png'} alt={client.nombre} />
                                                         <div className="ml-3">
                                                             <h3 className="text-md font-semibold">{client.nombre}</h3>
                                                             <p className="text-xs text-gray-600 dark:text-gray-400">ID: {client.id}</p>
@@ -1029,13 +1023,7 @@ export default function AdminDashboard() {
                             {filteredMemberships.map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
-                                        <Image
-                                            src={client.foto || '/default-profile.png'}
-                                            alt={client.nombre}
-                                            width={64}
-                                            height={64}
-                                            className="w-16 h-16 rounded-full object-cover"
-                                        />
+                                        <ProfileImage src={client.foto || '/default-profile.png'} alt={client.nombre} />
                                         <div className="ml-4">
                                             <h3 className="text-lg font-semibold">{client.nombre}</h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
