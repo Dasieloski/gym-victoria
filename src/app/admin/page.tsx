@@ -21,6 +21,7 @@ import Image from 'next/image'
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { MessageCircle } from 'lucide-react';
 import dayjs from 'dayjs'
+ import isBetween from 'dayjs/plugin/isBetween'; // Importar el plugin isBetween
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend)
 
