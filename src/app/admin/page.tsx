@@ -678,46 +678,62 @@ export default function AdminDashboard() {
         setCurrentPage(1);
     }, [searchHistory, sortBy]);
 
-  const handleMembershipChange = async (clientId: number, newMembershipType: string) => {
-    if (!newMembershipType) {
-        toast.error('Por favor, seleccione un tipo de membresía válido');
-        return;
-    }
-
-    console.log(`Asignando membresía ${newMembershipType} al cliente con ID ${clientId}`);
-    try {
-        const response = await fetch('/api/admin/updateMembership', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ clientId, tipo: newMembershipType }),
-        });
-
-        console.log('Respuesta recibida:', response);
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Error en la respuesta de la API:', errorData);
-            throw new Error(errorData.error || 'Error desconocido al actualizar la membresía');
+    const handleMembershipChange = async (clientId: number, newMembershipType: string) => {
+        if (!newMembershipType) {
+            toast.error('Por favor, seleccione un tipo de membresía válido');
+            return;
         }
 
-        const updatedClient: ClientType = await response.json();
-        console.log('Cliente actualizado:', updatedClient);
-        setClientesConMembresia(prev =>
-            prev.map((client: ClientType) =>
-                client.id === updatedClient.id ? updatedClient : client
-            )
-        );
-        toast.success('Membresía actualizada con éxito');
+        // Determinar los días adicionales basados en el tipo de membresía
+        let additionalDays = 0;
+        switch (newMembershipType) {
+            case 'MENSUAL_ADV':
+                additionalDays = 30;
+                break;
+            case 'SEMIANUAL_ADV':
+                additionalDays = 180;
+                break;
+            case 'ANUAL_ADV':
+                additionalDays = 365;
+                break;
+            default:
+                additionalDays = 0;
+        }
 
-        // Resetear la selección después de la asignación
-        setSelectedMembership(prev => ({ ...prev, [clientId]: '' }));
-    } catch (error) {
-        console.error('Error al actualizar la membresía:', error);
-        toast.error(`Error al actualizar la membresía: ${(error as Error).message}`);
-    }
-};
+        console.log(`Asignando membresía ${newMembershipType} al cliente con ID ${clientId}`);
+        try {
+            const response = await fetch('/api/admin/updateMembership', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ clientId, tipo: newMembershipType }),
+            });
+
+            console.log('Respuesta recibida:', response);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error en la respuesta de la API:', errorData);
+                throw new Error(errorData.error || 'Error desconocido al actualizar la membresía');
+            }
+
+            const updatedClient: ClientType = await response.json();
+            console.log('Cliente actualizado:', updatedClient);
+            setClientesConMembresia(prev =>
+                prev.map((client: ClientType) =>
+                    client.id === updatedClient.id ? updatedClient : client
+                )
+            );
+            toast.success('Membresía actualizada con éxito');
+
+            // Resetear la selección después de la asignación
+            setSelectedMembership(prev => ({ ...prev, [clientId]: '' }));
+        } catch (error) {
+            console.error('Error al actualizar la membresía:', error);
+            toast.error(`Error al actualizar la membresía: ${(error as Error).message}`);
+        }
+    };
 
     const handleDeleteM = (id: number, type: string) => {
         setDeleteConfirmation({ isOpen: true, id, type });
@@ -1061,9 +1077,15 @@ export default function AdminDashboard() {
                                             <option value="" disabled selected>
                                                 Seleccione la membresía
                                             </option>
+                                            <option value="" disabled>
+                                                Seleccione la membresía
+                                            </option>
                                             <option value="MENSUAL">Mensual</option>
-                                            <option value="TRIMESTRAL">Semestral</option>
+                                            <option value="MENSUAL_ADV">Mensual Adelantado</option>
+                                            <option value="SEMIANUAL">Semestral</option>
+                                            <option value="SEMIANUAL_ADV">Semestral Adelantado</option>
                                             <option value="ANUAL">Anual</option>
+                                            <option value="ANUAL_ADV">Anual Adelantado</option>
                                         </select>
                                     </div>
                                     {client.membresiaActual ? (
