@@ -110,6 +110,7 @@ export default function AdminDashboard() {
     const [clientesProximosPagos, setClientesProximosPagos] = useState<ClientType[]>([]);
     const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
     const [membresiasHoy, setMembresiasHoy] = useState(0);
+    const [selectedMembership, setSelectedMembership] = useState<{ [key: number]: string }>({});
 
     const filteredClients = Array.isArray(clientes) ? clientes.filter((client: ClientType) =>
     (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
@@ -678,6 +679,7 @@ export default function AdminDashboard() {
     }, [searchHistory, sortBy]);
 
     const handleMembershipChange = async (clientId: number, newMembershipType: string) => {
+        console.log(`Asignando membresía ${newMembershipType} al cliente con ID ${clientId}`);
         try {
             const response = await fetch('/api/admin/updateMembership', {
                 method: 'PUT',
@@ -687,23 +689,30 @@ export default function AdminDashboard() {
                 body: JSON.stringify({ clientId, tipo: newMembershipType }),
             });
 
+            console.log('Respuesta recibida:', response);
+
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('Error en la respuesta de la API:', errorData);
                 throw new Error(errorData.error || 'Error desconocido al actualizar la membresía');
             }
 
             const updatedClient: ClientType = await response.json();
+            console.log('Cliente actualizado:', updatedClient);
             setClientesConMembresia(prev =>
                 prev.map((client: ClientType) =>
                     client.id === updatedClient.id ? updatedClient : client
                 )
             );
             toast.success('Membresía actualizada con éxito');
+
+            // Resetear el valor del select
+            setSelectedMembership(prev => ({ ...prev, [clientId]: '' }));
         } catch (error) {
             console.error('Error al actualizar la membresía:', error);
             toast.error(`Error al actualizar la membresía: ${(error as Error).message}`);
         }
-    }
+    };
 
     const handleDeleteM = (id: number, type: string) => {
         setDeleteConfirmation({ isOpen: true, id, type });
@@ -1035,11 +1044,16 @@ export default function AdminDashboard() {
                                         </label>
                                         <select
                                             id={`membership-${client.id}`}
-                                            value={client.membresiaActual?.tipo || ''}
-                                            onChange={(e) => handleMembershipChange(client.id, e.target.value)}
+                                            value={selectedMembership[client.id] || ''}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                setSelectedMembership(prev => ({ ...prev, [client.id]: value }));
+                                            }}
                                             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
                                         >
-                                            <option>Seleccione La membresía</option>
+                                            <option value="" disabled selected>
+                                                Seleccione la membresía
+                                            </option>
                                             <option value="MENSUAL">Mensual</option>
                                             <option value="TRIMESTRAL">Semestral</option>
                                             <option value="ANUAL">Anual</option>
