@@ -1044,11 +1044,8 @@ export default function AdminDashboard() {
                                         </label>
                                         <select
                                             id={`membership-${client.id}`}
-                                            value={selectedMembership[client.id] || ''}
-                                            onChange={(e) => {
-                                                const value = e.target.value;
-                                                setSelectedMembership(prev => ({ ...prev, [client.id]: value }));
-                                            }}
+                                            value={client.membresiaActual?.tipo || ''}
+                                            onChange={(e) => handleMembershipChange(client.id, e.target.value)}
                                             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
                                         >
                                             <option value="" disabled selected>
