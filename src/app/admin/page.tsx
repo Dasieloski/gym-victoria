@@ -678,41 +678,46 @@ export default function AdminDashboard() {
         setCurrentPage(1);
     }, [searchHistory, sortBy]);
 
-    const handleMembershipChange = async (clientId: number, newMembershipType: string) => {
-        console.log(`Asignando membresía ${newMembershipType} al cliente con ID ${clientId}`);
-        try {
-            const response = await fetch('/api/admin/updateMembership', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ clientId, tipo: newMembershipType }),
-            });
+  const handleMembershipChange = async (clientId: number, newMembershipType: string) => {
+    if (!newMembershipType) {
+        toast.error('Por favor, seleccione un tipo de membresía válido');
+        return;
+    }
 
-            console.log('Respuesta recibida:', response);
+    console.log(`Asignando membresía ${newMembershipType} al cliente con ID ${clientId}`);
+    try {
+        const response = await fetch('/api/admin/updateMembership', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ clientId, tipo: newMembershipType }),
+        });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error en la respuesta de la API:', errorData);
-                throw new Error(errorData.error || 'Error desconocido al actualizar la membresía');
-            }
+        console.log('Respuesta recibida:', response);
 
-            const updatedClient: ClientType = await response.json();
-            console.log('Cliente actualizado:', updatedClient);
-            setClientesConMembresia(prev =>
-                prev.map((client: ClientType) =>
-                    client.id === updatedClient.id ? updatedClient : client
-                )
-            );
-            toast.success('Membresía actualizada con éxito');
-
-            // Resetear el valor del select
-            setSelectedMembership(prev => ({ ...prev, [clientId]: '' }));
-        } catch (error) {
-            console.error('Error al actualizar la membresía:', error);
-            toast.error(`Error al actualizar la membresía: ${(error as Error).message}`);
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error en la respuesta de la API:', errorData);
+            throw new Error(errorData.error || 'Error desconocido al actualizar la membresía');
         }
-    };
+
+        const updatedClient: ClientType = await response.json();
+        console.log('Cliente actualizado:', updatedClient);
+        setClientesConMembresia(prev =>
+            prev.map((client: ClientType) =>
+                client.id === updatedClient.id ? updatedClient : client
+            )
+        );
+        toast.success('Membresía actualizada con éxito');
+
+        // Resetear la selección después de la asignación
+        setSelectedMembership(prev => ({ ...prev, [clientId]: '' }));
+    } catch (error) {
+        console.error('Error al actualizar la membresía:', error);
+        toast.error(`Error al actualizar la membresía: ${(error as Error).message}`);
+    }
+};
 
     const handleDeleteM = (id: number, type: string) => {
         setDeleteConfirmation({ isOpen: true, id, type });
@@ -1044,8 +1049,13 @@ export default function AdminDashboard() {
                                         </label>
                                         <select
                                             id={`membership-${client.id}`}
-                                            value={client.membresiaActual?.tipo || ''}
-                                            onChange={(e) => handleMembershipChange(client.id, e.target.value)}
+                                            value={selectedMembership[client.id] || ''}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                handleMembershipChange(client.id, value);
+                                                // Resetear el valor del select después de la asignación
+                                                setSelectedMembership(prev => ({ ...prev, [client.id]: '' }));
+                                            }}
                                             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
                                         >
                                             <option value="" disabled selected>
