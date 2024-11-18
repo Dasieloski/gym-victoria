@@ -1095,7 +1095,7 @@ export default function AdminDashboard() {
                                                 Seleccione la membresía
                                             </option>
                                             <option value="MENSUAL">Mensual</option>
-                                            <option value="SEMIANUAL">Semestral</option>
+                                            <option value="TRIMESTRAL">Semestral</option>
                                             <option value="ANUAL">Anual</option>
                                         </select>
 
