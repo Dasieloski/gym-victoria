@@ -7,18 +7,18 @@ const getAdditionalDays = (tipo: string): number => {
         case 'ANUAL':
             return 365;
         case 'TRIMESTRAL':
-            return 180; // 3 meses
+            return 180; // 6 meses
         case 'MENSUAL':
             return 30;
         default:
-            return 30; // Por defecto
+            return 0; // Por defecto
     }
 }
 
 export async function PUT(request: Request) {
     const { clientId, tipo, fechaInicio, fechaFin, descripcion } = await request.json();
 
-    if (!clientId || !tipo) { 
+    if (!clientId || !tipo) {
         return NextResponse.json({ error: 'clientId y tipo son requeridos' }, { status: 400 });
     }
 
@@ -42,13 +42,13 @@ export async function PUT(request: Request) {
         if (isAdvanced && usuario.membresiaActual) {
             // Obtener la fechaFin de la membresía actual
             const currentFechaFin = new Date(usuario.membresiaActual.fechaFin);
-            
+
             // Calcular los días adicionales basados en el tipo de membresía
             const additionalDays = getAdditionalDays(tipo);
-            
+
             // Establecer la nueva fecha de inicio como la fechaFin actual
             nuevaFechaInicio = currentFechaFin;
-            
+
             // Calcular la nueva fecha de fin añadiendo los días adicionales
             nuevaFechaFin = new Date(currentFechaFin);
             nuevaFechaFin.setDate(nuevaFechaFin.getDate() + additionalDays);

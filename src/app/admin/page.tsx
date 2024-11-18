@@ -692,7 +692,7 @@ export default function AdminDashboard() {
             case 'MENSUAL':
                 duration = 30;
                 break;
-            case 'SEMIANUAL':
+            case 'TRIMESTRAL':
                 duration = 180;
                 break;
             case 'ANUAL':
@@ -700,10 +700,6 @@ export default function AdminDashboard() {
                 break;
             default:
                 duration = 30;
-        }
-
-        if (isAdvanced) {
-            duration += duration; // Duplica la duración como ejemplo
         }
 
         try {
