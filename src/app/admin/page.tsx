@@ -706,7 +706,7 @@ export default function AdminDashboard() {
                     duration = 30;
                     break;
                 case 'TRIMESTRAL':
-                    duration = 90; // Actualizado a 90 días
+                    duration = 180; // Actualizado a 90 días
                     break;
                 case 'ANUAL':
                     duration = 365;
