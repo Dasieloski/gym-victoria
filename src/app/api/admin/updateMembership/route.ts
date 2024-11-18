@@ -5,21 +5,35 @@ import prisma from '@/lib/prisma';
 const getAdditionalDays = (tipo: string): number => {
     switch (tipo.toUpperCase()) {
         case 'ANUAL':
-            return 365;
+            return 365 * 24 * 60 * 60 * 1000;
         case 'TRIMESTRAL':
-            return 90; // 3 meses
+            return 180 * 24 * 60 * 60 * 1000; // 6 meses
         case 'MENSUAL':
-            return 30;
+            return 30 * 24 * 60 * 60 * 1000;
         default:
-            return 30; // Valor por defecto
+            return 30 * 24 * 60 * 60 * 1000; // Duración por defecto
     }
 }
 
+/* // Función auxiliar para determinar días adicionales según el tipo adelantado
+const getAdditionalDays = (tipo: string): number => {
+    switch (tipo.toUpperCase()) {
+        case 'MENSUAL_ADV':
+            return 30; // 30 días adicionales
+        case 'TRIMESTRAL_ADV':
+            return 180; // 180 días adicionales
+        case 'ANUAL_ADV':
+            return 365; // 365 días adicionales
+        default:
+            return 0; // Sin días adicionales
+    }
+} */
+
 export async function PUT(request: Request) {
-    const { clientId, tipo, descripcion } = await request.json();
-    
-    if (!clientId || !tipo) {
-        return NextResponse.json({ error: 'clientId y tipo son requeridos' }, { status: 400 });
+    const { clientId, tipo, fechaInicio, fechaFin, descripcion } = await request.json();
+
+    if (!clientId || !tipo || !fechaInicio || !fechaFin) {
+        return NextResponse.json({ error: 'clientId, tipo, fechaInicio y fechaFin son requeridos' }, { status: 400 });
     }
 
     try {
