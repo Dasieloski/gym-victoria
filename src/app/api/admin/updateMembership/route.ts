@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-// Función auxiliar para obtener la duración en días según el tipo de membresía
-const getAdditionalDays = (tipo: string): number => {
+// Función auxiliar para determinar la duración de la membresía en milisegundos
+const getDuration = (tipo: string): number => {
     switch (tipo.toUpperCase()) {
         case 'ANUAL':
             return 365 * 24 * 60 * 60 * 1000;
@@ -37,10 +37,9 @@ export async function PUT(request: Request) {
     }
 
     try {
-        // Buscar al usuario (cliente) incluyendo su membresía actual
+        // Buscar al usuario (cliente)
         const usuario = await prisma.usuario.findUnique({
             where: { id: clientId },
-            include: { membresiaActual: true },
         });
 
         if (!usuario) {
@@ -50,35 +49,19 @@ export async function PUT(request: Request) {
         // Determinar si es un pago adelantado
         const isAdvanced = descripcion && descripcion.toLowerCase().includes('adelantado');
 
-        let nuevaFechaInicio: Date;
-        let nuevaFechaFin: Date;
-
-        if (isAdvanced && usuario.membresiaActual) {
-            // Obtener la fechaFin actual del cliente
-            const currentFechaFin = new Date(usuario.membresiaActual.fechaFin);
-            
-            // Calcular los días adicionales basados en el tipo de membresía
-            const additionalDays = getAdditionalDays(tipo);
-            
-            // Establecer la nueva fecha de inicio como la fechaFin actual
-            nuevaFechaInicio = currentFechaFin;
-            
-            // Calcular la nueva fecha de fin añadiendo los días adicionales
-            nuevaFechaFin = new Date(currentFechaFin);
-            nuevaFechaFin.setDate(nuevaFechaFin.getDate() + additionalDays);
-        } else {
-            // Si no es un pago adelantado, establecer las fechas basadas en la solicitud
-            const { fechaInicio, fechaFin } = await request.json();
-            nuevaFechaInicio = new Date(fechaInicio);
-            nuevaFechaFin = new Date(fechaFin);
+        // Crear una nueva membresía con las fechas proporcionadas
+        let finalFechaFin = new Date(fechaFin);
+        if (isAdvanced) {
+            // Sumar días adicionales a la fechaFin
+            const additionalDays = 30; // Puedes ajustar según el tipo
+            finalFechaFin.setDate(finalFechaFin.getDate() + additionalDays);
         }
 
-        // Crear una nueva membresía con las fechas calculadas
         const nuevaMembresia = await prisma.membresia.create({
             data: {
                 tipo: tipo.toUpperCase(),
-                fechaInicio: nuevaFechaInicio,
-                fechaFin: nuevaFechaFin,
+                fechaInicio: new Date(fechaInicio),
+                fechaFin: finalFechaFin,
                 estadoPago: 'PAGADO',
                 clienteId: clientId,
             },
