@@ -7,7 +7,7 @@ const getAdditionalDays = (tipo: string): number => {
         case 'ANUAL':
             return 365;
         case 'TRIMESTRAL':
-            return 180; // 6 meses
+            return 180; // 3 meses
         case 'MENSUAL':
             return 30;
         default:
@@ -16,9 +16,9 @@ const getAdditionalDays = (tipo: string): number => {
 }
 
 export async function PUT(request: Request) {
-    const { clientId, tipo, fechaInicio, fechaFin, descripcion } = await request.json();
+    const { clientId, tipo, descripcion } = await request.json();
 
-    if (!clientId || !tipo) {
+    if (!clientId || !tipo) { 
         return NextResponse.json({ error: 'clientId y tipo son requeridos' }, { status: 400 });
     }
 
@@ -49,11 +49,11 @@ export async function PUT(request: Request) {
             // Establecer la nueva fecha de inicio como la fechaFin actual
             nuevaFechaInicio = currentFechaFin;
 
-            // Calcular la nueva fecha de fin añadiendo los días adicionales
-            nuevaFechaFin = new Date(currentFechaFin);
-            nuevaFechaFin.setDate(nuevaFechaFin.getDate() + additionalDays);
+            // Calcular la nueva fecha de fin añadiendo los días adicionales usando getTime
+            nuevaFechaFin = new Date(currentFechaFin.getTime() + (additionalDays * 24 * 60 * 60 * 1000));
         } else {
             // Si no es un pago adelantado, usar las fechas proporcionadas en la solicitud
+            const { fechaInicio, fechaFin } = await request.json();
             if (!fechaInicio || !fechaFin) {
                 return NextResponse.json({ error: 'fechaInicio y fechaFin son requeridos si no es adelantado' }, { status: 400 });
             }
