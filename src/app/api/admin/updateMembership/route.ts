@@ -7,7 +7,7 @@ const getAdditionalDays = (tipo: string): number => {
         case 'ANUAL':
             return 365;
         case 'TRIMESTRAL':
-            return 90; // 3 meses
+            return 180; // 3 meses
         case 'MENSUAL':
             return 30;
         default:
