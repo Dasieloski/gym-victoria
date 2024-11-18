@@ -680,75 +680,86 @@ export default function AdminDashboard() {
         setCurrentPage(1);
     }, [searchHistory, sortBy]);
 
-   const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean) => {
-    if (!newMembershipType) {
-        toast.error('Por favor, seleccione un tipo de membresía válido');
-        return;
-    }
+    const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean) => {
+        console.log('handleMembershipChange called');
+        console.log('clientId:', clientId);
+        console.log('newMembershipType:', newMembershipType);
+        console.log('isAdvanced:', isAdvanced);
 
-    let payload: any = {
-        clientId,
-        tipo: newMembershipType.toUpperCase(),
-    };
-
-    if (isAdvanced) {
-        payload.descripcion = 'Pago adelantado';
-        // No establecer fechaInicio y fechaFin, el backend manejará las fechas
-    } else {
-        let duration = 0;
-        switch (newMembershipType) {
-            case 'MENSUAL':
-                duration = 30;
-                break;
-            case 'TRIMESTRAL':
-                duration = 180;
-                break;
-            case 'ANUAL':
-                duration = 365;
-                break;
-            default:
-                duration = 30;
+        if (!newMembershipType) {
+            toast.error('Por favor, seleccione un tipo de membresía válido');
+            return;
         }
 
-        const fechaInicio = new Date();
-        const fechaFin = new Date(fechaInicio.getTime() + (duration * 24 * 60 * 60 * 1000));
+        let payload: any = {
+            clientId,
+            tipo: newMembershipType.toUpperCase(),
+        };
 
-        payload.fechaInicio = fechaInicio.toISOString();
-        payload.fechaFin = fechaFin.toISOString();
-    }
+        if (isAdvanced) {
+            payload.descripcion = 'Pago adelantado';
+            console.log('Payload para pago adelantado:', payload);
+        } else {
+            let duration = 0;
+            switch (newMembershipType) {
+                case 'MENSUAL':
+                    duration = 30;
+                    break;
+                case 'TRIMESTRAL':
+                    duration = 90; // Actualizado a 90 días
+                    break;
+                case 'ANUAL':
+                    duration = 365;
+                    break;
+                default:
+                    duration = 30;
+            }
 
-    try {
-        const response = await fetch('/api/admin/updateMembership', {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
+            const fechaInicio = new Date();
+            const fechaFin = new Date(fechaInicio.getTime() + (duration * 24 * 60 * 60 * 1000));
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Error desconocido al actualizar la membresía');
+            payload.fechaInicio = fechaInicio.toISOString();
+            payload.fechaFin = fechaFin.toISOString();
+            console.log('Payload para pago normal:', payload);
         }
 
-        const updatedClient: ClientType = await response.json();
-        setClientesConMembresia(prev =>
-            prev.map((client: ClientType) =>
-                client.id === updatedClient.id ? updatedClient : client
-            )
-        );
-        toast.success('Membresía actualizada con éxito');
+        try {
+            const response = await fetch('/api/admin/updateMembership', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
 
-        // Resetear la selección después de la asignación
-        setSelectedMembership(prev => ({
-            ...prev,
-            [clientId]: { tipo: '', isAdvanced: false }
-        }));
-    } catch (error) {
-        console.error('Error al actualizar la membresía:', error);
-        toast.error(`Error al actualizar la membresía: ${(error as Error).message}`);
+            console.log('Respuesta de la API:', response);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error de la API:', errorData);
+                throw new Error(errorData.error || 'Error desconocido al actualizar la membresía');
+            }
+
+            const updatedClient: ClientType = await response.json();
+            console.log('Cliente actualizado:', updatedClient);
+
+            setClientesConMembresia(prev =>
+                prev.map((client: ClientType) =>
+                    client.id === updatedClient.id ? updatedClient : client
+                )
+            );
+            toast.success('Membresía actualizada con éxito');
+
+            // Resetear la selección después de la asignación
+            setSelectedMembership(prev => ({
+                ...prev,
+                [clientId]: { tipo: '', isAdvanced: false }
+            }));
+        } catch (error) {
+            console.error('Error al actualizar la membresía:', error);
+            toast.error(`Error al actualizar la membresía: ${(error as Error).message}`);
+        }
     }
-}
 
     const handleDeleteM = (id: number, type: string) => {
         setDeleteConfirmation({ isOpen: true, id, type });
