@@ -7,7 +7,9 @@ const getDuration = (tipo: string): number => {
         case 'ANUAL':
             return 365 * 24 * 60 * 60 * 1000;
         case 'TRIMESTRAL':
-            return 180 * 24 * 60 * 60 * 1000; // Cambiado a 6 meses
+            return 180 * 24 * 60 * 60 * 1000; // 6 meses
+        case 'SEMIANUAL':
+            return 180 * 24 * 60 * 60 * 1000; // 6 meses
         case 'MENSUAL':
             return 30 * 24 * 60 * 60 * 1000;
         default:
@@ -18,11 +20,11 @@ const getDuration = (tipo: string): number => {
 // Función auxiliar para determinar días adicionales según el tipo adelantado
 const getAdditionalDays = (tipo: string): number => {
     switch (tipo.toUpperCase()) {
-        case 'MENSUAL_ADVANTADO':
+        case 'MENSUAL_ADV':
             return 30; // 30 días adicionales
-        case 'SEMIANUAL_ADVANTADO':
+        case 'TRIMESTRAL_ADV':
             return 180; // 180 días adicionales
-        case 'ANUAL_ADVANTADO':
+        case 'ANUAL_ADV':
             return 365; // 365 días adicionales
         default:
             return 0; // Sin días adicionales
@@ -30,52 +32,38 @@ const getAdditionalDays = (tipo: string): number => {
 }
 
 export async function PUT(request: Request) {
-    const { clientId, tipo } = await request.json();
+    const { clientId, tipo, fechaInicio, fechaFin, descripcion } = await request.json();
 
-    if (!clientId || !tipo) {
-        return NextResponse.json({ error: 'clientId y tipo son requeridos' }, { status: 400 });
+    if (!clientId || !tipo || !fechaInicio || !fechaFin) {
+        return NextResponse.json({ error: 'clientId, tipo, fechaInicio y fechaFin son requeridos' }, { status: 400 });
     }
 
     try {
-        // Buscar al usuario (cliente) incluyendo su membresía actual
+        // Buscar al usuario (cliente)
         const usuario = await prisma.usuario.findUnique({
             where: { id: clientId },
-            include: { membresiaActual: true },
         });
 
         if (!usuario) {
             return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
         }
 
-        let fechaInicio: Date;
-        let nuevaFechaFin: Date;
+        // Determinar si es un pago adelantado
+        const isAdvanced = descripcion && descripcion.toLowerCase().includes('adelantado');
 
-        // Verificar si el tipo seleccionado es una membresía adelantada
-        if (tipo.toUpperCase().endsWith('_ADVANTADO') && usuario.membresiaActual) {
-            const additionalDays = getAdditionalDays(tipo);
-
-            if (additionalDays > 0) {
-                const currentFechaFin = new Date(usuario.membresiaActual.fechaFin);
-                // Sumar los días adicionales a la fecha de fin actual
-                nuevaFechaFin = new Date(currentFechaFin.setDate(currentFechaFin.getDate() + additionalDays));
-                fechaInicio = currentFechaFin; // La nueva membresía comienza cuando termina la actual
-            } else {
-                // Si el tipo no coincide con los adelantados definidos, tratarlo como regular
-                fechaInicio = new Date();
-                nuevaFechaFin = new Date(Date.now() + getDuration(tipo));
-            }
-        } else {
-            // Lógica para asignar una nueva membresía regular
-            fechaInicio = new Date();
-            nuevaFechaFin = new Date(Date.now() + getDuration(tipo));
+        // Crear una nueva membresía con las fechas proporcionadas
+        let finalFechaFin = new Date(fechaFin);
+        if (isAdvanced) {
+            // Sumar días adicionales a la fechaFin
+            const additionalDays = 30; // Puedes ajustar según el tipo
+            finalFechaFin.setDate(finalFechaFin.getDate() + additionalDays);
         }
 
-        // Crear una nueva membresía con las fechas calculadas
         const nuevaMembresia = await prisma.membresia.create({
             data: {
-                tipo: tipo.toUpperCase().replace('_ADVANTADO', ''), // Guarda el tipo base sin '_ADVANTADO'
-                fechaInicio: fechaInicio,
-                fechaFin: nuevaFechaFin,
+                tipo: tipo.toUpperCase(),
+                fechaInicio: new Date(fechaInicio),
+                fechaFin: finalFechaFin,
                 estadoPago: 'PAGADO',
                 clienteId: clientId,
             },

@@ -110,7 +110,9 @@ export default function AdminDashboard() {
     const [clientesProximosPagos, setClientesProximosPagos] = useState<ClientType[]>([]);
     const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
     const [membresiasHoy, setMembresiasHoy] = useState(0);
-    const [selectedMembership, setSelectedMembership] = useState<{ [key: number]: string }>({});
+    const [selectedMembership, setSelectedMembership] = useState<{
+        [key: number]: { tipo: string; isAdvanced: boolean }
+    }>({});
 
     const filteredClients = Array.isArray(clientes) ? clientes.filter((client: ClientType) =>
     (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
@@ -678,48 +680,56 @@ export default function AdminDashboard() {
         setCurrentPage(1);
     }, [searchHistory, sortBy]);
 
-    const handleMembershipChange = async (clientId: number, newMembershipType: string) => {
+    const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean) => {
         if (!newMembershipType) {
             toast.error('Por favor, seleccione un tipo de membresía válido');
             return;
         }
 
-        // Determinar los días adicionales basados en el tipo de membresía
-        let additionalDays = 0;
+        // Calcular los días adicionales si es adelantado
+        let duration = 0;
         switch (newMembershipType) {
-            case 'MENSUAL_ADV':
-                additionalDays = 30;
+            case 'MENSUAL':
+                duration = 30;
                 break;
-            case 'SEMIANUAL_ADV':
-                additionalDays = 180;
+            case 'SEMIANUAL':
+                duration = 180;
                 break;
-            case 'ANUAL_ADV':
-                additionalDays = 365;
+            case 'ANUAL':
+                duration = 365;
                 break;
             default:
-                additionalDays = 0;
+                duration = 30;
         }
 
-        console.log(`Asignando membresía ${newMembershipType} al cliente con ID ${clientId}`);
+        if (isAdvanced) {
+            duration += duration; // Duplica la duración como ejemplo
+        }
+
         try {
+            const fechaInicio = new Date();
+            const fechaFin = new Date(fechaInicio);
+            fechaFin.setDate(fechaFin.getDate() + duration);
+
             const response = await fetch('/api/admin/updateMembership', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ clientId, tipo: newMembershipType }),
+                body: JSON.stringify({
+                    clientId,
+                    tipo: newMembershipType.toUpperCase(),
+                    fechaInicio: fechaInicio.toISOString(),
+                    fechaFin: fechaFin.toISOString(),
+                }),
             });
-
-            console.log('Respuesta recibida:', response);
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Error en la respuesta de la API:', errorData);
                 throw new Error(errorData.error || 'Error desconocido al actualizar la membresía');
             }
 
             const updatedClient: ClientType = await response.json();
-            console.log('Cliente actualizado:', updatedClient);
             setClientesConMembresia(prev =>
                 prev.map((client: ClientType) =>
                     client.id === updatedClient.id ? updatedClient : client
@@ -728,7 +738,10 @@ export default function AdminDashboard() {
             toast.success('Membresía actualizada con éxito');
 
             // Resetear la selección después de la asignación
-            setSelectedMembership(prev => ({ ...prev, [clientId]: '' }));
+            setSelectedMembership(prev => ({
+                ...prev,
+                [clientId]: { tipo: '', isAdvanced: false }
+            }));
         } catch (error) {
             console.error('Error al actualizar la membresía:', error);
             toast.error(`Error al actualizar la membresía: ${(error as Error).message}`);
@@ -1065,28 +1078,46 @@ export default function AdminDashboard() {
                                         </label>
                                         <select
                                             id={`membership-${client.id}`}
-                                            value={selectedMembership[client.id] || ''}
+                                            value={selectedMembership[client.id]?.tipo || ''}
                                             onChange={(e) => {
-                                                const value = e.target.value;
-                                                handleMembershipChange(client.id, value);
-                                                // Resetear el valor del select después de la asignación
-                                                setSelectedMembership(prev => ({ ...prev, [client.id]: '' }));
+                                                const tipo = e.target.value;
+                                                const isAdvanced = selectedMembership[client.id]?.isAdvanced || false;
+                                                handleMembershipChange(client.id, tipo, isAdvanced);
+                                                // Resetear la selección después de la asignación
+                                                setSelectedMembership(prev => ({
+                                                    ...prev,
+                                                    [client.id]: { tipo: '', isAdvanced: false }
+                                                }));
                                             }}
                                             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
                                         >
-                                            <option value="" disabled selected>
-                                                Seleccione la membresía
-                                            </option>
                                             <option value="" disabled>
                                                 Seleccione la membresía
                                             </option>
                                             <option value="MENSUAL">Mensual</option>
-                                            <option value="MENSUAL_ADV">Mensual Adelantado</option>
                                             <option value="SEMIANUAL">Semestral</option>
-                                            <option value="SEMIANUAL_ADV">Semestral Adelantado</option>
                                             <option value="ANUAL">Anual</option>
-                                            <option value="ANUAL_ADV">Anual Adelantado</option>
                                         </select>
+
+                                        {/* Añadir un checkbox para indicar si es adelantado */}
+                                        <label className="flex items-center mt-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedMembership[client.id]?.isAdvanced || false}
+                                                onChange={(e) => {
+                                                    const isChecked = e.target.checked;
+                                                    setSelectedMembership(prev => ({
+                                                        ...prev,
+                                                        [client.id]: {
+                                                            ...prev[client.id],
+                                                            isAdvanced: isChecked,
+                                                        },
+                                                    }));
+                                                }}
+                                                className="mr-2"
+                                            />
+                                            Adelantar Pago
+                                        </label>
                                     </div>
                                     {client.membresiaActual ? (
                                         <>
