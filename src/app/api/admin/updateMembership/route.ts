@@ -1,45 +1,32 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-// Función auxiliar para determinar la duración de la membresía en milisegundos
-const getDuration = (tipo: string): number => {
-    switch (tipo.toUpperCase()) {
-        case 'ANUAL':
-            return 365 * 24 * 60 * 60 * 1000;
-        case 'TRIMESTRAL':
-            return 180 * 24 * 60 * 60 * 1000; // 6 meses
-        case 'MENSUAL':
-            return 30 * 24 * 60 * 60 * 1000;
-        default:
-            return 30 * 24 * 60 * 60 * 1000; // Duración por defecto
-    }
-}
-
-/* // Función auxiliar para determinar días adicionales según el tipo adelantado
+// Función auxiliar para determinar días adicionales según el tipo de membresía
 const getAdditionalDays = (tipo: string): number => {
     switch (tipo.toUpperCase()) {
-        case 'MENSUAL_ADV':
-            return 30; // 30 días adicionales
-        case 'TRIMESTRAL_ADV':
-            return 180; // 180 días adicionales
-        case 'ANUAL_ADV':
-            return 365; // 365 días adicionales
+        case 'ANUAL':
+            return 365;
+        case 'TRIMESTRAL':
+            return 90; // 3 meses
+        case 'MENSUAL':
+            return 30;
         default:
-            return 0; // Sin días adicionales
+            return 30; // Por defecto
     }
-} */
+}
 
 export async function PUT(request: Request) {
     const { clientId, tipo, fechaInicio, fechaFin, descripcion } = await request.json();
 
-    if (!clientId || !tipo || !fechaInicio || !fechaFin) {
-        return NextResponse.json({ error: 'clientId, tipo, fechaInicio y fechaFin son requeridos' }, { status: 400 });
+    if (!clientId || !tipo) { 
+        return NextResponse.json({ error: 'clientId y tipo son requeridos' }, { status: 400 });
     }
 
     try {
-        // Buscar al usuario (cliente)
+        // Buscar al usuario (cliente) incluyendo la membresía actual
         const usuario = await prisma.usuario.findUnique({
             where: { id: clientId },
+            include: { membresiaActual: true },
         });
 
         if (!usuario) {
@@ -49,19 +36,37 @@ export async function PUT(request: Request) {
         // Determinar si es un pago adelantado
         const isAdvanced = descripcion && descripcion.toLowerCase().includes('adelantado');
 
-        // Crear una nueva membresía con las fechas proporcionadas
-        let finalFechaFin = new Date(fechaFin);
-        if (isAdvanced) {
-            // Sumar días adicionales a la fechaFin
-            const additionalDays = 30; // Puedes ajustar según el tipo
-            finalFechaFin.setDate(finalFechaFin.getDate() + additionalDays);
+        let nuevaFechaInicio: Date;
+        let nuevaFechaFin: Date;
+
+        if (isAdvanced && usuario.membresiaActual) {
+            // Obtener la fechaFin de la membresía actual
+            const currentFechaFin = new Date(usuario.membresiaActual.fechaFin);
+            
+            // Calcular los días adicionales basados en el tipo de membresía
+            const additionalDays = getAdditionalDays(tipo);
+            
+            // Establecer la nueva fecha de inicio como la fechaFin actual
+            nuevaFechaInicio = currentFechaFin;
+            
+            // Calcular la nueva fecha de fin añadiendo los días adicionales
+            nuevaFechaFin = new Date(currentFechaFin);
+            nuevaFechaFin.setDate(nuevaFechaFin.getDate() + additionalDays);
+        } else {
+            // Si no es un pago adelantado, usar las fechas proporcionadas en la solicitud
+            if (!fechaInicio || !fechaFin) {
+                return NextResponse.json({ error: 'fechaInicio y fechaFin son requeridos si no es adelantado' }, { status: 400 });
+            }
+            nuevaFechaInicio = new Date(fechaInicio);
+            nuevaFechaFin = new Date(fechaFin);
         }
 
+        // Crear una nueva membresía con las fechas calculadas
         const nuevaMembresia = await prisma.membresia.create({
             data: {
                 tipo: tipo.toUpperCase(),
-                fechaInicio: new Date(fechaInicio),
-                fechaFin: finalFechaFin,
+                fechaInicio: nuevaFechaInicio,
+                fechaFin: nuevaFechaFin,
                 estadoPago: 'PAGADO',
                 clienteId: clientId,
             },
