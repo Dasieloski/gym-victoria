@@ -12,6 +12,7 @@ interface WeightRecordPartial {
   cintura: number;
   cadera: number;
   muslo: number;
+  altura: number;
 }
 
 interface WeightFormProps {
@@ -30,6 +31,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
     cintura: 0,
     cadera: 0,
     muslo: 0,
+    altura: 0,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,6 +54,18 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             id="peso"
             name="peso"
             value={formData.peso}
+            onChange={handleChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="altura" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Altura (cm)</label>
+          <input
+            type="number"
+            id="altura"
+            name="altura"
+            value={formData.altura}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50"
             required

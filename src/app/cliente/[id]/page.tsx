@@ -14,6 +14,7 @@ interface RegistroPeso {
     id: string;
     fecha: string;
     peso: number;
+    altura: number;
     imc: number;
     grasaCorporal: number;
     cuello: number;

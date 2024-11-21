@@ -4,6 +4,7 @@
        "id" SERIAL PRIMARY KEY,
        "fecha" TIMESTAMP NOT NULL DEFAULT now(),
        "peso" FLOAT NOT NULL,
+       "altura" FLOAT NOT NULL,
        "imc" FLOAT NOT NULL,
        "grasaCorporal" FLOAT NOT NULL,
        "cuello" FLOAT NOT NULL,

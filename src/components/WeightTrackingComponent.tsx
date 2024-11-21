@@ -29,6 +29,7 @@ interface WeightRecord {
     id: string;
     fecha: string;
     peso: number;
+    altura: number;
     imc: number;
     grasaCorporal: number;
     cuello: number;
@@ -45,6 +46,7 @@ interface WeightTrackingComponentProps {
 
 interface WeightRecordPartial {
     peso: number;
+    altura: number;
     imc: number;
     grasaCorporal: number;
     cuello: number;
@@ -202,6 +204,52 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Primer Uso</h3>
+                        <p className="text-xl font-bold text-[#2272FF]">{formatDate(primerRegistro.fecha)}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {primerRegistro.peso.toFixed(1)} kg</p>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Último Uso</h3>
+                        <p className="text-xl font-bold text-[#2272FF]">{formatDate(ultimoRegistro.fecha)}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {ultimoRegistro.peso.toFixed(1)} kg</p>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Kg Ganados/Perdidos</h3>
+                        <p className={`text-2xl font-bold ${kgDiferencia >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {kgDiferencia >= 0 ? 'Ganados' : 'Perdidos'}: {kgDiferencia.toFixed(1)} kg
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">En {diasDiferencia} días</p>
+                        <div className="mt-2">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Por Día: {kgPorDia.toFixed(2)} kg/día</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Por Semana: {kgPorSemana.toFixed(2)} kg/semana</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Por Mes: {kgPorMes.toFixed(2)} kg/mes</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Elevado</h3>
+                        <p className="text-xl font-bold text-[#2272FF]">{pesoMaximo.toFixed(1)} kg</p>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Bajo</h3>
+                        <p className="text-xl font-bold text-[#2272FF]">{pesoMinimo.toFixed(1)} kg</p>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Ganancia Acumulada</h3>
+                        <p className="text-xl font-bold text-green-500">{ganancias.toFixed(1)} kg</p>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Pérdida Acumulada</h3>
+                        <p className="text-xl font-bold text-red-500">{perdidas.toFixed(1)} kg</p>
+                    </div>
+
                     <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Ideal</h3>
                     <p className="text-3xl font-bold text-[#2272FF]">{idealWeight.toFixed(1)} lb</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
@@ -333,50 +381,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Primer Uso</h3>
-                    <p className="text-xl font-bold text-[#2272FF]">{formatDate(primerRegistro.fecha)}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {primerRegistro.peso.toFixed(1)} kg</p>
-                </div>
 
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Último Uso</h3>
-                    <p className="text-xl font-bold text-[#2272FF]">{formatDate(ultimoRegistro.fecha)}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {ultimoRegistro.peso.toFixed(1)} kg</p>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Kg Ganados/Perdidos</h3>
-                    <p className={`text-2xl font-bold ${kgDiferencia >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {kgDiferencia >= 0 ? 'Ganados' : 'Perdidos'}: {kgDiferencia.toFixed(1)} kg
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">En {diasDiferencia} días</p>
-                    <div className="mt-2">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Por Día: {kgPorDia.toFixed(2)} kg/día</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Por Semana: {kgPorSemana.toFixed(2)} kg/semana</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Por Mes: {kgPorMes.toFixed(2)} kg/mes</p>
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Elevado</h3>
-                    <p className="text-xl font-bold text-[#2272FF]">{pesoMaximo.toFixed(1)} kg</p>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Bajo</h3>
-                    <p className="text-xl font-bold text-[#2272FF]">{pesoMinimo.toFixed(1)} kg</p>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Ganancia Acumulada</h3>
-                    <p className="text-xl font-bold text-green-500">{ganancias.toFixed(1)} kg</p>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Pérdida Acumulada</h3>
-                    <p className="text-xl font-bold text-red-500">{perdidas.toFixed(1)} kg</p>
-                </div>
             </div>
         );
     };
