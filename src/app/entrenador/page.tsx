@@ -9,25 +9,25 @@ import { addToHistorial } from '@/services/historialService';
 import Image from 'next/image';
 import { Line } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
 } from 'chart.js';
 import StatsModal from '@/components/StatsModal';
 
 ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
 );
 
 export interface Client {
@@ -81,6 +81,18 @@ export interface Client {
     weightRecords?: WeightRecord[];
 }
 
+export interface Estadisticas {
+    kgDiferencia: number;
+    diasDiferencia: number;
+    kgPorDia: number;
+    kgPorSemana: number;
+    kgPorMes: number;
+    pesoMaximo: number;
+    pesoMinimo: number;
+    ganancias: number;
+    registros: WeightRecord[];
+}
+
 type MiTipo = {
     accion: string;
     descripcion: string;
@@ -100,10 +112,10 @@ export interface WeightRecord {
 }
 
 interface Schedule {
-  id: number;
-  clientName: string;
-  date: string;
-  time: string;
+    id: number;
+    clientName: string;
+    date: string;
+    time: string;
 }
 
 export default function TrainerPage() {
@@ -119,7 +131,7 @@ export default function TrainerPage() {
         payments: 'name'
     })
     const [showStatsModal, setShowStatsModal] = useState(false)
-    const [selectedClient, setSelectedClient] = useState<Client | null>(null)
+    const [selectedClient, setSelectedClient] = useState<Client & { estadisticas: Estadisticas } | null>(null)
     const router = useRouter();
 
     useEffect(() => {
@@ -373,9 +385,34 @@ export default function TrainerPage() {
         );
     };
 
-    const handleShowStats = (client: Client) => {
-        setSelectedClient(client);
-        setShowStatsModal(true);
+    const handleShowStats = async (clientId: number) => {
+        try {
+            // Obtener los datos completos del cliente
+            const responseCliente = await fetch(`/api/cliente/${clientId}`);
+            if (!responseCliente.ok) {
+                throw new Error('No se pudieron obtener los datos del cliente');
+            }
+            const dataCliente: Client = await responseCliente.json();
+
+            // Obtener las estadísticas del cliente
+            const responseEstadisticas = await fetch(`/api/cliente/${clientId}/entrenador-estadistica`);
+            if (!responseEstadisticas.ok) {
+                throw new Error('No se pudieron obtener las estadísticas del cliente');
+            }
+            const dataEstadisticas = await responseEstadisticas.json();
+
+            // Combinar los datos si es necesario
+            const clienteConEstadisticas = {
+                ...dataCliente,
+                estadisticas: dataEstadisticas,
+            };
+
+            setSelectedClient(clienteConEstadisticas);
+            setShowStatsModal(true);
+        } catch (error) {
+            console.error('Error al obtener los datos del cliente:', error);
+            alert('Hubo un problema al cargar las estadísticas del cliente.');
+        }
     };
 
     return (
@@ -503,7 +540,7 @@ export default function TrainerPage() {
                                     </button>
                                     <button
                                         className="w-full bg-[#2272FF] text-white px-4 py-2 rounded-md hover:bg-[#1b5acc] transition-colors duration-300 flex items-center justify-center transform hover:scale-105"
-                                        onClick={() => handleShowStats(client)}
+                                        onClick={() => handleShowStats(client.id)}
                                     >
                                         <BarChart2 size={18} className="mr-2" />
                                         Estadísticas

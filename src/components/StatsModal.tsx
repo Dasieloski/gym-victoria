@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import React from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -12,8 +12,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import Image from 'next/image';
-import { Client } from '@/app/entrenador/page'; // Asegúrate de exportar la interfaz Client desde page.tsx
+import { Client } from '@/app/entrenador/page';
 
 ChartJS.register(
   CategoryScale,
@@ -33,18 +32,70 @@ interface WeightRecord {
   grasaCorporal: number;
 }
 
+interface Estadisticas {
+  kgDiferencia: number;
+  diasDiferencia: number;
+  kgPorDia: number;
+  kgPorSemana: number;
+  kgPorMes: number;
+  pesoMaximo: number;
+  pesoMinimo: number;
+  ganancias: number;
+  registros: WeightRecord[];
+}
+
 interface StatsModalProps {
-  client: Client;
+  client: Client & { estadisticas: Estadisticas };
   onClose: () => void;
 }
 
 const StatsModal: React.FC<StatsModalProps> = ({ client, onClose }) => {
-  const weightRecords: WeightRecord[] = client.weightRecords || [];
+  const { estadisticas } = client;
+  const weightRecords: WeightRecord[] = estadisticas.registros || [];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-11/12 max-w-4xl max-h-90vh overflow-y-auto">
         <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Estadísticas de {client.nombre}</h2>
+
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">Resumen de Progreso</h3>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
+              <p className="font-semibold text-lg mb-2">Diferencia de Peso</p>
+              <p className="font-medium">{estadisticas.kgDiferencia.toFixed(1)} kg</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
+              <p className="font-semibold text-lg mb-2">Días de Progreso</p>
+              <p className="font-medium">{estadisticas.diasDiferencia} días</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
+              <p className="font-semibold text-lg mb-2">Peso Por Día</p>
+              <p className="font-medium">{estadisticas.kgPorDia.toFixed(2)} kg/día</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
+              <p className="font-semibold text-lg mb-2">Peso Por Semana</p>
+              <p className="font-medium">{estadisticas.kgPorSemana.toFixed(2)} kg/semana</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
+              <p className="font-semibold text-lg mb-2">Peso Por Mes</p>
+              <p className="font-medium">{estadisticas.kgPorMes.toFixed(2)} kg/mes</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
+              <p className="font-semibold text-lg mb-2">Peso Máximo</p>
+              <p className="font-medium">{estadisticas.pesoMaximo.toFixed(1)} kg</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
+              <p className="font-semibold text-lg mb-2">Peso Mínimo</p>
+              <p className="font-medium">{estadisticas.pesoMinimo.toFixed(1)} kg</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
+              <p className="font-semibold text-lg mb-2">Ganancias Totales</p>
+              <p className="font-medium">{estadisticas.ganancias.toFixed(1)} kg</p>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">Últimos Registros</h3>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -58,6 +109,7 @@ const StatsModal: React.FC<StatsModalProps> = ({ client, onClose }) => {
             ))}
           </div>
         </div>
+
         <div>
           <h3 className="text-xl font-semibold mb-4">Gráfico de Progreso</h3>
           <div className="h-96">
@@ -109,6 +161,7 @@ const StatsModal: React.FC<StatsModalProps> = ({ client, onClose }) => {
             />
           </div>
         </div>
+
         <button
           onClick={onClose}
           className="mt-6 w-full bg-[#2272FF] text-white px-4 py-2 rounded-md hover:bg-[#1b5acc] transition-colors duration-300"
