@@ -250,7 +250,9 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
         }, 0);
 
         const idealWeight = calcularPesoIdeal(latestRecord.altura); // Calcular el peso ideal basado en la altura
-        const waistHipRatio = latestRecord.cintura / latestRecord.cadera;
+        const waistHipRatio = latestRecord.cintura > 0 && latestRecord.cadera > 0 
+            ? latestRecord.cintura / latestRecord.cadera 
+            : 0;
 
         const perdidas = sortedRecords.reduce((acc, record, index) => {
             if (index === 0) return acc;
@@ -263,7 +265,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                 {/* Tarjetas Existentes */}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
                     <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Ideal</h3>
-                    <p className="text-3xl font-bold text-[#2272FF]">{idealWeight.toFixed(1)} lb</p>
+                    <p className="text-3xl font-bold text-[#2272FF]">{idealWeight.toFixed(1)} kg</p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                         Promedio de varias fórmulas de peso ideal
                     </p>
@@ -287,7 +289,9 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                 {/* Índice Cintura-Cadera */}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
                     <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Índice Cintura-Cadera</h3>
-                    <p className="text-3xl font-bold text-[#2272FF]">{waistHipRatio.toFixed(2)}</p>
+                    <p className="text-3xl font-bold text-[#2272FF]">
+                        {waistHipRatio > 0 ? waistHipRatio.toFixed(2) : 'N/A'}
+                    </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                         Relación entre la circunferencia de la cintura y la cadera
                     </p>
