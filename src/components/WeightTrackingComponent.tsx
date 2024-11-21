@@ -62,6 +62,57 @@ function calcularPesoIdeal(altura: number): number {
     return alturaEnCm - 100;
 }
 
+// Función para la fórmula de Broca
+function calcularBroca(alturaCm: number): number {
+    return alturaCm - 100;
+}
+
+// Función para la fórmula de Lorentz
+function calcularLorentz(alturaCm: number): number {
+    return alturaCm - 100 - ((alturaCm - 150) / 4);
+}
+
+// Función para la fórmula de Devine
+function calcularDevine(alturaCm: number): number {
+    const alturaInches = alturaCm / 2.54;
+    const alturaSobre5Pies = alturaInches - 60; // 5 pies = 60 pulgadas
+    return 50 + 2.3 * alturaSobre5Pies;
+}
+
+// Función para la fórmula de Hamwi
+function calcularHamwi(alturaCm: number): number {
+    return 48.0 + 2.7 * ((alturaCm / 2.54) - 60);
+}
+
+// Función para la fórmula de Robinson
+function calcularRobinson(alturaCm: number): number {
+    return 52 + 1.9 * ((alturaCm / 2.54) - 60);
+}
+
+// Función para la fórmula de Miller
+function calcularMiller(alturaCm: number): number {
+    return 56.2 + 1.41 * ((alturaCm / 2.54) - 60);
+}
+
+// Función para la fórmula de Peck
+function calcularPeck(alturaCm: number): number {
+    return 49.0 + 1.7 * ((alturaCm / 2.54) - 60);
+}
+
+// Función para calcular el peso ideal promedio
+function calcularPesoIdealPromedio(alturaCm: number): number {
+    const broca = calcularBroca(alturaCm);
+    const lorentz = calcularLorentz(alturaCm);
+    const devine = calcularDevine(alturaCm);
+    const hamwi = calcularHamwi(alturaCm);
+    const robinson = calcularRobinson(alturaCm);
+    const miller = calcularMiller(alturaCm);
+    const peck = calcularPeck(alturaCm);
+
+    const suma = broca + lorentz + devine + hamwi + robinson + miller + peck;
+    return suma / 7;
+}
+
 export default function WeightTrackingComponent({ clientId }: WeightTrackingComponentProps) {
     const [activeTab, setActiveTab] = useState('peso');
     const [weightRecords, setWeightRecords] = useState<WeightRecord[]>([]);
@@ -219,20 +270,21 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     <div className="mt-4">
                         <h4 className="font-semibold">Fórmulas:</h4>
                         <ul className="text-sm">
-                            <li>Broca: 165.3 lb</li>
-                            <li>Lorentz: 151.6 lb</li>
-                            <li>Devine: 155.3 lb</li>
-                            <li>Hamwi: 158.8 lb</li>
-                            <li>Robinson: 151.9 lb</li>
-                            <li>Miller: 151.6 lb</li>
-                            <li>Peck: 149.3 lb</li>
+                            <li>Broca: {calcularBroca(latestRecord.altura).toFixed(1)} kg</li>
+                            <li>Lorentz: {calcularLorentz(latestRecord.altura).toFixed(1)} kg</li>
+                            <li>Devine: {calcularDevine(latestRecord.altura).toFixed(1)} kg</li>
+                            <li>Hamwi: {calcularHamwi(latestRecord.altura).toFixed(1)} kg</li>
+                            <li>Robinson: {calcularRobinson(latestRecord.altura).toFixed(1)} kg</li>
+                            <li>Miller: {calcularMiller(latestRecord.altura).toFixed(1)} kg</li>
+                            <li>Peck: {calcularPeck(latestRecord.altura).toFixed(1)} kg</li>
                         </ul>
                     </div>
                     <p className="text-sm mt-2">
-                        IMC normal: entre 124.9 y 168.8 lb
+                        IMC normal: entre 18.5 y 24.9
                     </p>
                 </div>
 
+                {/* Índice Cintura-Cadera */}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
                     <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Índice Cintura-Cadera</h3>
                     <p className="text-3xl font-bold text-[#2272FF]">{waistHipRatio.toFixed(2)}</p>
@@ -275,6 +327,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     </div>
                 </div>
 
+                {/* IMC */}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
                     <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">IMC</h3>
                     <p className="text-3xl font-bold text-[#2272FF]">{latestRecord.imc.toFixed(1)}</p>
@@ -295,6 +348,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     </div>
                 </div>
 
+                {/* Índice de Grasa Corporal */}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
                     <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Índice de Grasa Corporal</h3>
                     <p className="text-3xl font-bold text-[#2272FF]">{latestRecord.grasaCorporal.toFixed(1)}%</p>
