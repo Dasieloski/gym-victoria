@@ -282,7 +282,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
             if (weightRecords.length === 0) return null;
 
             return (
-                <div className="w-full">
+                <div className="w-full mt-8">
                     <h3 className="text-xl font-semibold mb-2">Progreso de Medidas</h3>
                     <div className="w-full h-96">
                         <Line
@@ -370,214 +370,217 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
         };
 
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Tarjetas Existentes */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Ideal</h3>
-                    <p className="text-3xl font-bold text-[#2272FF]">{idealWeight.toFixed(1)} kg</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Promedio de varias fórmulas de peso ideal
-                    </p>
-                    <div className="mt-4">
-                        <h4 className="font-semibold">Fórmulas:</h4>
-                        <ul className="text-sm">
-                            <li>Broca: {calcularBroca(latestRecord.altura).toFixed(1)} kg</li>
-                            <li>Lorentz: {calcularLorentz(latestRecord.altura).toFixed(1)} kg</li>
-                            <li>Devine: {calcularDevine(latestRecord.altura).toFixed(1)} kg</li>
-                            <li>Hamwi: {calcularHamwi(latestRecord.altura).toFixed(1)} kg</li>
-                            <li>Robinson: {calcularRobinson(latestRecord.altura).toFixed(1)} kg</li>
-                            <li>Miller: {calcularMiller(latestRecord.altura).toFixed(1)} kg</li>
-                            <li>Peck: {calcularPeck(latestRecord.altura).toFixed(1)} kg</li>
-                        </ul>
-                    </div>
-                    <p className="text-sm mt-2">
-                        IMC normal: entre 18.5 y 24.9
-                    </p>
-                </div>
-
-                {/* Índice Cintura-Cadera */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Índice Cintura-Cadera</h3>
-                    <p className="text-3xl font-bold text-[#2272FF]">
-                        {waistHipRatio > 0 ? waistHipRatio.toFixed(2) : 'N/A'}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Relación entre la circunferencia de la cintura y la cadera
-                    </p>
-
-                    {/* Alerta de Nivel de Riesgo */}
-                    {waistHipRatio > 0 && (
-                        <div
-                            className={`mt-4 p-3 rounded-md ${color === 'green'
-                                    ? 'bg-green-100 text-green-800'
-                                    : color === 'yellow'
-                                        ? 'bg-yellow-100 text-yellow-800'
-                                        : 'bg-red-100 text-red-800'
-                                }`}
-                        >
-                            <span className="font-semibold">Nivel de Riesgo: </span>{nivel}
+            <div className="w-full">
+                {/* Grid de Paneles */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Ejemplo de un panel */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Ideal</h3>
+                        <p className="text-3xl font-bold text-[#2272FF]">{idealWeight.toFixed(1)} kg</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                            Promedio de varias fórmulas de peso ideal
+                        </p>
+                        <div className="mt-4">
+                            <h4 className="font-semibold">Fórmulas:</h4>
+                            <ul className="text-sm">
+                                <li>Broca: {calcularBroca(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>Lorentz: {calcularLorentz(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>Devine: {calcularDevine(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>Hamwi: {calcularHamwi(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>Robinson: {calcularRobinson(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>Miller: {calcularMiller(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>Peck: {calcularPeck(latestRecord.altura).toFixed(1)} kg</li>
+                            </ul>
                         </div>
-                    )}
-
-                    <div className="mt-4">
-                        <h4 className="font-semibold">Categorías:</h4>
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Mujer</th>
-                                    <th>Hombre</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Bajo</td>
-                                    <td>≤ 0.71</td>
-                                    <td>≤ 0.83</td>
-                                </tr>
-                                <tr>
-                                    <td>Moderado</td>
-                                    <td>0.71-0.77</td>
-                                    <td>0.83-0.88</td>
-                                </tr>
-                                <tr>
-                                    <td>Alto</td>
-                                    <td>0.78-0.82</td>
-                                    <td>0.89-0.94</td>
-                                </tr>
-                                <tr>
-                                    <td>Muy Alto</td>
-                                    <td>&gt; 0.82</td>
-                                    <td>&gt; 0.94</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <p className="text-sm mt-2">
+                            IMC normal: entre 18.5 y 24.9
+                        </p>
                     </div>
-                </div>
 
-                {/* IMC */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">IMC</h3>
-                    <p className="text-3xl font-bold text-[#2272FF]">{latestRecord.imc.toFixed(1)}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Índice de Masa Corporal
-                    </p>
-                    <div className="mt-4">
-                        <h4 className="font-semibold">Categorías:</h4>
-                        <ul className="text-sm">
-                            <li>Delgadez: 15.0 a 16.0</li>
-                            <li>Insuficiente: 16.0 a 18.5</li>
-                            <li>Peso normal: 18.5 a 25</li>
-                            <li>Sobrepeso: 25 a 30</li>
-                            <li>Sobrepeso I - Obesidad Moderada: 30 a 35</li>
-                            <li>Sobrepeso II - Obesidad severa: 35 a 40</li>
-                            <li>Sobrepeso III - Obesidad mórbida: &gt; 40</li>
-                        </ul>
+                    {/* Índice Cintura-Cadera */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Índice Cintura-Cadera</h3>
+                        <p className="text-3xl font-bold text-[#2272FF]">
+                            {waistHipRatio > 0 ? waistHipRatio.toFixed(2) : 'N/A'}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                            Relación entre la circunferencia de la cintura y la cadera
+                        </p>
+
+                        {/* Alerta de Nivel de Riesgo */}
+                        {waistHipRatio > 0 && (
+                            <div
+                                className={`mt-4 p-3 rounded-md ${color === 'green'
+                                        ? 'bg-green-100 text-green-800'
+                                        : color === 'yellow'
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : 'bg-red-100 text-red-800'
+                                    }`}
+                            >
+                                <span className="font-semibold">Nivel de Riesgo: </span>{nivel}
+                            </div>
+                        )}
+
+                        <div className="mt-4">
+                            <h4 className="font-semibold">Categorías:</h4>
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Mujer</th>
+                                        <th>Hombre</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Bajo</td>
+                                        <td>≤ 0.71</td>
+                                        <td>≤ 0.83</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Moderado</td>
+                                        <td>0.71-0.77</td>
+                                        <td>0.83-0.88</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Alto</td>
+                                        <td>0.78-0.82</td>
+                                        <td>0.89-0.94</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Muy Alto</td>
+                                        <td>&gt; 0.82</td>
+                                        <td>&gt; 0.94</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                {/* Índice de Grasa Corporal */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Índice de Grasa Corporal</h3>
-                    <p className="text-3xl font-bold text-[#2272FF]">{latestRecord.grasaCorporal.toFixed(1)}%</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Medida del nivel de condición física
-                    </p>
-                    <div className="mt-4">
-                        <h4 className="font-semibold">Categorías:</h4>
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Mujer</th>
-                                    <th>Hombre</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Grasas esenciales</td>
-                                    <td>10-13%</td>
-                                    <td>2-5%</td>
-                                </tr>
-                                <tr>
-                                    <td>Atleta</td>
-                                    <td>14-20%</td>
-                                    <td>6-13%</td>
-                                </tr>
-                                <tr>
-                                    <td>Fitness</td>
-                                    <td>21-24%</td>
-                                    <td>14-17%</td>
-                                </tr>
-                                <tr>
-                                    <td>Normal</td>
-                                    <td>25-31%</td>
-                                    <td>18-24%</td>
-                                </tr>
-                                <tr>
-                                    <td>Obeso</td>
-                                    <td>32%+</td>
-                                    <td>25%+</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    {/* IMC */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">IMC</h3>
+                        <p className="text-3xl font-bold text-[#2272FF]">{latestRecord.imc.toFixed(1)}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                            Índice de Masa Corporal
+                        </p>
+                        <div className="mt-4">
+                            <h4 className="font-semibold">Categorías:</h4>
+                            <ul className="text-sm">
+                                <li>Delgadez: 15.0 a 16.0</li>
+                                <li>Insuficiente: 16.0 a 18.5</li>
+                                <li>Peso normal: 18.5 a 25</li>
+                                <li>Sobrepeso: 25 a 30</li>
+                                <li>Sobrepeso I - Obesidad Moderada: 30 a 35</li>
+                                <li>Sobrepeso II - Obesidad severa: 35 a 40</li>
+                                <li>Sobrepeso III - Obesidad mórbida: &gt; 40</li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
 
-                {/* Primer Uso */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Primer Uso</h3>
-                    <p className="text-xl font-bold text-[#2272FF]">{formatDate(primerRegistro.fecha)}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {primerRegistro.peso.toFixed(1)} kg</p>
-                </div>
-
-                {/* Último Uso */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Último Uso</h3>
-                    <p className="text-xl font-bold text-[#2272FF]">{formatDate(ultimoRegistro.fecha)}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {ultimoRegistro.peso.toFixed(1)} kg</p>
-                </div>
-
-                {/* Kg Ganados/Perdidos */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Kg Ganados/Perdidos</h3>
-                    <p className={`text-2xl font-bold ${kgDiferencia >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {kgDiferencia >= 0 ? 'Ganados' : 'Perdidos'}: {kgDiferencia.toFixed(1)} kg
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">En {diasDiferencia} días</p>
-                    <div className="mt-2">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Por Día: {kgPorDia.toFixed(2)} kg/día</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Por Semana: {kgPorSemana.toFixed(2)} kg/semana</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Por Mes: {kgPorMes.toFixed(2)} kg/mes</p>
+                    {/* Índice de Grasa Corporal */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Índice de Grasa Corporal</h3>
+                        <p className="text-3xl font-bold text-[#2272FF]">{latestRecord.grasaCorporal.toFixed(1)}%</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                            Medida del nivel de condición física
+                        </p>
+                        <div className="mt-4">
+                            <h4 className="font-semibold">Categorías:</h4>
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Mujer</th>
+                                        <th>Hombre</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Grasas esenciales</td>
+                                        <td>10-13%</td>
+                                        <td>2-5%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Atleta</td>
+                                        <td>14-20%</td>
+                                        <td>6-13%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fitness</td>
+                                        <td>21-24%</td>
+                                        <td>14-17%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Normal</td>
+                                        <td>25-31%</td>
+                                        <td>18-24%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Obeso</td>
+                                        <td>32%+</td>
+                                        <td>25%+</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                {/* Peso Más Elevado */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Elevado</h3>
-                    <p className="text-xl font-bold text-[#2272FF]">{pesoMaximo.toFixed(1)} kg</p>
-                </div>
+                    {/* Primer Uso */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Primer Uso</h3>
+                        <p className="text-xl font-bold text-[#2272FF]">{formatDate(primerRegistro.fecha)}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {primerRegistro.peso.toFixed(1)} kg</p>
+                    </div>
 
-                {/* Peso Más Bajo */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Bajo</h3>
-                    <p className="text-xl font-bold text-[#2272FF]">{pesoMinimo.toFixed(1)} kg</p>
-                </div>
+                    {/* Último Uso */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Último Uso</h3>
+                        <p className="text-xl font-bold text-[#2272FF]">{formatDate(ultimoRegistro.fecha)}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {ultimoRegistro.peso.toFixed(1)} kg</p>
+                    </div>
 
-                {/* Ganancia Acumulada */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Ganancia Acumulada</h3>
-                    <p className="text-xl font-bold text-green-500">{ganancias.toFixed(1)} kg</p>
-                </div>
+                    {/* Kg Ganados/Perdidos */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Kg Ganados/Perdidos</h3>
+                        <p className={`text-2xl font-bold ${kgDiferencia >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {kgDiferencia >= 0 ? 'Ganados' : 'Perdidos'}: {kgDiferencia.toFixed(1)} kg
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">En {diasDiferencia} días</p>
+                        <div className="mt-2">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Por Día: {kgPorDia.toFixed(2)} kg/día</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Por Semana: {kgPorSemana.toFixed(2)} kg/semana</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Por Mes: {kgPorMes.toFixed(2)} kg/mes</p>
+                        </div>
+                    </div>
 
-                {/* Pérdida Acumulada */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Pérdida Acumulada</h3>
-                    <p className="text-xl font-bold text-red-500">{perdidas.toFixed(1)} kg</p>
-                </div>
+                    {/* Peso Más Elevado */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Elevado</h3>
+                        <p className="text-xl font-bold text-[#2272FF]">{pesoMaximo.toFixed(1)} kg</p>
+                    </div>
 
-                {/* Progreso de Medidas */}
-                {renderProgresoMedidas()}
+                    {/* Peso Más Bajo */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Bajo</h3>
+                        <p className="text-xl font-bold text-[#2272FF]">{pesoMinimo.toFixed(1)} kg</p>
+                    </div>
+
+                    {/* Ganancia Acumulada */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Ganancia Acumulada</h3>
+                        <p className="text-xl font-bold text-green-500">{ganancias.toFixed(1)} kg</p>
+                    </div>
+
+                    {/* Pérdida Acumulada */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Pérdida Acumulada</h3>
+                        <p className="text-xl font-bold text-red-500">{perdidas.toFixed(1)} kg</p>
+                    </div>
+
+                    {/* Progreso de Medidas */}
+                    {renderProgresoMedidas()}
+                </div>
             </div>
         );
     };
