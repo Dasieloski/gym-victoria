@@ -1,14 +1,36 @@
 "use client"
 import { useState, useEffect } from 'react'
-import { Dumbbell, Calendar, Sun, Moon, X, Menu, MessageSquare, DollarSign, Users, Clock, CreditCard, CheckCircle, ArrowUpDown, Phone, IdCard, Award, User } from 'lucide-react'
+import { Dumbbell, Calendar, Sun, Moon, X, Menu, MessageSquare, Users, Clock, CreditCard, CheckCircle, ArrowUpDown, Phone, IdCard, Award, User, BarChart2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { signOut, useSession } from "next-auth/react";
 import { addToHistorial } from '@/services/historialService';
 import Image from 'next/image';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import StatsModal from '@/components/StatsModal';
 
-interface Client {
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+export interface Client {
     id: number;
     nombre: string;
     carnetIdentidad: string;
@@ -55,7 +77,8 @@ interface Client {
         fecha: string;
         estado: string;
     }[];
-    profileImage?: string; // Nueva propiedad para la imagen de perfil
+    profileImage?: string;
+    weightRecords?: WeightRecord[];
 }
 
 type MiTipo = {
@@ -68,22 +91,35 @@ type MiTipo = {
     clienteId?: number;
 };
 
+export interface WeightRecord {
+    id: number;
+    fecha: string;
+    peso: number;
+    imc: number;
+    grasaCorporal: number;
+}
+
+interface Schedule {
+  id: number;
+  clientName: string;
+  date: string;
+  time: string;
+}
+
 export default function TrainerPage() {
     const { data: session } = useSession();
     const [isDarkMode, setIsDarkMode] = useState(false)
     const [activeTab, setActiveTab] = useState('clients')
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [clients, setClients] = useState<Client[]>([])
-    const [schedules, setSchedules] = useState([
-        { id: 1, clientName: 'Juan Pérez', date: '2023-05-15', time: '10:00' },
-        { id: 2, clientName: 'Ana López', date: '2023-05-16', time: '15:00' },
-        { id: 3, clientName: 'Luis Martínez', date: '2023-05-17', time: '18:00' },
-    ])
+    const [schedules, setSchedules] = useState<Schedule[]>([])
     const [sortCriteria, setSortCriteria] = useState({
         clients: 'name',
         schedules: 'date',
         payments: 'name'
     })
+    const [showStatsModal, setShowStatsModal] = useState(false)
+    const [selectedClient, setSelectedClient] = useState<Client | null>(null)
     const router = useRouter();
 
     useEffect(() => {
@@ -337,6 +373,11 @@ export default function TrainerPage() {
         );
     };
 
+    const handleShowStats = (client: Client) => {
+        setSelectedClient(client);
+        setShowStatsModal(true);
+    };
+
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''} transition-colors duration-300`}>
             {/* Header */}
@@ -454,11 +495,18 @@ export default function TrainerPage() {
                                         Próxima Fecha de Pago: {client.nextPayment}
                                     </p>
                                     <button
-                                        className="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105"
+                                        className="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors duration-300 flex items-center justify-center transform hover:scale-105 mb-2"
                                         onClick={() => window.open(`https://wa.me/${client.telefono}`, '_blank')}
                                     >
                                         <MessageSquare size={18} className="mr-2" />
                                         Mensaje
+                                    </button>
+                                    <button
+                                        className="w-full bg-[#2272FF] text-white px-4 py-2 rounded-md hover:bg-[#1b5acc] transition-colors duration-300 flex items-center justify-center transform hover:scale-105"
+                                        onClick={() => handleShowStats(client)}
+                                    >
+                                        <BarChart2 size={18} className="mr-2" />
+                                        Estadísticas
                                     </button>
                                 </div>
                             ))}
@@ -561,6 +609,10 @@ export default function TrainerPage() {
                     </div>
                 )}
             </main>
+
+            {showStatsModal && selectedClient && (
+                <StatsModal client={selectedClient} onClose={() => setShowStatsModal(false)} />
+            )}
         </div>
     )
 }
