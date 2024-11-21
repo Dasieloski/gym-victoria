@@ -380,8 +380,7 @@ export default function ClientPage({ params }: { params: PageParams }) {
     };
 
     const agregarRegistroPeso = async (data: WeightRecord) => {
-        const registro: RegistroPeso = {
-            id: 0, // Asigna un ID adecuado o déjalo manejar por el backend
+        const registro = {
             fecha: new Date().toISOString(),
             peso: data.peso,
             imc: data.imc,
