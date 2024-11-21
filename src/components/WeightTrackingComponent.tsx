@@ -579,8 +579,11 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     </div>
 
                     {/* Progreso de Medidas */}
-                    {renderProgresoMedidas()}
+                  {/*   {renderProgresoMedidas()} */}
                 </div>
+
+                {/* Gráfico de Progreso de Medidas */}
+                {renderProgresoMedidas()}
             </div>
         );
     };
