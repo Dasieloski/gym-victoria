@@ -158,45 +158,45 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
 
         return (
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Monitoreo de Progreso</h2>
+                <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">📈 Monitoreo de Progreso</h2>
 
                 <div className="mb-8">
-                    <h3 className="text-xl font-semibold mb-4">Últimos Registros</h3>
+                    <h3 className="text-xl font-semibold mb-4">📝 Últimos Registros</h3>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {latestRecords.map((record) => (
                             <div key={record.id} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
                                 <p className="font-semibold text-lg mb-2">{formatDate(record.fecha)}</p>
-                                <p>Peso: <span className="font-medium">{record.peso.toFixed(1)} kg</span></p>
-                                <p>IMC: <span className="font-medium">{record.imc.toFixed(2)}</span></p>
-                                <p>Grasa Corporal: <span className="font-medium">{record.grasaCorporal.toFixed(1)}%</span></p>
+                                <p>🏋️‍♂️ Peso: <span className="font-medium">{record.peso.toFixed(1)} kg</span></p>
+                                <p>📏 IMC: <span className="font-medium">{record.imc.toFixed(2)}</span></p>
+                                <p>🍃 Grasa Corporal: <span className="font-medium">{record.grasaCorporal.toFixed(1)}%</span></p>
                             </div>
                         ))}
                     </div>
                 </div>
 
                 <div className="w-full">
-                    <h3 className="text-xl font-semibold mb-4">Gráfico de Progreso</h3>
+                    <h3 className="text-xl font-semibold mb-4">📊 Gráfico de Progreso</h3>
                     <div className="w-full h-96">
                         <Line
                             data={{
                                 labels: weightRecords.map(record => formatDate(record.fecha)),
                                 datasets: [
                                     {
-                                        label: 'Peso (kg)',
+                                        label: '🏋️‍♂️ Peso (kg)',
                                         data: weightRecords.map(record => record.peso),
                                         borderColor: 'rgb(75, 192, 192)',
                                         backgroundColor: 'rgba(75, 192, 192, 0.5)',
                                         tension: 0.1
                                     },
                                     {
-                                        label: 'IMC',
+                                        label: '📏 IMC',
                                         data: weightRecords.map(record => record.imc),
                                         borderColor: 'rgb(255, 99, 132)',
                                         backgroundColor: 'rgba(255, 99, 132, 0.5)',
                                         tension: 0.1
                                     },
                                     {
-                                        label: 'Grasa Corporal (%)',
+                                        label: '🍃 Grasa Corporal (%)',
                                         data: weightRecords.map(record => record.grasaCorporal),
                                         borderColor: 'rgb(153, 102, 255)',
                                         backgroundColor: 'rgba(153, 102, 255, 0.5)',
@@ -213,7 +213,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                     },
                                     title: {
                                         display: true,
-                                        text: 'Progreso de Peso, IMC y Grasa Corporal'
+                                        text: '📈 Progreso de Peso, IMC y Grasa Corporal'
                                     }
                                 },
                                 scales: {
@@ -283,49 +283,49 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
 
             return (
                 <div className="w-full mt-8">
-                    <h3 className="text-xl font-semibold mb-2">Progreso de Medidas</h3>
+                    <h3 className="text-xl font-semibold mb-2">📊 Progreso de Medidas</h3>
                     <div className="w-full h-96">
                         <Line
                             data={{
                                 labels: weightRecords.map(record => formatDate(record.fecha)),
                                 datasets: [
                                     {
-                                        label: 'Cuello (cm)',
+                                        label: '🦵 Cuello (cm)',
                                         data: weightRecords.map(record => record.cuello || 0),
                                         borderColor: 'rgb(255, 99, 132)',
                                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                                         tension: 0.1
                                     },
                                     {
-                                        label: 'Pecho (cm)',
+                                        label: '👕 Pecho (cm)',
                                         data: weightRecords.map(record => record.pecho || 0),
                                         borderColor: 'rgb(54, 162, 235)',
                                         backgroundColor: 'rgba(54, 162, 235, 0.2)',
                                         tension: 0.1
                                     },
                                     {
-                                        label: 'Brazo (cm)',
+                                        label: '💪 Brazo (cm)',
                                         data: weightRecords.map(record => record.brazo || 0),
                                         borderColor: 'rgb(255, 206, 86)',
                                         backgroundColor: 'rgba(255, 206, 86, 0.2)',
                                         tension: 0.1
                                     },
                                     {
-                                        label: 'Cintura (cm)',
+                                        label: '🧍‍♂️ Cintura (cm)',
                                         data: weightRecords.map(record => record.cintura || 0),
                                         borderColor: 'rgb(75, 192, 192)',
                                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                                         tension: 0.1
                                     },
                                     {
-                                        label: 'Cadera (cm)',
+                                        label: '🍑 Cadera (cm)',
                                         data: weightRecords.map(record => record.cadera || 0),
                                         borderColor: 'rgb(153, 102, 255)',
                                         backgroundColor: 'rgba(153, 102, 255, 0.2)',
                                         tension: 0.1
                                     },
                                     {
-                                        label: 'Muslo (cm)',
+                                        label: '🦵 Muslo (cm)',
                                         data: weightRecords.map(record => record.muslo || 0),
                                         borderColor: 'rgb(255, 159, 64)',
                                         backgroundColor: 'rgba(255, 159, 64, 0.2)',
@@ -346,7 +346,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                     },
                                     title: {
                                         display: true,
-                                        text: 'Progreso de Medidas Corporales'
+                                        text: '📊 Progreso de Medidas Corporales'
                                     }
                                 },
                                 scales: {
@@ -375,21 +375,21 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Ejemplo de un panel */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Ideal</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">🎯 Peso Ideal</h3>
                         <p className="text-3xl font-bold text-[#2272FF]">{idealWeight.toFixed(1)} kg</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                             Promedio de varias fórmulas de peso ideal
                         </p>
                         <div className="mt-4">
-                            <h4 className="font-semibold">Fórmulas:</h4>
+                            <h4 className="font-semibold">🧮 Fórmulas:</h4>
                             <ul className="text-sm">
-                                <li>Broca: {calcularBroca(latestRecord.altura).toFixed(1)} kg</li>
-                                <li>Lorentz: {calcularLorentz(latestRecord.altura).toFixed(1)} kg</li>
-                                <li>Devine: {calcularDevine(latestRecord.altura).toFixed(1)} kg</li>
-                                <li>Hamwi: {calcularHamwi(latestRecord.altura).toFixed(1)} kg</li>
-                                <li>Robinson: {calcularRobinson(latestRecord.altura).toFixed(1)} kg</li>
-                                <li>Miller: {calcularMiller(latestRecord.altura).toFixed(1)} kg</li>
-                                <li>Peck: {calcularPeck(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>📏 Broca: {calcularBroca(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>📐 Lorentz: {calcularLorentz(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>📝 Devine: {calcularDevine(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>🔢 Hamwi: {calcularHamwi(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>💡 Robinson: {calcularRobinson(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>📊 Miller: {calcularMiller(latestRecord.altura).toFixed(1)} kg</li>
+                                <li>📋 Peck: {calcularPeck(latestRecord.altura).toFixed(1)} kg</li>
                             </ul>
                         </div>
                         <p className="text-sm mt-2">
@@ -399,7 +399,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
 
                     {/* Índice Cintura-Cadera */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Índice Cintura-Cadera</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">⚖️ Índice Cintura-Cadera</h3>
                         <p className="text-3xl font-bold text-[#2272FF]">
                             {waistHipRatio > 0 ? waistHipRatio.toFixed(2) : 'N/A'}
                         </p>
@@ -417,7 +417,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                             : 'bg-red-100 text-red-800'
                                     }`}
                             >
-                                <span className="font-semibold">Nivel de Riesgo: </span>{nivel}
+                                <span className="font-semibold">⚠️ Nivel de Riesgo: </span>{nivel}
                             </div>
                         )}
 
@@ -459,7 +459,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
 
                     {/* IMC */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">IMC</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">📏 IMC</h3>
                         <p className="text-3xl font-bold text-[#2272FF]">{latestRecord.imc.toFixed(1)}</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                             Índice de Masa Corporal
@@ -467,20 +467,20 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                         <div className="mt-4">
                             <h4 className="font-semibold">Categorías:</h4>
                             <ul className="text-sm">
-                                <li>Delgadez: 15.0 a 16.0</li>
-                                <li>Insuficiente: 16.0 a 18.5</li>
-                                <li>Peso normal: 18.5 a 25</li>
-                                <li>Sobrepeso: 25 a 30</li>
-                                <li>Sobrepeso I - Obesidad Moderada: 30 a 35</li>
-                                <li>Sobrepeso II - Obesidad severa: 35 a 40</li>
-                                <li>Sobrepeso III - Obesidad mórbida: &gt; 40</li>
+                                <li>❄️ Delgadez: 15.0 a 16.0</li>
+                                <li>⚠️ Insuficiente: 16.0 a 18.5</li>
+                                <li>✅ Peso normal: 18.5 a 25</li>
+                                <li>🔺 Sobrepeso: 25 a 30</li>
+                                <li>⚠️ Sobrepeso I - Obesidad Moderada: 30 a 35</li>
+                                <li>🚫 Sobrepeso II - Obesidad severa: 35 a 40</li>
+                                <li>💀 Sobrepeso III - Obesidad mórbida: &gt; 40</li>
                             </ul>
                         </div>
                     </div>
 
                     {/* Índice de Grasa Corporal */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Índice de Grasa Corporal</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">🍃 Índice de Grasa Corporal</h3>
                         <p className="text-3xl font-bold text-[#2272FF]">{latestRecord.grasaCorporal.toFixed(1)}%</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                             Medida del nivel de condición física
@@ -497,27 +497,27 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>Grasas esenciales</td>
+                                        <td>🌿 Grasas esenciales</td>
                                         <td>10-13%</td>
                                         <td>2-5%</td>
                                     </tr>
                                     <tr>
-                                        <td>Atleta</td>
+                                        <td>🏃‍♂️ Atleta</td>
                                         <td>14-20%</td>
                                         <td>6-13%</td>
                                     </tr>
                                     <tr>
-                                        <td>Fitness</td>
+                                        <td>💪 Fitness</td>
                                         <td>21-24%</td>
                                         <td>14-17%</td>
                                     </tr>
                                     <tr>
-                                        <td>Normal</td>
+                                        <td>📐 Normal</td>
                                         <td>25-31%</td>
                                         <td>18-24%</td>
                                     </tr>
                                     <tr>
-                                        <td>Obeso</td>
+                                        <td>🚫 Obeso</td>
                                         <td>32%+</td>
                                         <td>25%+</td>
                                     </tr>
@@ -528,53 +528,53 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
 
                     {/* Primer Uso */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Primer Uso</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">⏳ Primer Uso</h3>
                         <p className="text-xl font-bold text-[#2272FF]">{formatDate(primerRegistro.fecha)}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {primerRegistro.peso.toFixed(1)} kg</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">🏋️‍♂️ Peso: {primerRegistro.peso.toFixed(1)} kg</p>
                     </div>
 
                     {/* Último Uso */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Último Uso</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">⏰ Último Uso</h3>
                         <p className="text-xl font-bold text-[#2272FF]">{formatDate(ultimoRegistro.fecha)}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {ultimoRegistro.peso.toFixed(1)} kg</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">🏋️‍♂️ Peso: {ultimoRegistro.peso.toFixed(1)} kg</p>
                     </div>
 
                     {/* Kg Ganados/Perdidos */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Kg Ganados/Perdidos</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">📈 Kg Ganados/Perdidos</h3>
                         <p className={`text-2xl font-bold ${kgDiferencia >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {kgDiferencia >= 0 ? 'Ganados' : 'Perdidos'}: {kgDiferencia.toFixed(1)} kg
+                            {kgDiferencia >= 0 ? '✅ Ganados' : '❌ Perdidos'}: {kgDiferencia.toFixed(1)} kg
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">En {diasDiferencia} días</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">📆 En {diasDiferencia} días</p>
                         <div className="mt-2">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Por Día: {kgPorDia.toFixed(2)} kg/día</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Por Semana: {kgPorSemana.toFixed(2)} kg/semana</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Por Mes: {kgPorMes.toFixed(2)} kg/mes</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">📅 Por Día: {kgPorDia.toFixed(2)} kg/día</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">📆 Por Semana: {kgPorSemana.toFixed(2)} kg/semana</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">📅 Por Mes: {kgPorMes.toFixed(2)} kg/mes</p>
                         </div>
                     </div>
 
                     {/* Peso Más Elevado */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Elevado</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">🔼 Peso Más Elevado</h3>
                         <p className="text-xl font-bold text-[#2272FF]">{pesoMaximo.toFixed(1)} kg</p>
                     </div>
 
                     {/* Peso Más Bajo */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Bajo</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">🔽 Peso Más Bajo</h3>
                         <p className="text-xl font-bold text-[#2272FF]">{pesoMinimo.toFixed(1)} kg</p>
                     </div>
 
                     {/* Ganancia Acumulada */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Ganancia Acumulada</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">📈 Ganancia Acumulada</h3>
                         <p className="text-xl font-bold text-green-500">{ganancias.toFixed(1)} kg</p>
                     </div>
 
                     {/* Pérdida Acumulada */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Pérdida Acumulada</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">📉 Pérdida Acumulada</h3>
                         <p className="text-xl font-bold text-red-500">{perdidas.toFixed(1)} kg</p>
                     </div>
 
@@ -609,7 +609,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
             setShowWeightForm(false);
         } catch (error) {
             console.error('Error al agregar el registro de peso:', error);
-            alert('Error al agregar el registro de peso. Por favor, intenta de nuevo.');
+            alert('❌ Error al agregar el registro de peso. Por favor, intenta de nuevo.');
         }
     };
 
@@ -621,37 +621,46 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
             <div className="mb-4 flex space-x-4">
                 <button
                     onClick={() => setActiveTab('peso')}
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${activeTab === 'peso' ? 'bg-[#2272FF] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                        }`}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                        activeTab === 'peso'
+                            ? 'bg-[#2272FF] text-white'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    }`}
                 >
-                    Peso
+                    🏋️‍♂️ Peso
                 </button>
                 <button
                     onClick={() => setActiveTab('monitorear')}
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${activeTab === 'monitorear' ? 'bg-[#2272FF] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                        }`}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                        activeTab === 'monitorear'
+                            ? 'bg-[#2272FF] text-white'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    }`}
                 >
-                    Monitorear
+                    📈 Monitorear
                 </button>
                 <button
                     onClick={() => setActiveTab('estadisticas')}
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${activeTab === 'estadisticas' ? 'bg-[#2272FF] text-white' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                        }`}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                        activeTab === 'estadisticas'
+                            ? 'bg-[#2272FF] text-white'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    }`}
                 >
-                    Estadísticas
+                    📊 Estadísticas
                 </button>
             </div>
 
             {activeTab === 'peso' && (
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold">Registro de Peso</h2>
+                        <h2 className="text-2xl font-bold">📋 Registro de Peso</h2>
                         <button
                             onClick={() => setShowWeightForm(true)}
                             className="flex items-center bg-[#2272FF] text-white px-4 py-2 rounded-md hover:bg-[#1b5acc] transition-colors duration-200"
                         >
                             <Plus size={20} className="mr-2" />
-                            Agregar Registro
+                            ➕ Agregar Registro
                         </button>
                     </div>
                     {showWeightForm && (
@@ -670,9 +679,9 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                             >
                                 <div>
                                     <p className="font-semibold">{formatDate(registro.fecha)}</p>
-                                    <p>Peso: {registro.peso.toFixed(1)} kg</p>
-                                    <p>IMC: {registro.imc.toFixed(2)}</p>
-                                    <p>Grasa Corporal: {registro.grasaCorporal.toFixed(1)}%</p>
+                                    <p>🏋️‍♂️ Peso: {registro.peso.toFixed(1)} kg</p>
+                                    <p>📏 IMC: {registro.imc.toFixed(2)}</p>
+                                    <p>🍃 Grasa Corporal: {registro.grasaCorporal.toFixed(1)}%</p>
                                 </div>
                                 <ChevronRight size={20} className="text-gray-400" />
                             </div>
@@ -685,7 +694,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
 
             {activeTab === 'estadisticas' && (
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-                    <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Estadísticas de Salud</h2>
+                    <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">📊 Estadísticas de Salud</h2>
                     {renderHealthMetrics()}
                 </div>
             )}
