@@ -282,7 +282,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
             if (weightRecords.length === 0) return null;
 
             return (
-                <div className="mt-8 w-full">
+                <div className="w-full">
                     <h3 className="text-xl font-semibold mb-2">Progreso de Medidas</h3>
                     <div className="w-full h-96">
                         <Line
@@ -342,7 +342,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                 },
                                 plugins: {
                                     legend: {
-                                        position: 'top',
+                                        position: 'top' as const,
                                     },
                                     title: {
                                         display: true,
@@ -370,7 +370,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
         };
 
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Tarjetas Existentes */}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
                     <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Ideal</h3>
@@ -523,8 +523,6 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                         </table>
                     </div>
                 </div>
-
-                {/* Nuevas Estadísticas Agregadas */}
 
                 {/* Primer Uso */}
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
