@@ -279,91 +279,92 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
         const { nivel, color } = obtenerNivelRiesgoICC(waistHipRatio);
 
         const renderProgresoMedidas = () => {
-            // Verifica que existan registros de peso
             if (weightRecords.length === 0) return null;
 
             return (
-                <div className="mt-8">
+                <div className="mt-8 w-full">
                     <h3 className="text-xl font-semibold mb-2">Progreso de Medidas</h3>
-                    <Line
-                        data={{
-                            labels: weightRecords.map(record => formatDate(record.fecha)),
-                            datasets: [
-                                {
-                                    label: 'Cuello (cm)',
-                                    data: weightRecords.map(record => record.cuello || 0),
-                                    borderColor: 'rgb(255, 99, 132)',
-                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                    tension: 0.1
+                    <div className="w-full h-96">
+                        <Line
+                            data={{
+                                labels: weightRecords.map(record => formatDate(record.fecha)),
+                                datasets: [
+                                    {
+                                        label: 'Cuello (cm)',
+                                        data: weightRecords.map(record => record.cuello || 0),
+                                        borderColor: 'rgb(255, 99, 132)',
+                                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                        tension: 0.1
+                                    },
+                                    {
+                                        label: 'Pecho (cm)',
+                                        data: weightRecords.map(record => record.pecho || 0),
+                                        borderColor: 'rgb(54, 162, 235)',
+                                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                        tension: 0.1
+                                    },
+                                    {
+                                        label: 'Brazo (cm)',
+                                        data: weightRecords.map(record => record.brazo || 0),
+                                        borderColor: 'rgb(255, 206, 86)',
+                                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                                        tension: 0.1
+                                    },
+                                    {
+                                        label: 'Cintura (cm)',
+                                        data: weightRecords.map(record => record.cintura || 0),
+                                        borderColor: 'rgb(75, 192, 192)',
+                                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                        tension: 0.1
+                                    },
+                                    {
+                                        label: 'Cadera (cm)',
+                                        data: weightRecords.map(record => record.cadera || 0),
+                                        borderColor: 'rgb(153, 102, 255)',
+                                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                        tension: 0.1
+                                    },
+                                    {
+                                        label: 'Muslo (cm)',
+                                        data: weightRecords.map(record => record.muslo || 0),
+                                        borderColor: 'rgb(255, 159, 64)',
+                                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                        tension: 0.1
+                                    }
+                                ]
+                            }}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                interaction: {
+                                    mode: 'index',
+                                    intersect: false,
                                 },
-                                {
-                                    label: 'Pecho (cm)',
-                                    data: weightRecords.map(record => record.pecho || 0),
-                                    borderColor: 'rgb(54, 162, 235)',
-                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                                    tension: 0.1
-                                },
-                                {
-                                    label: 'Brazo (cm)',
-                                    data: weightRecords.map(record => record.brazo || 0),
-                                    borderColor: 'rgb(255, 206, 86)',
-                                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                                    tension: 0.1
-                                },
-                                {
-                                    label: 'Cintura (cm)',
-                                    data: weightRecords.map(record => record.cintura || 0),
-                                    borderColor: 'rgb(75, 192, 192)',
-                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                    tension: 0.1
-                                },
-                                {
-                                    label: 'Cadera (cm)',
-                                    data: weightRecords.map(record => record.cadera || 0),
-                                    borderColor: 'rgb(153, 102, 255)',
-                                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                                    tension: 0.1
-                                },
-                                {
-                                    label: 'Muslo (cm)',
-                                    data: weightRecords.map(record => record.muslo || 0),
-                                    borderColor: 'rgb(255, 159, 64)',
-                                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                                    tension: 0.1
-                                }
-                            ]
-                        }}
-                        options={{
-                            responsive: true,
-                            interaction: {
-                                mode: 'index' as const,
-                                intersect: false,
-                            },
-                          //  stacked: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top' as const,
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Progreso de Medidas Corporales'
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    stacked: false,
-                                },
-                                y: {
-                                    beginAtZero: false,
-                                    stacked: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
                                     title: {
                                         display: true,
-                                        text: 'Medidas (cm)'
+                                        text: 'Progreso de Medidas Corporales'
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        stacked: false,
+                                    },
+                                    y: {
+                                        beginAtZero: false,
+                                        stacked: false,
+                                        title: {
+                                            display: true,
+                                            text: 'Medidas (cm)'
+                                        }
                                     }
                                 }
-                            }
-                        }}
-                    />
+                            }}
+                        />
+                    </div>
                 </div>
             );
         };
