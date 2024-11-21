@@ -58,7 +58,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
             usuarioId: nuevoRegistro?.usuarioId?.toString(), // Si usuarioId también es BigInt
         };
 
-        return NextResponse.json(nuevoRegistro, { status: 201 });
+        return NextResponse.json(serializedRegistro, { status: 201 });
     } catch (error) {
         if (error instanceof Error) {
             console.error('Error al agregar registro de peso:', error);

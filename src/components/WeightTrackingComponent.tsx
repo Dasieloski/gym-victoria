@@ -26,7 +26,7 @@ ChartJS.register(
 );
 
 interface WeightRecord {
-    id: number;
+    id: string;
     fecha: string;
     peso: number;
     imc: number;
