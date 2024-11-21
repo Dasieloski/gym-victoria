@@ -161,13 +161,44 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
     };
 
     const renderHealthMetrics = () => {
+
         // Utiliza el registro de peso más reciente para los cálculos
         const latestRecord = weightRecords[weightRecords.length - 1];
         if (!latestRecord) return null;
 
+        if (weightRecords.length === 0) return null;
+
+        // Ordenar los registros por fecha
+        const sortedRecords = [...weightRecords].sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+
+        const primerRegistro = sortedRecords[0];
+        const ultimoRegistro = sortedRecords[sortedRecords.length - 1];
+
+        const kgDiferencia = ultimoRegistro.peso - primerRegistro.peso;
+        const diasDiferencia = Math.ceil((new Date(ultimoRegistro.fecha).getTime() - new Date(primerRegistro.fecha).getTime()) / (1000 * 60 * 60 * 24));
+
+        const kgPorDia = diasDiferencia !== 0 ? kgDiferencia / diasDiferencia : kgDiferencia;
+        const kgPorSemana = kgPorDia * 7;
+        const kgPorMes = kgPorDia * 30;
+
+        const pesos = weightRecords.map(record => record.peso);
+        const pesoMaximo = Math.max(...pesos);
+        const pesoMinimo = Math.min(...pesos);
+
+        const ganancias = sortedRecords.reduce((acc, record, index) => {
+            if (index === 0) return acc;
+            const diff = record.peso - sortedRecords[index - 1].peso;
+            return diff > 0 ? acc + diff : acc;
+        }, 0);
+
         const idealWeight = 153.8; // Este valor debería calcularse basado en la altura y otros factores
         const waistHipRatio = latestRecord.cintura / latestRecord.cadera;
 
+        const perdidas = sortedRecords.reduce((acc, record, index) => {
+            if (index === 0) return acc;
+            const diff = record.peso - sortedRecords[index - 1].peso;
+            return diff < 0 ? acc + Math.abs(diff) : acc;
+        }, 0);
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
@@ -300,6 +331,51 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Primer Uso</h3>
+                    <p className="text-xl font-bold text-[#2272FF]">{formatDate(primerRegistro.fecha)}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {primerRegistro.peso.toFixed(1)} kg</p>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Último Uso</h3>
+                    <p className="text-xl font-bold text-[#2272FF]">{formatDate(ultimoRegistro.fecha)}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Peso: {ultimoRegistro.peso.toFixed(1)} kg</p>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Kg Ganados/Perdidos</h3>
+                    <p className={`text-2xl font-bold ${kgDiferencia >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {kgDiferencia >= 0 ? 'Ganados' : 'Perdidos'}: {kgDiferencia.toFixed(1)} kg
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">En {diasDiferencia} días</p>
+                    <div className="mt-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Por Día: {kgPorDia.toFixed(2)} kg/día</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Por Semana: {kgPorSemana.toFixed(2)} kg/semana</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Por Mes: {kgPorMes.toFixed(2)} kg/mes</p>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Elevado</h3>
+                    <p className="text-xl font-bold text-[#2272FF]">{pesoMaximo.toFixed(1)} kg</p>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Peso Más Bajo</h3>
+                    <p className="text-xl font-bold text-[#2272FF]">{pesoMinimo.toFixed(1)} kg</p>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Ganancia Acumulada</h3>
+                    <p className="text-xl font-bold text-green-500">{ganancias.toFixed(1)} kg</p>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+                    <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Pérdida Acumulada</h3>
+                    <p className="text-xl font-bold text-red-500">{perdidas.toFixed(1)} kg</p>
                 </div>
             </div>
         );
