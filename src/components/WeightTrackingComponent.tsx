@@ -113,6 +113,18 @@ function calcularPesoIdealPromedio(alturaCm: number): number {
     return suma / 7;
 }
 
+// Agregar esta función en algún lugar del archivo, preferiblemente después de las funciones de cálculo de peso ideal
+
+function obtenerNivelRiesgoICC(icc: number): { nivel: string; color: string } {
+    if (icc <= 0.90) {
+        return { nivel: 'Bajo Riesgo', color: 'green' };
+    } else if (icc >= 0.91 && icc <= 0.99) {
+        return { nivel: 'Riesgo Moderado', color: 'yellow' };
+    } else {
+        return { nivel: 'Alto Riesgo', color: 'red' };
+    }
+}
+
 export default function WeightTrackingComponent({ clientId }: WeightTrackingComponentProps) {
     const [activeTab, setActiveTab] = useState('peso');
     const [weightRecords, setWeightRecords] = useState<WeightRecord[]>([]);
@@ -250,8 +262,8 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
         }, 0);
 
         const idealWeight = calcularPesoIdeal(latestRecord.altura); // Calcular el peso ideal basado en la altura
-        const waistHipRatio = latestRecord.cintura > 0 && latestRecord.cadera > 0 
-            ? latestRecord.cintura / latestRecord.cadera 
+        const waistHipRatio = latestRecord.cintura > 0 && latestRecord.cadera > 0
+            ? latestRecord.cintura / latestRecord.cadera
             : 0;
 
         const perdidas = sortedRecords.reduce((acc, record, index) => {
@@ -259,6 +271,8 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
             const diff = record.peso - sortedRecords[index - 1].peso;
             return diff < 0 ? acc + Math.abs(diff) : acc;
         }, 0);
+
+        const { nivel, color } = obtenerNivelRiesgoICC(waistHipRatio);
 
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -295,6 +309,21 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                         Relación entre la circunferencia de la cintura y la cadera
                     </p>
+
+                    {/* Alerta de Nivel de Riesgo */}
+                    {waistHipRatio > 0 && (
+                        <div
+                            className={`mt-4 p-3 rounded-md ${color === 'green'
+                                    ? 'bg-green-100 text-green-800'
+                                    : color === 'yellow'
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : 'bg-red-100 text-red-800'
+                                }`}
+                        >
+                            <span className="font-semibold">Nivel de Riesgo: </span>{nivel}
+                        </div>
+                    )}
+
                     <div className="mt-4">
                         <h4 className="font-semibold">Categorías:</h4>
                         <table className="w-full text-sm">
