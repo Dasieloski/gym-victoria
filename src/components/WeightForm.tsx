@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-interface WeightRecord {
+interface WeightRecordPartial {
   peso: number;
   imc: number;
   grasaCorporal: number;
@@ -15,22 +15,21 @@ interface WeightRecord {
 }
 
 interface WeightFormProps {
-  onSubmit: (data: WeightRecord) => void;
+  onSubmit: (data: WeightRecordPartial) => Promise<void>;
   onCancel: () => void;
-  initialData?: WeightRecord;
 }
 
-const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, initialData }) => {
-  const [formData, setFormData] = useState<WeightRecord>({
-    peso: initialData?.peso || 0,
-    imc: initialData?.imc || 0,
-    grasaCorporal: initialData?.grasaCorporal || 0,
-    cuello: initialData?.cuello || 0,
-    pecho: initialData?.pecho || 0,
-    brazo: initialData?.brazo || 0,
-    cintura: initialData?.cintura || 0,
-    cadera: initialData?.cadera || 0,
-    muslo: initialData?.muslo || 0,
+const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
+  const [formData, setFormData] = useState<WeightRecordPartial>({
+    peso: 0,
+    imc: 0,
+    grasaCorporal: 0,
+    cuello: 0,
+    pecho: 0,
+    brazo: 0,
+    cintura: 0,
+    cadera: 0,
+    muslo: 0,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,9 +37,9 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, initialData
     setFormData(prev => ({ ...prev, [name]: parseFloat(value) }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    await onSubmit(formData);
   };
 
   return (

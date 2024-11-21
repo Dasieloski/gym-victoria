@@ -43,6 +43,18 @@ interface WeightTrackingComponentProps {
     clientId: string;
 }
 
+interface WeightRecordPartial {
+    peso: number;
+    imc: number;
+    grasaCorporal: number;
+    cuello: number;
+    pecho: number;
+    brazo: number;
+    cintura: number;
+    cadera: number;
+    muslo: number;
+}
+
 export default function WeightTrackingComponent({ clientId }: WeightTrackingComponentProps) {
     const [activeTab, setActiveTab] = useState('peso');
     const [weightRecords, setWeightRecords] = useState<WeightRecord[]>([]);
@@ -293,14 +305,29 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
         );
     };
 
-    const addWeightRecord = (data: Omit<WeightRecord, 'id' | 'fecha'>) => {
-        const nuevoRegistro: WeightRecord = {
-            id: weightRecords.length + 1, // Asegúrate de manejar el ID adecuadamente
-            fecha: new Date().toISOString(),
-            ...data,
-        };
-        setWeightRecords([...weightRecords, nuevoRegistro]);
-        setShowWeightForm(false);
+    const addWeightRecord = async (data: WeightRecordPartial): Promise<void> => {
+        try {
+            const response = await fetch(`/api/cliente/${clientId}/registro-peso`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Respuesta de error de la API:', errorData);
+                throw new Error('Error al agregar el registro de peso');
+            }
+
+            const nuevoRegistro = await response.json();
+            setWeightRecords([...weightRecords, nuevoRegistro]);
+            setShowWeightForm(false);
+        } catch (error) {
+            console.error('Error al agregar el registro de peso:', error);
+            alert('Error al agregar el registro de peso. Por favor, intenta de nuevo.');
+        }
     };
 
     return (
@@ -342,11 +369,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                         </button>
                     </div>
                     {showWeightForm && (
-                        <WeightForm
-                            onSubmit={addWeightRecord}
-                            onCancel={() => setShowWeightForm(false)}
-                            initialData={selectedWeightRecord || undefined}
-                        />
+                        <WeightForm onSubmit={addWeightRecord} onCancel={() => setShowWeightForm(false)} />
                     )}
                     <div className="grid gap-4">
                         {weightRecords.map(registro => (
