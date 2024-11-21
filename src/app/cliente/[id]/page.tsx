@@ -8,6 +8,7 @@ import { signOut } from "next-auth/react";
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import WeightForm from '@/components/WeightForm';
+import WeightTrackingComponent from '@/components/WeightTrackingComponent';
 
 interface RegistroPeso {
     id: number;
@@ -730,42 +731,7 @@ export default function ClientPage({ params }: { params: PageParams }) {
                 )}
 
                 {/* Registro de Peso */}
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold">Registro de Peso</h2>
-                        <button
-                            onClick={() => setShowWeightForm(true)}
-                            className="flex items-center bg-[#2272FF] text-white px-4 py-2 rounded-md hover:bg-[#1b5acc] transition-colors duration-200"
-                        >
-                            <Plus size={20} className="mr-2" />
-                            Agregar Registro
-                        </button>
-                    </div>
-                    {showWeightForm && (
-                        <WeightForm
-                            onSubmit={agregarRegistroPeso}
-                            onCancel={() => setShowWeightForm(false)}
-                            initialData={selectedRegistroPeso || undefined}
-                        />
-                    )}
-                    <div className="grid gap-4">
-                        {registrosPeso.map(registro => (
-                            <div
-                                key={registro.id}
-                                className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow flex justify-between items-center"
-                                onClick={() => setSelectedRegistroPeso(registro)}
-                            >
-                                <div>
-                                    <p className="font-semibold">{new Date(registro.fecha).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                                    <p>Peso: {registro.peso} kg</p>
-                                    <p>IMC: {registro.imc.toFixed(2)}</p>
-                                    <p>Grasa Corporal: {registro.grasaCorporal}%</p>
-                                </div>
-                                <ChevronRight size={20} className="text-gray-400" />
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <WeightTrackingComponent clientId={params.id} />
             </main>
         </div>
     )
