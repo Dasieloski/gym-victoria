@@ -660,7 +660,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                             className="flex items-center bg-[#2272FF] text-white px-4 py-2 rounded-md hover:bg-[#1b5acc] transition-colors duration-200"
                         >
                             <Plus size={20} className="mr-2" />
-                            ➕ Agregar Registro
+                             Agregar Registro
                         </button>
                     </div>
                     {showWeightForm && (
