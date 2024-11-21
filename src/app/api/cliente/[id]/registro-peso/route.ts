@@ -14,7 +14,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
             },
         });
 
-        return NextResponse.json(registros, { status: 200 });
+        // Convertir campos BigInt a string
+        const serializedRegistros = registros.map(registro => ({
+            ...registro,
+            id: registro.id.toString(),
+        }));
+
+        return NextResponse.json(serializedRegistros, { status: 200 });
     } catch (error) {
         console.error('Error al obtener los registros de peso:', error);
         return NextResponse.json({ error: 'Error al obtener los registros de peso' }, { status: 500 });
