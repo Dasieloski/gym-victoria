@@ -613,6 +613,9 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
         }
     };
 
+    // Obtener el último registro si existe
+    const lastRecord = weightRecords.length > 0 ? weightRecords[weightRecords.length - 1] : undefined;
+
     return (
         <div>
             <div className="mb-4 flex space-x-4">
@@ -652,7 +655,11 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                         </button>
                     </div>
                     {showWeightForm && (
-                        <WeightForm onSubmit={addWeightRecord} onCancel={() => setShowWeightForm(false)} />
+                        <WeightForm
+                            onSubmit={addWeightRecord}
+                            onCancel={() => setShowWeightForm(false)}
+                            lastRecord={lastRecord}
+                        />
                     )}
                     <div className="grid gap-4">
                         {weightRecords.map(registro => (
