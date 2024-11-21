@@ -57,6 +57,11 @@ interface WeightRecordPartial {
     muslo: number;
 }
 
+function calcularPesoIdeal(altura: number): number {
+    const alturaEnCm = altura * 100; // Convertir metros a centímetros
+    return alturaEnCm - 100;
+}
+
 export default function WeightTrackingComponent({ clientId }: WeightTrackingComponentProps) {
     const [activeTab, setActiveTab] = useState('peso');
     const [weightRecords, setWeightRecords] = useState<WeightRecord[]>([]);
@@ -193,7 +198,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
             return diff > 0 ? acc + diff : acc;
         }, 0);
 
-        const idealWeight = 153.8; // Este valor debería calcularse basado en la altura y otros factores
+        const idealWeight = calcularPesoIdeal(latestRecord.altura); // Calcular el peso ideal basado en la altura
         const waistHipRatio = latestRecord.cintura / latestRecord.cadera;
 
         const perdidas = sortedRecords.reduce((acc, record, index) => {
