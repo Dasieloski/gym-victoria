@@ -51,7 +51,16 @@ export async function middleware(req: NextRequest) {
         : NextResponse.redirect(new URL('/403', req.url));
     }
   } else if (pathname.startsWith('/cliente') || pathname.startsWith('/api/cliente')|| pathname.startsWith('/api/historial')) {
-    if (token.rol !== 'CLIENTE') {
+    // Excepción: permitir también a ENTRENADOR y ADMIN acceder a ciertas rutas de CLIENTE
+    const isStatsRoute = /^\/api\/cliente\/\d+\/entrenador-estadistica$/.test(pathname);
+    if (!(token.rol === 'CLIENTE' || token.rol === 'ENTRENADOR' || token.rol === 'ADMIN')) {
+      return isApiRoute
+        ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
+        : NextResponse.redirect(new URL('/403', req.url));
+    }
+
+    // Si es una ruta de estadísticas, solo ENTRENADOR y ADMIN pueden acceder
+    if (isStatsRoute && !(token.rol === 'ENTRENADOR' || token.rol === 'ADMIN')) {
       return isApiRoute
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
