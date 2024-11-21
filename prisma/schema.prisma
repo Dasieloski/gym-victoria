@@ -99,7 +99,7 @@ model RegistroPeso {
   cintura       Float?
   cadera        Float?
   muslo         Float?
-  usuarioId     Int?
+  usuarioId     Int
   updateAt      DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamp(6)
   usuario       Usuario?  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 }
@@ -126,3 +126,4 @@ enum EstadoReserva {
   ACTIVA
   CANCELADA
 }
+

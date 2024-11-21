@@ -26,6 +26,15 @@ export async function POST(request: Request, { params }: { params: { id: string 
   const { peso, imc, grasaCorporal, cuello, pecho, brazo, cintura, cadera, muslo } = await request.json();
 
   try {
+    // Verificar si el usuario existe
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!usuario) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+    }
+
     const nuevoRegistro = await prisma.registroPeso.create({
       data: {
         peso,
@@ -44,7 +53,12 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
     return NextResponse.json(nuevoRegistro, { status: 201 });
   } catch (error) {
-    console.error('Error al agregar registro de peso:', error);
-    return NextResponse.json({ error: 'Error al agregar registro de peso' }, { status: 500 });
+    if (error instanceof Error) {
+      console.error('Error al agregar registro de peso:', error);
+      return NextResponse.json({ error: 'Error al agregar registro de peso', details: error.message }, { status: 500 });
+    } else {
+      console.error('Error desconocido:', error);
+      return NextResponse.json({ error: 'Error desconocido al agregar registro de peso' }, { status: 500 });
+    }
   }
 }
