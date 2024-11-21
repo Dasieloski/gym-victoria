@@ -217,8 +217,12 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                     }
                                 },
                                 scales: {
+                                    x: {
+                                        stacked: false,
+                                    },
                                     y: {
                                         beginAtZero: false,
+                                        stacked: false,
                                     }
                                 }
                             }}
@@ -274,6 +278,96 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
         // Determinar el nivel de riesgo basado en el ICC
         const { nivel, color } = obtenerNivelRiesgoICC(waistHipRatio);
 
+        const renderProgresoMedidas = () => {
+            // Verifica que existan registros de peso
+            if (weightRecords.length === 0) return null;
+
+            return (
+                <div className="mt-8">
+                    <h3 className="text-xl font-semibold mb-2">Progreso de Medidas</h3>
+                    <Line
+                        data={{
+                            labels: weightRecords.map(record => formatDate(record.fecha)),
+                            datasets: [
+                                {
+                                    label: 'Cuello (cm)',
+                                    data: weightRecords.map(record => record.cuello || 0),
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'Pecho (cm)',
+                                    data: weightRecords.map(record => record.pecho || 0),
+                                    borderColor: 'rgb(54, 162, 235)',
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'Brazo (cm)',
+                                    data: weightRecords.map(record => record.brazo || 0),
+                                    borderColor: 'rgb(255, 206, 86)',
+                                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'Cintura (cm)',
+                                    data: weightRecords.map(record => record.cintura || 0),
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'Cadera (cm)',
+                                    data: weightRecords.map(record => record.cadera || 0),
+                                    borderColor: 'rgb(153, 102, 255)',
+                                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'Muslo (cm)',
+                                    data: weightRecords.map(record => record.muslo || 0),
+                                    borderColor: 'rgb(255, 159, 64)',
+                                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                    tension: 0.1
+                                }
+                            ]
+                        }}
+                        options={{
+                            responsive: true,
+                            interaction: {
+                                mode: 'index' as const,
+                                intersect: false,
+                            },
+                          //  stacked: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top' as const,
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Progreso de Medidas Corporales'
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    stacked: false,
+                                },
+                                y: {
+                                    beginAtZero: false,
+                                    stacked: false,
+                                    title: {
+                                        display: true,
+                                        text: 'Medidas (cm)'
+                                    }
+                                }
+                            }
+                        }}
+                    />
+                </div>
+            );
+        };
+
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Tarjetas Existentes */}
@@ -309,17 +403,16 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                         Relación entre la circunferencia de la cintura y la cadera
                     </p>
-                    
+
                     {/* Alerta de Nivel de Riesgo */}
                     {waistHipRatio > 0 && (
                         <div
-                            className={`mt-4 p-3 rounded-md ${
-                                color === 'green'
+                            className={`mt-4 p-3 rounded-md ${color === 'green'
                                     ? 'bg-green-100 text-green-800'
                                     : color === 'yellow'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
-                            }`}
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : 'bg-red-100 text-red-800'
+                                }`}
                         >
                             <span className="font-semibold">Nivel de Riesgo: </span>{nivel}
                         </div>
@@ -483,6 +576,9 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">Pérdida Acumulada</h3>
                     <p className="text-xl font-bold text-red-500">{perdidas.toFixed(1)} kg</p>
                 </div>
+
+                {/* Progreso de Medidas */}
+                {renderProgresoMedidas()}
             </div>
         );
     };
@@ -579,64 +675,6 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
                     <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">Estadísticas de Salud</h2>
                     {renderHealthMetrics()}
-                    <div className="mt-8">
-                        <h3 className="text-xl font-semibold mb-2">Progreso de Medidas</h3>
-                        <Line
-                            data={{
-                                labels: weightRecords.map(record => formatDate(record.fecha)),
-                                datasets: [
-                                    {
-                                        label: 'Cuello (cm)',
-                                        data: weightRecords.map(record => record.cuello),
-                                        borderColor: 'rgb(255, 99, 132)',
-                                        tension: 0.1
-                                    },
-                                    {
-                                        label: 'Pecho (cm)',
-                                        data: weightRecords.map(record => record.pecho),
-                                        borderColor: 'rgb(54, 162, 235)',
-                                        tension: 0.1
-                                    },
-                                    {
-                                        label: 'Brazo (cm)',
-                                        data: weightRecords.map(record => record.brazo),
-                                        borderColor: 'rgb(255, 206, 86)',
-                                        tension: 0.1
-                                    },
-                                    {
-                                        label: 'Cintura (cm)',
-                                        data: weightRecords.map(record => record.cintura),
-                                        borderColor: 'rgb(75, 192, 192)',
-                                        tension: 0.1
-                                    },
-                                    {
-                                        label: 'Cadera (cm)',
-                                        data: weightRecords.map(record => record.cadera),
-                                        borderColor: 'rgb(153, 102, 255)',
-                                        tension: 0.1
-                                    },
-                                    {
-                                        label: 'Muslo (cm)',
-                                        data: weightRecords.map(record => record.muslo),
-                                        borderColor: 'rgb(255, 159, 64)',
-                                        tension: 0.1
-                                    }
-                                ]
-                            }}
-                            options={{
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        position: 'top' as const,
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: 'Progreso de Medidas Corporales'
-                                    }
-                                }
-                            }}
-                        />
-                    </div>
                 </div>
             )}
         </div>
