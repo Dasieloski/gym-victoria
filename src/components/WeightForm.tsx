@@ -18,30 +18,77 @@ interface WeightRecordPartial {
 interface WeightFormProps {
   onSubmit: (data: WeightRecordPartial) => Promise<void>;
   onCancel: () => void;
+  lastRecord?: WeightRecordPartial;
 }
 
-const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState<WeightRecordPartial>({
-    peso: 0,
-    imc: 0,
-    grasaCorporal: 0,
-    cuello: 0,
-    pecho: 0,
-    brazo: 0,
-    cintura: 0,
-    cadera: 0,
-    muslo: 0,
-    altura: 0,
+// Definir un tipo para el estado del formulario que permita cadenas vacías
+interface FormData {
+  peso: string;
+  imc: string;
+  grasaCorporal: string;
+  cuello: string;
+  pecho: string;
+  brazo: string;
+  cintura: string;
+  cadera: string;
+  muslo: string;
+  altura: string;
+}
+
+const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord }) => {
+  const [formData, setFormData] = useState<FormData>({
+    peso: '',
+    imc: '',
+    grasaCorporal: '',
+    cuello: '',
+    pecho: '',
+    brazo: '',
+    cintura: '',
+    cadera: '',
+    muslo: '',
+    altura: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: parseFloat(value) }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value, // Mantener los valores como cadenas
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(formData);
+
+    // Validar que todos los campos estén llenos
+    const allFieldsFilled = Object.values(formData).every(value => value.trim() !== '');
+    if (!allFieldsFilled) {
+      alert('Por favor, completa todos los campos.');
+      return;
+    }
+
+    // Asegurar que los valores sean números
+    const data: WeightRecordPartial = {
+      peso: parseFloat(formData.peso),
+      imc: parseFloat(formData.imc),
+      grasaCorporal: parseFloat(formData.grasaCorporal),
+      cuello: parseFloat(formData.cuello),
+      pecho: parseFloat(formData.pecho),
+      brazo: parseFloat(formData.brazo),
+      cintura: parseFloat(formData.cintura),
+      cadera: parseFloat(formData.cadera),
+      muslo: parseFloat(formData.muslo),
+      altura: parseFloat(formData.altura),
+    };
+
+    // Validar que la conversión a número fue exitosa
+    const hasNaN = Object.values(data).some(value => isNaN(value));
+    if (hasNaN) {
+      alert('Por favor, ingresa valores numéricos válidos.');
+      return;
+    }
+
+    await onSubmit(data);
   };
 
   return (
@@ -56,6 +103,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             name="peso"
             value={formData.peso}
             onChange={handleChange}
+            placeholder={lastRecord ? lastRecord.peso.toString() : ''}
             className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
             required
           />
@@ -69,6 +117,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             name="altura"
             value={formData.altura}
             onChange={handleChange}
+            placeholder={lastRecord ? lastRecord.altura.toString() : ''}
             className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
             required
           />
@@ -82,6 +131,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             name="imc"
             value={formData.imc}
             onChange={handleChange}
+            placeholder={lastRecord ? lastRecord.imc.toString() : ''}
             className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
             required
           />
@@ -95,6 +145,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             name="grasaCorporal"
             value={formData.grasaCorporal}
             onChange={handleChange}
+            placeholder={lastRecord ? lastRecord.grasaCorporal.toString() : ''}
             className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
             required
           />
@@ -108,6 +159,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             name="cuello"
             value={formData.cuello}
             onChange={handleChange}
+            placeholder={lastRecord ? lastRecord.cuello.toString() : ''}
             className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
             required
           />
@@ -121,6 +173,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             name="pecho"
             value={formData.pecho}
             onChange={handleChange}
+            placeholder={lastRecord ? lastRecord.pecho.toString() : ''}
             className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
             required
           />
@@ -134,6 +187,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             name="brazo"
             value={formData.brazo}
             onChange={handleChange}
+            placeholder={lastRecord ? lastRecord.brazo.toString() : ''}
             className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
             required
           />
@@ -147,6 +201,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             name="cintura"
             value={formData.cintura}
             onChange={handleChange}
+            placeholder={lastRecord ? lastRecord.cintura.toString() : ''}
             className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
             required
           />
@@ -160,6 +215,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             name="cadera"
             value={formData.cadera}
             onChange={handleChange}
+            placeholder={lastRecord ? lastRecord.cadera.toString() : ''}
             className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
             required
           />
@@ -173,6 +229,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel }) => {
             name="muslo"
             value={formData.muslo}
             onChange={handleChange}
+            placeholder={lastRecord ? lastRecord.muslo.toString() : ''}
             className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
             required
           />
