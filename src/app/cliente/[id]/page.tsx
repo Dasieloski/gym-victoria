@@ -733,12 +733,12 @@ export default function ClientPage({ params }: { params: PageParams }) {
                  <WeightTrackingComponent clientId={params.id} />
 
                 {showWeightForm && (
-                    <WeightForm onSubmit={agregarRegistroPeso} onCancel={() => setShowWeightForm(false)} />
+                    <WeightForm onSubmit={agregarRegistroPeso} onCancel={() => setShowWeightForm(true)} />
                 )}
 
-                <button onClick={() => setShowWeightForm(true)}>
+               {/*  <button onClick={() => setShowWeightForm(true)}>
                     Agregar Registro de Peso
-                </button>
+                </button> */}
             </main>
         </div>
     )
