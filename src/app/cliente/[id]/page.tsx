@@ -593,7 +593,8 @@ export default function ClientPage({ params }: { params: PageParams }) {
                             <p className="text-lg italic text-gray-600 dark:text-gray-400">&ldquo;{motivationalQuote}&rdquo;</p>
                         </div>
 
-                        <WeightTrackingComponent clientId={clientInfo.id.toString()} />                    </>
+                        <WeightTrackingComponent clientId={clientInfo.id.toString()} />
+                    </>
                 )}
 
                 {/* Membership History */}
@@ -731,14 +732,11 @@ export default function ClientPage({ params }: { params: PageParams }) {
                     </div>
                 )}
 
-                {/* Registro de Peso */}
-                <WeightTrackingComponent clientId={params.id} />
-
                 {showWeightForm && (
                     <WeightForm onSubmit={agregarRegistroPeso} onCancel={() => setShowWeightForm(true)} />
                 )}
 
-                {/*  <button onClick={() => setShowWeightForm(true)}>
+               {/*  <button onClick={() => setShowWeightForm(true)}>
                     Agregar Registro de Peso
                 </button> */}
             </main>
