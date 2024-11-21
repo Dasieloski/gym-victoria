@@ -1,12 +1,27 @@
 "use client";
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Dumbbell, Sun, Moon, ChevronRight, ChevronLeft, X, Menu, MessageSquare, Activity, User, CreditCard, Phone, Calendar, Camera } from 'lucide-react';
+import { Dumbbell, Sun, Moon, ChevronRight, ChevronLeft, X, Menu, MessageSquare, Activity, User, CreditCard, Phone, Calendar, Camera, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { signOut } from "next-auth/react";
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import WeightForm from '@/components/WeightForm';
+
+interface RegistroPeso {
+    id: number;
+    fecha: string;
+    peso: number;
+    imc: number;
+    grasaCorporal: number;
+    cuello: number;
+    pecho: number;
+    brazo: number;
+    cintura: number;
+    cadera: number;
+    muslo: number;
+}
 
 interface ClientInfo {
     id: number;
@@ -41,6 +56,7 @@ interface ClientInfo {
         nombre: string;
     } | null; // Nuevo campo para el nombre del entrenador
     profileImage?: string; // Nuevo campo para la imagen de perfil
+    registrosPeso: RegistroPeso[]; // Asegúrate de que esta propiedad exista
 }
 
 interface Booking {
@@ -67,6 +83,19 @@ interface Reserva {
     };
 }
 
+// Define la interfaz WeightRecord si no está definida
+interface WeightRecord {
+    peso: number;
+    imc: number;
+    grasaCorporal: number;
+    cuello: number;
+    pecho: number;
+    brazo: number;
+    cintura: number;
+    cadera: number;
+    muslo: number;
+}
+
 export default function ClientPage({ params }: { params: PageParams }) {
     const router = useRouter();
     const [isDarkMode, setIsDarkMode] = useState(false)
@@ -80,6 +109,9 @@ export default function ClientPage({ params }: { params: PageParams }) {
     const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null)
     const [animatingId, setAnimatingId] = useState<number | null>(null);
     const [newBookingId, setNewBookingId] = useState<number | null>(null); // Para la nueva reserva
+    const [registrosPeso, setRegistrosPeso] = useState<RegistroPeso[]>([]);
+    const [showWeightForm, setShowWeightForm] = useState(false);
+    const [selectedRegistroPeso, setSelectedRegistroPeso] = useState<RegistroPeso | null>(null);
 
     const motivationalQuotes = [
         "El único mal entrenamiento es el que no hiciste.💪",
@@ -344,6 +376,43 @@ export default function ClientPage({ params }: { params: PageParams }) {
     const formatDate = (dateTimeString: string) => {
         const [date, time] = dateTimeString.split('T');
         return { date, time: time.split('.')[0] }; // Eliminar la parte de los milisegundos
+    };
+
+    const agregarRegistroPeso = async (data: WeightRecord) => {
+        const registro: RegistroPeso = {
+            id: 0, // Asigna un ID adecuado o déjalo manejar por el backend
+            fecha: new Date().toISOString(),
+            peso: data.peso,
+            imc: data.imc,
+            grasaCorporal: data.grasaCorporal,
+            cuello: data.cuello,
+            pecho: data.pecho,
+            brazo: data.brazo,
+            cintura: data.cintura,
+            cadera: data.cadera,
+            muslo: data.muslo,
+        };
+
+        try {
+            const response = await fetch(`/api/cliente/${params.id}/registro-peso`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(registro),
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al agregar el registro de peso');
+            }
+
+            const nuevoRegistro = await response.json();
+            setRegistrosPeso([...registrosPeso, nuevoRegistro]);
+            setShowWeightForm(false);
+        } catch (error) {
+            console.error('Error al agregar el registro de peso:', error);
+            alert('Error al agregar el registro de peso. Por favor, intenta de nuevo.');
+        }
     };
 
     return (
@@ -659,6 +728,44 @@ export default function ClientPage({ params }: { params: PageParams }) {
                         </div>
                     </div>
                 )}
+
+                {/* Registro de Peso */}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-2xl font-bold">Registro de Peso</h2>
+                        <button
+                            onClick={() => setShowWeightForm(true)}
+                            className="flex items-center bg-[#2272FF] text-white px-4 py-2 rounded-md hover:bg-[#1b5acc] transition-colors duration-200"
+                        >
+                            <Plus size={20} className="mr-2" />
+                            Agregar Registro
+                        </button>
+                    </div>
+                    {showWeightForm && (
+                        <WeightForm
+                            onSubmit={agregarRegistroPeso}
+                            onCancel={() => setShowWeightForm(false)}
+                            initialData={selectedRegistroPeso || undefined}
+                        />
+                    )}
+                    <div className="grid gap-4">
+                        {registrosPeso.map(registro => (
+                            <div
+                                key={registro.id}
+                                className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow flex justify-between items-center"
+                                onClick={() => setSelectedRegistroPeso(registro)}
+                            >
+                                <div>
+                                    <p className="font-semibold">{new Date(registro.fecha).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                    <p>Peso: {registro.peso} kg</p>
+                                    <p>IMC: {registro.imc.toFixed(2)}</p>
+                                    <p>Grasa Corporal: {registro.grasaCorporal}%</p>
+                                </div>
+                                <ChevronRight size={20} className="text-gray-400" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </main>
         </div>
     )

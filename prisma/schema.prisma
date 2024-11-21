@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,40 +15,33 @@ model Usuario {
   password             String
   carnetIdentidad      String         @unique
   telefono             String
-  visitasEsteMes       Int?           @default(0)
   rol                  Rol
-  membresias           Membresia[]
-  membresiaActualId    Int?           @unique
-  membresiaActual      Membresia?     @relation("MembresiaActual", fields: [membresiaActualId], references: [id])
-  reservasCliente      Reserva[]      @relation("ClienteReservas")
-  historiales          Historial[]
-  entrenadorAsignadoId Int?
-  entrenadorAsignado   Usuario?       @relation("EntrenadorClientes", fields: [entrenadorAsignadoId], references: [id])
-  clientesAsignados    Usuario[]      @relation("EntrenadorClientes")
-  entrenador           Entrenador?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
+  membresiaActualId    Int?           @unique
+  entrenadorAsignadoId Int?
+  visitasEsteMes       Int?           @default(0)
   foto                 String?
+  entrenador           Entrenador?
+  historiales          Historial[]
+  membresias           Membresia[]
   registrosPeso        RegistroPeso[]
-}
-
-enum Rol {
-  ADMIN
-  ENTRENADOR
-  CLIENTE
-  CLIENTEESPERA
+  reservasCliente      Reserva[]      @relation("ClienteReservas")
+  entrenadorAsignado   Usuario?       @relation("EntrenadorClientes", fields: [entrenadorAsignadoId], references: [id])
+  clientesAsignados    Usuario[]      @relation("EntrenadorClientes")
+  membresiaActual      Membresia?     @relation("MembresiaActual", fields: [membresiaActualId], references: [id])
 }
 
 model Entrenador {
   id          Int         @id @default(autoincrement())
   usuarioId   Int         @unique
-  usuario     Usuario     @relation(fields: [usuarioId], references: [id])
-  reservas    Reserva[]   @relation("EntrenadorReservas")
-  historiales Historial[]
   createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  usuario     Usuario     @relation(fields: [usuarioId], references: [id])
+  historiales Historial[]
+  reservas    Reserva[]   @relation("EntrenadorReservas")
 
-  @@map("Entrenador") // Especificamos que el nombre de la tabla será "Entrenador"
+  @@map("Entrenador")
 }
 
 model Membresia {
@@ -61,11 +51,64 @@ model Membresia {
   fechaFin      DateTime
   estadoPago    EstadoPago
   clienteId     Int
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime    @updatedAt
+  historiales   Historial[]
   cliente       Usuario       @relation(fields: [clienteId], references: [id])
   usuarioActual Usuario?      @relation("MembresiaActual")
-  historiales   Historial[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @default(now())
+}
+
+model Reserva {
+  id           Int           @id @default(autoincrement())
+  clienteId    Int
+  entrenadorId Int?
+  estado       EstadoReserva
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime    @updatedAt
+  fecha        DateTime
+  historiales  Historial[]
+  cliente      Usuario       @relation("ClienteReservas", fields: [clienteId], references: [id], map: "Reserva_ClienteId_fkey")
+  entrenador   Entrenador?   @relation("EntrenadorReservas", fields: [entrenadorId], references: [id], map: "Reserva_EntrenadorId_fkey")
+}
+
+model Historial {
+  id           Int         @id @default(autoincrement())
+  accion       String
+  descripcion  String
+  usuarioId    Int
+  entrenadorId Int?
+  membresiaId  Int?
+  reservaId    Int?
+  fecha        DateTime    @default(now())
+  entrenador   Entrenador? @relation(fields: [entrenadorId], references: [id], map: "Historial_EntrenadorId_fkey")
+  membresia    Membresia?  @relation(fields: [membresiaId], references: [id], map: "Historial_MembresiaId_fkey")
+  reserva      Reserva?    @relation(fields: [reservaId], references: [id], map: "Historial_ReservaId_fkey")
+  usuario      Usuario     @relation(fields: [usuarioId], references: [id], map: "Historial_UsuarioId_fkey")
+}
+
+model RegistroPeso {
+  id            BigInt    @id @default(autoincrement())
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  fecha         DateTime? @default(now()) @db.Timestamp(6)
+  peso          Float?
+  imc           Float?
+  grasaCorporal Float?
+  cuello        Float?
+  pecho         Float?
+  brazo         Float?
+  cintura       Float?
+  cadera        Float?
+  muslo         Float?
+  usuarioId     Int?
+  updateAt      DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamp(6)
+  usuario       Usuario?  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
+
+enum Rol {
+  ADMIN
+  ENTRENADOR
+  CLIENTE
+  CLIENTEESPERA
 }
 
 enum TipoMembresia {
@@ -79,53 +122,7 @@ enum EstadoPago {
   IMPAGADO
 }
 
-model Reserva {
-  id           Int           @id @default(autoincrement())
-  clienteId    Int
-  entrenadorId Int?
-  fecha        DateTime
-  estado       EstadoReserva
-  cliente      Usuario       @relation("ClienteReservas", fields: [clienteId], references: [id], map: "Reserva_ClienteId_fkey")
-  entrenador   Entrenador?   @relation("EntrenadorReservas", fields: [entrenadorId], references: [id], map: "Reserva_EntrenadorId_fkey")
-  historiales  Historial[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @default(now())
-}
-
 enum EstadoReserva {
   ACTIVA
   CANCELADA
-}
-
-model Historial {
-  id           Int         @id @default(autoincrement())
-  accion       String
-  descripcion  String
-  usuarioId    Int
-  usuario      Usuario     @relation(fields: [usuarioId], references: [id], map: "Historial_UsuarioId_fkey")
-  entrenadorId Int?
-  entrenador   Entrenador? @relation(fields: [entrenadorId], references: [id], map: "Historial_EntrenadorId_fkey")
-  membresiaId  Int?
-  membresia    Membresia?  @relation(fields: [membresiaId], references: [id], map: "Historial_MembresiaId_fkey")
-  reservaId    Int?
-  reserva      Reserva?    @relation(fields: [reservaId], references: [id], map: "Historial_ReservaId_fkey")
-  fecha        DateTime    @default(now())
-}
-
-model RegistroPeso {
-  id            Int      @id @default(autoincrement())
-  fecha         DateTime @default(now())
-  peso          Float
-  imc           Float
-  grasaCorporal Float
-  cuello        Float
-  pecho         Float
-  brazo         Float
-  cintura       Float
-  cadera        Float
-  muslo         Float
-  usuarioId     Int
-  usuario       Usuario  @relation(fields: [usuarioId], references: [id])
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
 }
