@@ -113,8 +113,7 @@ function calcularPesoIdealPromedio(alturaCm: number): number {
     return suma / 7;
 }
 
-// Agregar esta función en algún lugar del archivo, preferiblemente después de las funciones de cálculo de peso ideal
-
+// Función para determinar el nivel de riesgo del ICC
 function obtenerNivelRiesgoICC(icc: number): { nivel: string; color: string } {
     if (icc <= 0.90) {
         return { nivel: 'Bajo Riesgo', color: 'green' };
@@ -272,6 +271,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
             return diff < 0 ? acc + Math.abs(diff) : acc;
         }, 0);
 
+        // Determinar el nivel de riesgo basado en el ICC
         const { nivel, color } = obtenerNivelRiesgoICC(waistHipRatio);
 
         return (
@@ -309,16 +309,17 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                         Relación entre la circunferencia de la cintura y la cadera
                     </p>
-
+                    
                     {/* Alerta de Nivel de Riesgo */}
                     {waistHipRatio > 0 && (
                         <div
-                            className={`mt-4 p-3 rounded-md ${color === 'green'
+                            className={`mt-4 p-3 rounded-md ${
+                                color === 'green'
                                     ? 'bg-green-100 text-green-800'
                                     : color === 'yellow'
-                                        ? 'bg-yellow-100 text-yellow-800'
-                                        : 'bg-red-100 text-red-800'
-                                }`}
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-red-100 text-red-800'
+                            }`}
                         >
                             <span className="font-semibold">Nivel de Riesgo: </span>{nivel}
                         </div>
