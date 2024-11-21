@@ -174,9 +174,9 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     </div>
                 </div>
 
-                <div>
+                <div className="w-full">
                     <h3 className="text-xl font-semibold mb-4">Gráfico de Progreso</h3>
-                    <div className="h-96">
+                    <div className="w-full h-96">
                         <Line
                             data={{
                                 labels: weightRecords.map(record => formatDate(record.fecha)),
