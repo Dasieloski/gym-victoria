@@ -6,32 +6,33 @@ generator client {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
- directUrl         = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Usuario {
-  id                   Int         @id @default(autoincrement())
+  id                   Int            @id @default(autoincrement())
   nombre               String
-  username             String      @unique
+  username             String         @unique
   password             String
-  carnetIdentidad      String      @unique
+  carnetIdentidad      String         @unique
   telefono             String
-  visitasEsteMes       Int?         @default(0)
+  visitasEsteMes       Int?           @default(0)
   rol                  Rol
   membresias           Membresia[]
-  membresiaActualId    Int?        @unique
-  membresiaActual      Membresia?  @relation("MembresiaActual", fields: [membresiaActualId], references: [id])
-  reservasCliente      Reserva[]   @relation("ClienteReservas")
+  membresiaActualId    Int?           @unique
+  membresiaActual      Membresia?     @relation("MembresiaActual", fields: [membresiaActualId], references: [id])
+  reservasCliente      Reserva[]      @relation("ClienteReservas")
   historiales          Historial[]
   entrenadorAsignadoId Int?
-  entrenadorAsignado   Usuario?    @relation("EntrenadorClientes", fields: [entrenadorAsignadoId], references: [id])
-  clientesAsignados    Usuario[]   @relation("EntrenadorClientes")
+  entrenadorAsignado   Usuario?       @relation("EntrenadorClientes", fields: [entrenadorAsignadoId], references: [id])
+  clientesAsignados    Usuario[]      @relation("EntrenadorClientes")
   entrenador           Entrenador?
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
   foto                 String?
+  registrosPeso        RegistroPeso[]
 }
 
 enum Rol {
@@ -109,4 +110,22 @@ model Historial {
   reservaId    Int?
   reserva      Reserva?    @relation(fields: [reservaId], references: [id], map: "Historial_ReservaId_fkey")
   fecha        DateTime    @default(now())
+}
+
+model RegistroPeso {
+  id            Int      @id @default(autoincrement())
+  fecha         DateTime @default(now())
+  peso          Float
+  imc           Float
+  grasaCorporal Float
+  cuello        Float
+  pecho         Float
+  brazo         Float
+  cintura       Float
+  cadera        Float
+  muslo         Float
+  usuarioId     Int
+  usuario       Usuario  @relation(fields: [usuarioId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

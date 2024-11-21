@@ -142,6 +142,8 @@ export default function ClientPage({ params }: { params: PageParams }) {
                 setClientInfo(data)
                 setVisitsThisMonth(data.visitasEsteMes) // Actualizar el conteo de visitas
 
+                console.log('URL de la foto:', data.foto);
+
                 // Cargar las reservas existentes
                 if (data.reservas) {
                     setBookings(data.reservas);
@@ -434,8 +436,10 @@ export default function ClientPage({ params }: { params: PageParams }) {
                                         <Image
                                             src={clientInfo.foto}
                                             alt="foto"
-                                            fill
-                                            objectFit="cover"
+                                            width={128}
+                                            height={128}
+                                            className="object-cover"
+                                            unoptimized
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
