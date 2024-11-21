@@ -11,7 +11,7 @@ import WeightForm from '@/components/WeightForm';
 import WeightTrackingComponent from '@/components/WeightTrackingComponent';
 
 interface RegistroPeso {
-    id: number;
+    id: string;
     fecha: string;
     peso: number;
     imc: number;

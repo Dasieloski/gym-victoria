@@ -321,7 +321,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                 throw new Error('Error al agregar el registro de peso');
             }
 
-            const nuevoRegistro = await response.json();
+            const nuevoRegistro: WeightRecord = await response.json();
             setWeightRecords([...weightRecords, nuevoRegistro]);
             setShowWeightForm(false);
         } catch (error) {
