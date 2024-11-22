@@ -9,12 +9,14 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import WeightForm from '@/components/WeightForm';
 import WeightTrackingComponent from '@/components/WeightTrackingComponent';
+import { WeightRecord } from '@/types/types';
 
 interface RegistroPeso {
     id: string;
     fecha: string;
     peso: number;
     altura: number;
+    gluteo: number;
     imc: number;
     grasaCorporal: number;
     cuello: number;
@@ -24,7 +26,6 @@ interface RegistroPeso {
     cadera: number;
     muslo: number;
 }
-
 interface ClientInfo {
     id: number;
     foto: string;
@@ -85,10 +86,10 @@ interface Reserva {
     };
 }
 
-// Define la interfaz WeightRecord si no está definida
-interface WeightRecord {
+interface WeightRecordPartial {
     peso: number;
-    imc: number;
+    altura: number;
+    imc?: number;
     grasaCorporal: number;
     cuello: number;
     pecho: number;
@@ -96,6 +97,7 @@ interface WeightRecord {
     cintura: number;
     cadera: number;
     muslo: number;
+    gluteo?: number;
 }
 
 export default function ClientPage({ params }: { params: PageParams }) {
@@ -380,11 +382,11 @@ export default function ClientPage({ params }: { params: PageParams }) {
         return { date, time: time.split('.')[0] }; // Eliminar la parte de los milisegundos
     };
 
-    const agregarRegistroPeso = async (data: WeightRecord) => {
+    const agregarRegistroPeso = async (data: WeightRecordPartial) => {
         const registro = {
             fecha: new Date().toISOString(),
             peso: data.peso,
-            imc: data.imc,
+            imc: data.imc!,
             grasaCorporal: data.grasaCorporal,
             cuello: data.cuello,
             pecho: data.pecho,
@@ -392,6 +394,8 @@ export default function ClientPage({ params }: { params: PageParams }) {
             cintura: data.cintura,
             cadera: data.cadera,
             muslo: data.muslo,
+            altura: data.altura,
+            gluteo: data.gluteo,
         };
 
         try {
@@ -733,10 +737,10 @@ export default function ClientPage({ params }: { params: PageParams }) {
                 )}
 
                 {showWeightForm && (
-                    <WeightForm onSubmit={agregarRegistroPeso} onCancel={() => setShowWeightForm(true)} />
+                    <WeightForm onSubmit={agregarRegistroPeso} onCancel={() => setShowWeightForm(false)} />
                 )}
 
-               {/*  <button onClick={() => setShowWeightForm(true)}>
+                {/*  <button onClick={() => setShowWeightForm(true)}>
                     Agregar Registro de Peso
                 </button> */}
             </main>

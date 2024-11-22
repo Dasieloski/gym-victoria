@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from 'react';
+import { WeightRecord } from '@/types/types';
 
 interface WeightRecordPartial {
     peso: number;
@@ -19,7 +20,7 @@ interface WeightRecordPartial {
 interface WeightFormProps {
     onSubmit: (data: WeightRecordPartial) => Promise<void>;
     onCancel: () => void;
-    lastRecord?: WeightRecordPartial;
+    lastRecord?: WeightRecord;
 }
 
 // Definir un tipo para el estado del formulario que permita cadenas vacías
@@ -110,7 +111,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         name="peso"
                         value={formData.peso}
                         onChange={handleChange}
-                        placeholder={lastRecord?.peso != null ? lastRecord.peso.toString() : ''}
+                        placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                         required
                     />
@@ -124,7 +125,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         name="altura"
                         value={formData.altura}
                         onChange={handleChange}
-                        placeholder={lastRecord?.altura != null ? lastRecord.altura.toString() : ''}
+                        placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                         required
                     />
@@ -138,7 +139,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         name="grasaCorporal"
                         value={formData.grasaCorporal}
                         onChange={handleChange}
-                        placeholder={lastRecord?.grasaCorporal != null ? lastRecord.grasaCorporal.toString() : ''}
+                        placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                     />
                 </div>
@@ -151,7 +152,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         name="cuello"
                         value={formData.cuello}
                         onChange={handleChange}
-                        placeholder={lastRecord?.cuello != null ? lastRecord.cuello.toString() : ''}
+                        placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                         required
                     />
@@ -165,7 +166,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         name="pecho"
                         value={formData.pecho}
                         onChange={handleChange}
-                        placeholder={lastRecord?.pecho != null ? lastRecord.pecho.toString() : ''}
+                        placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                         required
                     />
@@ -179,7 +180,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         name="brazo"
                         value={formData.brazo}
                         onChange={handleChange}
-                        placeholder={lastRecord?.brazo != null ? lastRecord.brazo.toString() : ''}
+                        placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                         required
                     />
@@ -193,7 +194,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         name="cintura"
                         value={formData.cintura}
                         onChange={handleChange}
-                        placeholder={lastRecord?.cintura != null ? lastRecord.cintura.toString() : ''}
+                        placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                         required
                     />
@@ -207,7 +208,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         name="cadera"
                         value={formData.cadera}
                         onChange={handleChange}
-                        placeholder={lastRecord?.cadera != null ? lastRecord.cadera.toString() : ''}
+                        placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                         required
                     />
@@ -221,7 +222,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         name="muslo"
                         value={formData.muslo}
                         onChange={handleChange}
-                        placeholder={lastRecord?.muslo != null ? lastRecord.muslo.toString() : ''}
+                        placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                         required
                     />
@@ -235,7 +236,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         name="gluteo"
                         value={formData.gluteo}
                         onChange={handleChange}
-                        placeholder={lastRecord?.gluteo != null ? lastRecord.gluteo.toString() : ''}
+                        placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                     />
                 </div>

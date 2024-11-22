@@ -14,6 +14,7 @@ import {
     Legend,
 } from 'chart.js';
 import WeightForm from '@/components/WeightForm';
+import { WeightRecord } from '@/types/types';
 
 ChartJS.register(
     CategoryScale,
@@ -24,22 +25,6 @@ ChartJS.register(
     Tooltip,
     Legend
 );
-
-interface WeightRecord {
-    id: string;
-    fecha: string;
-    peso: number;
-    altura: number;
-    imc: number;
-    grasaCorporal: number;
-    cuello: number;
-    pecho: number;
-    brazo: number;
-    cintura: number;
-    cadera: number;
-    muslo: number;
-    gluteo?: number;
-}
 
 interface WeightTrackingComponentProps {
     clientId: string;
