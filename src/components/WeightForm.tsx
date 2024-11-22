@@ -104,7 +104,9 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {/* Peso */}
                 <div>
-                    <label htmlFor="peso" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Peso (kg)</label>
+                    <label htmlFor="peso" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Peso (kg) <span className="text-red-500">*</span>
+                    </label>
                     <input
                         type="number"
                         id="peso"
@@ -118,7 +120,9 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                 </div>
                 {/* Altura */}
                 <div>
-                    <label htmlFor="altura" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Altura (cm)</label>
+                    <label htmlFor="altura" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Altura (cm) <span className="text-red-500">*</span>
+                    </label>
                     <input
                         type="number"
                         id="altura"
@@ -130,22 +134,11 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         required
                     />
                 </div>
-                {/* Grasa Corporal */}
-                <div className="sm:col-span-2">
-                    <label htmlFor="grasaCorporal" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Grasa Corporal (%)</label>
-                    <input
-                        type="number"
-                        id="grasaCorporal"
-                        name="grasaCorporal"
-                        value={formData.grasaCorporal}
-                        onChange={handleChange}
-                        placeholder={''}
-                        className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
-                    />
-                </div>
                 {/* Cuello */}
                 <div>
-                    <label htmlFor="cuello" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Cuello (cm)</label>
+                    <label htmlFor="cuello" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Cuello (cm) <span className="text-red-500">*</span>
+                    </label>
                     <input
                         type="number"
                         id="cuello"
@@ -159,7 +152,9 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                 </div>
                 {/* Pecho */}
                 <div>
-                    <label htmlFor="pecho" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Pecho (cm)</label>
+                    <label htmlFor="pecho" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Pecho (cm) <span className="text-red-500">*</span>
+                    </label>
                     <input
                         type="number"
                         id="pecho"
@@ -173,7 +168,9 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                 </div>
                 {/* Brazo */}
                 <div>
-                    <label htmlFor="brazo" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Brazo (cm)</label>
+                    <label htmlFor="brazo" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Brazo (cm) <span className="text-red-500">*</span>
+                    </label>
                     <input
                         type="number"
                         id="brazo"
@@ -187,7 +184,9 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                 </div>
                 {/* Cintura */}
                 <div>
-                    <label htmlFor="cintura" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Cintura (cm)</label>
+                    <label htmlFor="cintura" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Cintura (cm) <span className="text-red-500">*</span>
+                    </label>
                     <input
                         type="number"
                         id="cintura"
@@ -201,7 +200,9 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                 </div>
                 {/* Cadera */}
                 <div>
-                    <label htmlFor="cadera" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Cadera (cm)</label>
+                    <label htmlFor="cadera" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Cadera (cm) <span className="text-red-500">*</span>
+                    </label>
                     <input
                         type="number"
                         id="cadera"
@@ -215,7 +216,9 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                 </div>
                 {/* Muslo */}
                 <div>
-                    <label htmlFor="muslo" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Muslo (cm)</label>
+                    <label htmlFor="muslo" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Muslo (cm) <span className="text-red-500">*</span>
+                    </label>
                     <input
                         type="number"
                         id="muslo"
@@ -227,14 +230,31 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         required
                     />
                 </div>
-                {/* Gluteo */}
+                {/* Glúteo */}
                 <div>
-                    <label htmlFor="gluteo" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Glúteo (cm)</label>
+                    <label htmlFor="gluteo" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Glúteo (cm)
+                    </label>
                     <input
                         type="number"
                         id="gluteo"
                         name="gluteo"
                         value={formData.gluteo}
+                        onChange={handleChange}
+                        placeholder={''}
+                        className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
+                    />
+                </div>
+                {/* Grasa Corporal */}
+                <div className="sm:col-span-2">
+                    <label htmlFor="grasaCorporal" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Grasa Corporal (%) 
+                    </label>
+                    <input
+                        type="number"
+                        id="grasaCorporal"
+                        name="grasaCorporal"
+                        value={formData.grasaCorporal}
                         onChange={handleChange}
                         placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
