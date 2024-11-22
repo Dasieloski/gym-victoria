@@ -29,7 +29,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
     const { id } = params;
-    const { peso, imc, grasaCorporal, cuello, pecho, brazo, cintura, cadera, muslo, altura } = await request.json();
+    const { peso, imc, grasaCorporal, cuello, pecho, brazo, cintura, cadera, muslo, altura, gluteo } = await request.json();
 
     try {
         // Verificar si el usuario existe
@@ -48,6 +48,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
                 grasaCorporal,
                 cuello,
                 altura,
+                gluteo,
                 pecho,
                 brazo,
                 cintura,
