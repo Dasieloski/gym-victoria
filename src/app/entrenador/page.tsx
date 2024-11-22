@@ -133,6 +133,7 @@ export default function TrainerPage() {
     const [showStatsModal, setShowStatsModal] = useState(false)
     const [selectedClient, setSelectedClient] = useState<Client & { estadisticas: Estadisticas } | null>(null)
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const isDark = localStorage.getItem('darkMode') === 'true'
@@ -653,6 +654,14 @@ export default function TrainerPage() {
 
             {showStatsModal && selectedClient && (
                 <StatsModal client={selectedClient} onClose={() => setShowStatsModal(false)} />
+            )}
+
+            {isLoading && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl">
+                        <p className="text-gray-800 dark:text-gray-100">Cargando estadísticas...</p>
+                    </div>
+                </div>
             )}
         </div>
     )

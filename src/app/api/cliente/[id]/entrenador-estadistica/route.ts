@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { getToken } from 'next-auth/jwt';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const { id } = params;
@@ -18,8 +15,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         entrenadorAsignado: {
           select: {
             id: true,
+            nombre: true,
+            telefono: true,
           },
         },
+        membresias: true, // Asegúrate de incluir membresias si son necesarias
       },
     });
 
@@ -27,8 +27,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       console.log(`Cliente con ID ${id} no encontrado.`);
       return NextResponse.json({ message: 'Cliente no encontrado' }, { status: 404 });
     }
-
-    console.log(`Cliente encontrado: ${usuario.nombre}, Registros de peso: ${usuario.registrosPeso.length}`);
 
     const weightRecords = usuario.registrosPeso || [];
 
@@ -41,8 +39,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const sortedRecords = [...weightRecords]
       .filter(record => record.fecha !== null && record.peso !== null)
       .sort((a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime());
-
-    console.log(`Registros filtrados y ordenados: ${sortedRecords.length}`);
 
     const primerRegistro = sortedRecords[0];
     const ultimoRegistro = sortedRecords[sortedRecords.length - 1];
@@ -86,45 +82,44 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       registros: sortedRecords,
     };
 
+    const clienteInfo = {
+      id: usuario.id,
+      nombre: usuario.nombre,
+      carnetIdentidad: usuario.carnetIdentidad,
+      foto: usuario.foto,
+      telefono: usuario.telefono,
+      rol: usuario.rol,
+      visitasEsteMes: usuario.visitasEsteMes || 0,
+      reservas: usuario.reservasCliente.map(r => ({
+        id: r.id,
+        fecha: r.fecha,
+        estado: r.estado,
+        entrenador: r.entrenador ? {
+          id: r.entrenador.id,
+          nombre: r.entrenador.usuario.nombre,
+          telefono: r.entrenador.usuario.telefono,
+        } : null,
+      })),
+      membresias: usuario.membresias.map(m => ({
+        id: m.id,
+        tipo: m.tipo,
+        estadoPago: m.estadoPago,
+        fechaInicio: m.fechaInicio,
+        fechaFin: m.fechaFin,
+      })),
+      entrenadorAsignado: usuario.entrenadorAsignado ? {
+        id: usuario.entrenadorAsignado.id,
+        nombre: usuario.entrenadorAsignado.nombre,
+        telefono: usuario.entrenadorAsignado.telefono,
+      } : null,
+      estadisticas, // Agregar estadísticas al objeto cliente
+    };
+
     console.log(`Estadísticas calculadas para el cliente ID ${id}:`, estadisticas);
 
-    const token = request.headers.get('Authorization')?.split(' ')[1];
-
-    if (!token) {
-      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
-    }
-
-    const user = await getToken({ req: request });
-
-    if (!user) {
-      return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
-    }
-
-    const { rol, id: userId } = user;
-
-    console.log(`Usuario autenticado: ${user.nombre} (${rol})`);
-    console.log(`Cliente solicitado: ${usuario.nombre} (ID: ${usuario.id})`);
-
-    if (rol === 'ENTRENADOR') {
-      console.log(`Entrenador asignado al cliente: ${usuario.entrenadorAsignadoId}`);
-    }
-
-    // Permitir acceso si el usuario es ADMIN
-    if (rol === 'ADMIN') {
-      // Permitir acceso
-    } else if (rol === 'ENTRENADOR') {
-      // Verificar que el entrenador está asignado al cliente
-      if (usuario.entrenadorAsignadoId !== userId) {
-        return NextResponse.json({ error: 'No autorizado para acceder a este cliente' }, { status: 403 });
-      }
-    } else {
-      // Rol no permitido
-      return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
-    }
-
-    return NextResponse.json(estadisticas, { status: 200 });
+    return NextResponse.json(clienteInfo);
   } catch (error) {
-    console.error('Error al obtener las estadísticas del cliente:', error);
-    return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
+    console.error('Error al obtener información del usuario:', error);
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
