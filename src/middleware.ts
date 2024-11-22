@@ -1,4 +1,4 @@
-/* import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 interface Token {
@@ -110,4 +110,3 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };
- */
