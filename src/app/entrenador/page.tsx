@@ -394,7 +394,7 @@ export default function TrainerPage() {
                 throw new Error('No estás autenticado.');
             }
 
-            const responseCliente = await fetch(`/api/cliente/${clientId}`, {
+            const responseCliente = await fetch(`/api/cliente/${clientId}/entrenador-estadistica`, {
                 method: 'GET',
                 credentials: 'include',
             });
