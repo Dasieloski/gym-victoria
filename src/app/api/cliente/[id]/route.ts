@@ -1,6 +1,5 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getToken } from 'next-auth/jwt';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -19,7 +18,7 @@ function convertirHora12a24(hora12: string): string {
   return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const userId = parseInt(params.id);
 
@@ -103,38 +102,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         telefono: usuario.entrenadorAsignado.telefono,
       } : null, // Si no hay entrenador asignado, devuelve null
     };
-
-    const token = request.headers.get('Authorization')?.split(' ')[1];
-
-    if (!token) {
-      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
-    }
-
-    const user = await getToken({ req: request });
-
-    if (!user) {
-      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
-    }
-
-    const { rol, id: tokenUserId } = user;
-
-    // Permitir acceso si el usuario es ADMIN
-    if (rol === 'ADMIN') {
-      // Permitir acceso
-    } else if (rol === 'ENTRENADOR') {
-      // Verificar que el entrenador está asignado al cliente
-      if (usuario.entrenadorAsignadoId !== tokenUserId) {
-        return NextResponse.json({ error: 'No autorizado para acceder a este cliente' }, { status: 403 });
-      }
-    } else if (rol === 'CLIENTE') {
-      // Permitir acceso solo si el cliente accede a sus propios datos
-      if (usuario.id !== tokenUserId) {
-        return NextResponse.json({ error: 'No autorizado para acceder a este cliente' }, { status: 403 });
-      }
-    } else {
-      // Rol no permitido
-      return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
-    }
 
     return NextResponse.json(clienteInfo);
   } catch (error) {
