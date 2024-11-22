@@ -1,7 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getToken } from 'next-auth/jwt';
-import { Token } from '@/types/token';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -21,19 +20,6 @@ function convertirHora12a24(hora12: string): string {
 }
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
-
-  const token = await getToken({ req: request }) as Token | null;
-  console.log(`Token recibido en API /cliente/${id}:`, token);
-
-  if (!token) {
-    return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
-  }
-
-  if (!['CLIENTE', 'ENTRENADOR', 'ADMIN'].includes(token.rol)) {
-    return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
-  }
-
   try {
     const userId = parseInt(params.id);
 
