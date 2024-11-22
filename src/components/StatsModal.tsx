@@ -51,6 +51,13 @@
      const { estadisticas } = client;
      const weightRecords: WeightRecord[] = estadisticas.registros || [];
 
+     console.log('Registros de peso:', weightRecords);
+
+     const formatDate = (dateString: string) => {
+       const date = new Date(dateString);
+       return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+     };
+
      return (
        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-11/12 max-w-4xl max-h-screen overflow-y-auto">
@@ -99,7 +106,7 @@
              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                {weightRecords.slice(-5).reverse().map((record) => (
                  <div key={record.id} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow">
-                   <p className="font-semibold text-lg mb-2">{new Date(record.fecha).toLocaleDateString()}</p>
+                   <p className="font-semibold text-lg mb-2">{formatDate(record.fecha)}</p>
                    <p>Peso: <span className="font-medium">{record.peso.toFixed(1)} kg</span></p>
                    <p>IMC: <span className="font-medium">{record.imc.toFixed(2)}</span></p>
                    <p>Grasa Corporal: <span className="font-medium">{record.grasaCorporal.toFixed(1)}%</span></p>
@@ -113,7 +120,7 @@
              <div className="h-96">
                <Line
                  data={{
-                   labels: weightRecords.map(record => new Date(record.fecha).toLocaleDateString()),
+                   labels: weightRecords.map(record => formatDate(record.fecha)),
                    datasets: [
                      {
                        label: 'Peso (kg)',
