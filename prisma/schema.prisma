@@ -52,7 +52,7 @@ model Membresia {
   estadoPago    EstadoPago
   clienteId     Int
   createdAt     DateTime      @default(now())
-  updatedAt     DateTime    @updatedAt
+  updatedAt     DateTime      @updatedAt
   historiales   Historial[]
   cliente       Usuario       @relation(fields: [clienteId], references: [id])
   usuarioActual Usuario?      @relation("MembresiaActual")
@@ -64,7 +64,7 @@ model Reserva {
   entrenadorId Int?
   estado       EstadoReserva
   createdAt    DateTime      @default(now())
-  updatedAt    DateTime    @updatedAt
+  updatedAt    DateTime      @updatedAt
   fecha        DateTime
   historiales  Historial[]
   cliente      Usuario       @relation("ClienteReservas", fields: [clienteId], references: [id], map: "Reserva_ClienteId_fkey")
@@ -103,6 +103,8 @@ model RegistroPeso {
   usuarioId     Int
   updateAt      DateTime? @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamp(6)
   usuario       Usuario?  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("RegistroPeso")
 }
 
 enum Rol {
@@ -127,4 +129,3 @@ enum EstadoReserva {
   ACTIVA
   CANCELADA
 }
-
