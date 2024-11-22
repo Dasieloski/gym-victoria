@@ -71,6 +71,15 @@ export async function middleware(req: NextRequest) {
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
     }
+  } else if (pathname.startsWith('/api/cliente')) {
+    if (!['CLIENTE', 'ENTRENADOR', 'ADMIN'].includes(token.rol as string)) {
+      return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
+    }
+
+    const isStatsRoute = /^\/api\/cliente\/\d+\/entrenador-estadistica$/.test(pathname);
+    if (isStatsRoute && !['ENTRENADOR', 'ADMIN'].includes(token.rol as string)) {
+      return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
+    }
   }
 
   // Si el usuario tiene el rol adecuado o la ruta no está protegida, continuar
