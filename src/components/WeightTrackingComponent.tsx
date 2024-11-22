@@ -38,6 +38,7 @@ interface WeightRecord {
     cintura: number;
     cadera: number;
     muslo: number;
+    gluteo?: number;
 }
 
 interface WeightTrackingComponentProps {
@@ -47,7 +48,7 @@ interface WeightTrackingComponentProps {
 interface WeightRecordPartial {
     peso: number;
     altura: number;
-    imc: number;
+    imc?: number;
     grasaCorporal: number;
     cuello: number;
     pecho: number;
@@ -55,6 +56,7 @@ interface WeightRecordPartial {
     cintura: number;
     cadera: number;
     muslo: number;
+    gluteo?: number;
 }
 
 function calcularPesoIdeal(altura: number): number {
@@ -168,7 +170,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                 <p className="font-semibold text-lg mb-2">{formatDate(record.fecha)}</p>
                                 <p>🏋️‍♂️ Peso: <span className="font-medium">{record.peso.toFixed(1)} kg</span></p>
                                 <p>📏 IMC: <span className="font-medium">{record.imc.toFixed(2)}</span></p>
-                                <p>🍃 Grasa Corporal: <span className="font-medium">{record.grasaCorporal.toFixed(1)}%</span></p>
+                                <p>📏 Altura: <span className="font-medium">{record.altura.toFixed(1)} cm</span></p>
                             </div>
                         ))}
                     </div>
@@ -196,8 +198,8 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                         tension: 0.1
                                     },
                                     {
-                                        label: '🍃 Grasa Corporal (%)',
-                                        data: weightRecords.map(record => record.grasaCorporal),
+                                        label: '📏 Altura (cm)',
+                                        data: weightRecords.map(record => record.altura),
                                         borderColor: 'rgb(153, 102, 255)',
                                         backgroundColor: 'rgba(153, 102, 255, 0.5)',
                                         tension: 0.1
@@ -213,7 +215,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                     },
                                     title: {
                                         display: true,
-                                        text: '📈 Progreso de Peso, IMC y Grasa Corporal'
+                                        text: '📈 Progreso de Peso, IMC y Altura'
                                     }
                                 },
                                 scales: {
@@ -329,6 +331,13 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                         data: weightRecords.map(record => record.muslo || 0),
                                         borderColor: 'rgb(255, 159, 64)',
                                         backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                        tension: 0.1
+                                    },
+                                    {
+                                        label: '🍑 Glúteo (cm)',
+                                        data: weightRecords.map(record => record.gluteo || 0),
+                                        borderColor: 'rgb(75, 192, 75)',
+                                        backgroundColor: 'rgba(75, 192, 75, 0.2)',
                                         tension: 0.1
                                     }
                                 ]
@@ -681,7 +690,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                     <p className="font-semibold">{formatDate(registro.fecha)}</p>
                                     <p>🏋️‍♂️ Peso: {registro.peso.toFixed(1)} kg</p>
                                     <p>📏 IMC: {registro.imc.toFixed(2)}</p>
-                                    <p>🍃 Grasa Corporal: {registro.grasaCorporal.toFixed(1)}%</p>
+                                    <p>📏 Altura: <span className="font-medium">{registro.altura.toFixed(1)} cm</span></p>
                                 </div>
                                 <ChevronRight size={20} className="text-gray-400" />
                             </div>

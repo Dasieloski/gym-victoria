@@ -4,15 +4,16 @@ import React, { useState } from 'react';
 
 interface WeightRecordPartial {
     peso: number;
-    imc: number;
     grasaCorporal: number;
+    cintura: number;
+    cadera: number;
     cuello: number;
     pecho: number;
     brazo: number;
-    cintura: number;
-    cadera: number;
     muslo: number;
     altura: number;
+    gluteo?: number;
+    imc?: number;
 }
 
 interface WeightFormProps {
@@ -24,7 +25,6 @@ interface WeightFormProps {
 // Definir un tipo para el estado del formulario que permita cadenas vacías
 interface FormData {
     peso: string;
-    imc: string;
     grasaCorporal: string;
     cuello: string;
     pecho: string;
@@ -33,12 +33,12 @@ interface FormData {
     cadera: string;
     muslo: string;
     altura: string;
+    gluteo: string;
 }
 
 const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord }) => {
     const [formData, setFormData] = useState<FormData>({
         peso: '',
-        imc: '',
         grasaCorporal: '',
         cuello: '',
         pecho: '',
@@ -47,6 +47,7 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
         cadera: '',
         muslo: '',
         altura: '',
+        gluteo: '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,29 +61,35 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validar que todos los campos estén llenos
-        const allFieldsFilled = Object.values(formData).every(value => value.trim() !== '');
+        // Validar que todos los campos obligatorios estén llenos
+        const requiredFields: Array<keyof FormData> = ['peso', 'cintura', 'cadera', 'cuello', 'pecho', 'brazo', 'muslo', 'altura'];
+        const allFieldsFilled = requiredFields.every(field => formData[field].trim() !== '');
         if (!allFieldsFilled) {
-            alert('Por favor, completa todos los campos.');
+            alert('Por favor, completa todos los campos obligatorios.');
             return;
         }
 
         // Asegurar que los valores sean números
+        const peso = parseFloat(formData.peso);
+        const altura = parseFloat(formData.altura);
+        const imc = altura > 0 ? peso / Math.pow(altura / 100, 2) : 0;
+
         const data: WeightRecordPartial = {
-            peso: parseFloat(formData.peso),
-            imc: parseFloat(formData.imc),
-            grasaCorporal: parseFloat(formData.grasaCorporal),
+            peso,
+            cintura: parseFloat(formData.cintura),
+            cadera: parseFloat(formData.cadera),
             cuello: parseFloat(formData.cuello),
             pecho: parseFloat(formData.pecho),
             brazo: parseFloat(formData.brazo),
-            cintura: parseFloat(formData.cintura),
-            cadera: parseFloat(formData.cadera),
             muslo: parseFloat(formData.muslo),
-            altura: parseFloat(formData.altura),
+            altura,
+            gluteo: formData.gluteo.trim() !== '' ? parseFloat(formData.gluteo) : undefined,
+            grasaCorporal: formData.grasaCorporal.trim() !== '' ? parseFloat(formData.grasaCorporal) : 0, // Valor por defecto si no se proporciona
+            imc, // Añadir el imc calculado
         };
 
         // Validar que la conversión a número fue exitosa
-        const hasNaN = Object.values(data).some(value => isNaN(value));
+        const hasNaN = Object.values(data).some(value => value !== undefined && isNaN(value));
         if (hasNaN) {
             alert('Por favor, ingresa valores numéricos válidos.');
             return;
@@ -122,22 +129,8 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         required
                     />
                 </div>
-                {/* IMC */}
-                <div>
-                    <label htmlFor="imc" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">IMC</label>
-                    <input
-                        type="number"
-                        id="imc"
-                        name="imc"
-                        value={formData.imc}
-                        onChange={handleChange}
-                        placeholder={lastRecord?.imc != null ? lastRecord.imc.toString() : ''}
-                        className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
-                        required
-                    />
-                </div>
                 {/* Grasa Corporal */}
-                <div>
+                <div className="sm:col-span-2">
                     <label htmlFor="grasaCorporal" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Grasa Corporal (%)</label>
                     <input
                         type="number"
@@ -147,7 +140,6 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         onChange={handleChange}
                         placeholder={lastRecord?.grasaCorporal != null ? lastRecord.grasaCorporal.toString() : ''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
-                        required
                     />
                 </div>
                 {/* Cuello */}
@@ -232,6 +224,19 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         placeholder={lastRecord?.muslo != null ? lastRecord.muslo.toString() : ''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                         required
+                    />
+                </div>
+                {/* Gluteo */}
+                <div>
+                    <label htmlFor="gluteo" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Glúteo (cm)</label>
+                    <input
+                        type="number"
+                        id="gluteo"
+                        name="gluteo"
+                        value={formData.gluteo}
+                        onChange={handleChange}
+                        placeholder={lastRecord?.gluteo != null ? lastRecord.gluteo.toString() : ''}
+                        className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
                     />
                 </div>
             </div>
