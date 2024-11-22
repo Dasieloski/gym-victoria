@@ -387,25 +387,20 @@ export default function TrainerPage() {
 
     const handleShowStats = async (clientId: number) => {
         try {
-            const token = Cookies.get('token'); // Asegúrate de que el token esté almacenado correctamente
+            // Verificar si el usuario está autenticado
+            if (!session) {
+                throw new Error('No estás autenticado.');
+            }
 
             // Obtener los datos completos del cliente
-            const responseCliente = await fetch(`/api/cliente/${clientId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const responseCliente = await fetch(`/api/cliente/${clientId}`);
             if (!responseCliente.ok) {
                 throw new Error('No se pudieron obtener los datos del cliente');
             }
             const dataCliente: Client = await responseCliente.json();
 
             // Obtener las estadísticas del cliente
-            const responseEstadisticas = await fetch(`/api/cliente/${clientId}/entrenador-estadistica`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const responseEstadisticas = await fetch(`/api/cliente/${clientId}/entrenador-estadistica`);
             if (!responseEstadisticas.ok) {
                 throw new Error('No se pudieron obtener las estadísticas del cliente');
             }

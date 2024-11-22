@@ -9,18 +9,14 @@ export async function middleware(req: NextRequest) {
   console.log('Ruta solicitada:', pathname);
   console.log('Token recibido:', token);
 
-  // Definir las páginas públicas
   const publicPages = ['/', '/registro', '/login', '/403', '/404'];
 
-  // Si es una página pública, permitir acceso
   if (publicPages.includes(pathname)) {
     return NextResponse.next();
   }
 
-  // Definir si es una ruta de API
   const isApiRoute = pathname.startsWith('/api/');
 
-  // Si no hay token, manejar según tipo de ruta
   if (!token) {
     console.log('No se encontró token. Acceso restringido.');
     if (
@@ -39,7 +35,6 @@ export async function middleware(req: NextRequest) {
 
       return NextResponse.redirect(new URL('/login', req.url));
     }
-    // Para otras rutas, permitir acceso
     return NextResponse.next();
   }
 
@@ -81,7 +76,6 @@ export async function middleware(req: NextRequest) {
         : NextResponse.redirect(new URL('/403', req.url));
     }
 
-    // Si es una ruta de estadísticas, solo ENTRENADOR y ADMIN pueden acceder
     const isStatsRoute = /^\/api\/cliente\/\d+\/entrenador-estadistica$/.test(pathname);
     if (isStatsRoute && !['ENTRENADOR', 'ADMIN'].includes(token.rol)) {
       console.log(`Acceso a estadísticas prohibido para rol: ${token.rol}`);
@@ -101,21 +95,8 @@ export async function middleware(req: NextRequest) {
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
     }
-  } else if (pathname.startsWith('/api/cliente')) {
-    console.log('Verificando acceso a /api/cliente para CLIENTE, ENTRENADOR o ADMIN');
-    if (!['CLIENTE', 'ENTRENADOR', 'ADMIN'].includes(token.rol)) {
-      console.log(`Acceso prohibido a /api/cliente para rol: ${token.rol}`);
-      return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
-    }
-
-    const isStatsRoute = /^\/api\/cliente\/\d+\/entrenador-estadistica$/.test(pathname);
-    if (isStatsRoute && !['ENTRENADOR', 'ADMIN'].includes(token.rol)) {
-      console.log(`Acceso a estadísticas en /api/cliente prohibido para rol: ${token.rol}`);
-      return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
-    }
   }
 
-  // Si el usuario tiene el rol adecuado o la ruta no está protegida, continuar
   console.log('Acceso permitido');
   return NextResponse.next();
 }

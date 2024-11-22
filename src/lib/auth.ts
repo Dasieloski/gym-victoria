@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials: Record<"username" | "password", string> | undefined, req: any) {
-                console.log("Credenciales recibidas:", credentials); // Agregar este log
+                console.log("Credenciales recibidas:", credentials);
 
                 if (!credentials) {
                     console.log("No se proporcionaron credenciales.");
@@ -55,7 +55,7 @@ export const authOptions: NextAuthOptions = {
             if (user) {
                 token.id = user.id;
                 token.rol = user.rol;
-                // Agrega otros campos que necesites
+                // Agrega otros campos si es necesario
             }
             return token;
         },
@@ -63,7 +63,7 @@ export const authOptions: NextAuthOptions = {
             if (token) {
                 session.user.id = token.id as string;
                 session.user.rol = token.rol as string;
-                // Agrega otros campos que necesites
+                // Agrega otros campos si es necesario
             }
             return session;
         }
