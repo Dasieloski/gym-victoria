@@ -26,12 +26,11 @@ interface WeightFormProps {
 // Definir un tipo para el estado del formulario que permita cadenas vacías
 interface FormData {
     peso: string;
-    grasaCorporal: string;
+    cintura: string;
+    cadera: string;
     cuello: string;
     pecho: string;
     brazo: string;
-    cintura: string;
-    cadera: string;
     muslo: string;
     altura: string;
     gluteo: string;
@@ -40,12 +39,11 @@ interface FormData {
 const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord }) => {
     const [formData, setFormData] = useState<FormData>({
         peso: '',
-        grasaCorporal: '',
+        cintura: '',
+        cadera: '',
         cuello: '',
         pecho: '',
         brazo: '',
-        cintura: '',
-        cadera: '',
         muslo: '',
         altura: '',
         gluteo: '',
@@ -57,6 +55,11 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
             ...prev,
             [name]: value, // Mantener los valores como cadenas
         }));
+    };
+
+    // Función para calcular la Grasa Corporal utilizando el Índice de Adiposidad Corporal (BAI)
+    const calcularGrasaCorporal = (cadera: number, altura: number): number => {
+        return (cadera / Math.pow(altura, 1.5)) - 18;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -72,20 +75,30 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
 
         // Asegurar que los valores sean números
         const peso = parseFloat(formData.peso);
+        const cintura = parseFloat(formData.cintura);
+        const cadera = parseFloat(formData.cadera);
+        const cuello = parseFloat(formData.cuello);
+        const pecho = parseFloat(formData.pecho);
+        const brazo = parseFloat(formData.brazo);
+        const muslo = parseFloat(formData.muslo);
         const altura = parseFloat(formData.altura);
+        const gluteo = formData.gluteo.trim() !== '' ? parseFloat(formData.gluteo) : undefined;
+
         const imc = altura > 0 ? peso / Math.pow(altura / 100, 2) : 0;
+
+        const grasaCorporal = calcularGrasaCorporal(cadera, altura);
 
         const data: WeightRecordPartial = {
             peso,
-            cintura: parseFloat(formData.cintura),
-            cadera: parseFloat(formData.cadera),
-            cuello: parseFloat(formData.cuello),
-            pecho: parseFloat(formData.pecho),
-            brazo: parseFloat(formData.brazo),
-            muslo: parseFloat(formData.muslo),
+            cintura,
+            cadera,
+            cuello,
+            pecho,
+            brazo,
+            muslo,
             altura,
-            gluteo: formData.gluteo.trim() !== '' ? parseFloat(formData.gluteo) : undefined,
-            grasaCorporal: formData.grasaCorporal.trim() !== '' ? parseFloat(formData.grasaCorporal) : 0,
+            gluteo,
+            grasaCorporal,
             imc,
         };
 
@@ -240,21 +253,6 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
                         id="gluteo"
                         name="gluteo"
                         value={formData.gluteo}
-                        onChange={handleChange}
-                        placeholder={''}
-                        className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
-                    />
-                </div>
-                {/* Grasa Corporal */}
-                <div className="sm:col-span-2">
-                    <label htmlFor="grasaCorporal" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Grasa Corporal (%) 
-                    </label>
-                    <input
-                        type="number"
-                        id="grasaCorporal"
-                        name="grasaCorporal"
-                        value={formData.grasaCorporal}
                         onChange={handleChange}
                         placeholder={''}
                         className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#2272FF] focus:ring focus:ring-[#2272FF] focus:ring-opacity-50 py-2 px-3 bg-white dark:bg-gray-600 text-black dark:text-gray-100"
