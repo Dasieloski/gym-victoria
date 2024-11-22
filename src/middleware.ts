@@ -56,7 +56,7 @@ export async function middleware(req: NextRequest) {
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
     }
-  } else if (pathname.startsWith('/entrenador') || pathname.startsWith('/api/entrenador')|| pathname.startsWith('/api/historial')) {
+  } else if (pathname.startsWith('/entrenador') || pathname.startsWith('/api/entrenador')|| pathname.startsWith('/api/cliente')) {
     if (token.rol !== 'ENTRENADOR') {
       return isApiRoute
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
