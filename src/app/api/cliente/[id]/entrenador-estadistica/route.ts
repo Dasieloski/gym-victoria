@@ -35,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     if (!usuario) {
       console.log(`Cliente con ID ${id} no encontrado.`);
-      return NextResponse.json({ message: 'Cliente no encontrado' }, { status: 404 });
+      return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
     }
 
     const weightRecords = usuario.registrosPeso || [];
@@ -92,35 +92,46 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       registros: sortedRecords,
     };
 
+    // Definir uniqueDays extrayendo las fechas únicas de reservas
+    const uniqueDays = new Set(
+      usuario.reservasCliente.map(reserva => new Date(reserva.fecha).toDateString())
+    );
+
+    const visitasEsteMes = uniqueDays.size; // Contar los días únicos
+
     const clienteInfo = {
-      id: usuario.id,
+      id: usuario.id.toString(),
       nombre: usuario.nombre,
       carnetIdentidad: usuario.carnetIdentidad,
       foto: usuario.foto,
       telefono: usuario.telefono,
       rol: usuario.rol,
-      visitasEsteMes: usuario.visitasEsteMes || 0,
+      visitasEsteMes, // Agregar el conteo de visitas
       reservas: usuario.reservasCliente.map(r => ({
-        id: r.id,
+        id: r.id.toString(),
         fecha: r.fecha,
         estado: r.estado,
-        entrenador: r.entrenador ? {
-          id: r.entrenador.id,
-          nombre: r.entrenador.usuario.nombre,
-        } : null,
+        entrenador: r.entrenador
+          ? {
+              id: r.entrenador.id.toString(),
+              nombre: r.entrenador.usuario.nombre,
+            }
+          : null,
       })),
       membresias: usuario.membresias.map(m => ({
-        id: m.id,
+        id: m.id.toString(),
         tipo: m.tipo,
         estadoPago: m.estadoPago,
         fechaInicio: m.fechaInicio,
         fechaFin: m.fechaFin,
       })),
-      entrenadorAsignado: usuario.entrenadorAsignado?.entrenador ? {
-        id: usuario.entrenadorAsignado.entrenador.id,
-        nombre: usuario.entrenadorAsignado.entrenador.usuario.nombre,
-        telefono: usuario.entrenadorAsignado.entrenador.usuario.telefono,
-      } : null,
+      entrenadorAsignado: usuario.entrenadorAsignado
+        ? {
+            id: usuario.entrenadorAsignado.id.toString(),
+            nombre: usuario.entrenadorAsignado.nombre,
+            telefono: usuario.entrenadorAsignado.telefono,
+          }
+        : null,
       estadisticas,
     };
 
