@@ -62,7 +62,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         const serializedRegistro = {
             ...nuevoRegistro,
             id: nuevoRegistro.id.toString(),
-            usuarioId: nuevoRegistro?.usuarioId?.toString(), // Si usuarioId también es BigInt
+            //usuarioId: nuevoRegistro?.usuarioId?.toString(), // Si usuarioId también es BigInt
         };
 
         return NextResponse.json(serializedRegistro, { status: 201 });
