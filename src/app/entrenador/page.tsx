@@ -388,20 +388,27 @@ export default function TrainerPage() {
 
     const handleShowStats = async (clientId: number) => {
         try {
+            setIsLoading(true);
             // Verificar si el usuario está autenticado
             if (!session) {
                 throw new Error('No estás autenticado.');
             }
 
             // Obtener los datos completos del cliente
-            const responseCliente = await fetch(`/api/cliente/${clientId}`);
+            const responseCliente = await fetch(`/api/cliente/${clientId}`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             if (!responseCliente.ok) {
                 throw new Error('No se pudieron obtener los datos del cliente');
             }
             const dataCliente: Client = await responseCliente.json();
 
             // Obtener las estadísticas del cliente
-            const responseEstadisticas = await fetch(`/api/cliente/${clientId}/entrenador-estadistica`);
+            const responseEstadisticas = await fetch(`/api/cliente/${clientId}/entrenador-estadistica`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             if (!responseEstadisticas.ok) {
                 throw new Error('No se pudieron obtener las estadísticas del cliente');
             }
@@ -417,6 +424,8 @@ export default function TrainerPage() {
         } catch (error) {
             console.error('Error al obtener los datos del cliente:', error);
             alert('Hubo un problema al cargar las estadísticas del cliente.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
