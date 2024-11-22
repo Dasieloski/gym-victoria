@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -18,9 +20,22 @@ function convertirHora12a24(hora12: string): string {
   return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+  }
+
+  // Opcional: Verificar si el usuario tiene el rol adecuado
+  if (session.user.rol !== 'ENTRENADOR' && session.user.rol !== 'ADMIN') {
+    return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
+  }
+
+  const { id } = params;
+
   try {
-    const userId = parseInt(params.id);
+    const userId = parseInt(id);
 
     if (isNaN(userId)) {
       return NextResponse.json({ error: 'ID de usuario inválido' }, { status: 400 });
@@ -31,7 +46,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       include: {
         reservasCliente: {
           include: {
-            entrenador: { // Asegúrate de incluir el entrenador
+            entrenador: {
               include: {
                 usuario: true,
               },
@@ -39,19 +54,26 @@ export async function GET(request: Request, { params }: { params: { id: string }
           },
         },
         membresias: true,
-        entrenador: true,
-        entrenadorAsignado: { // Modificación aquí
+        entrenadorAsignado: {
           include: {
-            entrenador: true, // Incluir la relación 'entrenador'
+            entrenador: {
+              include: {
+                usuario: true,
+              },
+            },
           },
         },
+        registrosPeso: true,
       },
     });
 
-    console.log(usuario); // Agrega esta línea para depurar
-
     if (!usuario) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+    }
+
+    // Verificar que el entrenador asignado al cliente corresponde al entrenador actual
+    if (session.user.rol === 'ENTRENADOR' && usuario.entrenadorAsignado?.id !== Number(session.user.id)) {
+      return NextResponse.json({ error: 'No tienes acceso a este cliente' }, { status: 403 });
     }
 
     // Obtener la fecha actual
@@ -79,14 +101,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
       foto: usuario.foto,
       telefono: usuario.telefono,
       rol: usuario.rol,
-      visitasEsteMes, // Agregar el conteo de visitas
+      visitasEsteMes,
       reservas: usuario.reservasCliente.map(r => ({
         id: r.id,
         fecha: r.fecha,
         estado: r.estado,
         entrenador: r.entrenador ? {
           id: r.entrenador.id,
-          nombre: r.entrenador.usuario.nombre, // Asegúrate de acceder correctamente al nombre
+          nombre: r.entrenador.usuario.nombre,
         } : null,
       })),
       membresias: usuario.membresias.map(m => ({
@@ -96,11 +118,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
         fechaInicio: m.fechaInicio,
         fechaFin: m.fechaFin,
       })),
-      entrenadorAsignado: usuario.entrenadorAsignado ? { // Asegúrate de incluir esta parte
+      entrenadorAsignado: usuario.entrenadorAsignado ? {
         id: usuario.entrenadorAsignado.id,
         nombre: usuario.entrenadorAsignado.nombre,
         telefono: usuario.entrenadorAsignado.telefono,
-      } : null, // Si no hay entrenador asignado, devuelve null
+      } : null,
+      estadisticas: usuario.registrosPeso,
     };
 
     return NextResponse.json(clienteInfo);

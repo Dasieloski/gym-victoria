@@ -43,6 +43,7 @@ export const authOptions: NextAuthOptions = {
                     id: userFound.id.toString(),
                     username: userFound.username,
                     rol: userFound.rol,
+                    role: userFound.rol,
                     nombre: userFound.nombre,
                     carnetIdentidad: userFound.carnetIdentidad,
                     telefono: userFound.telefono,
