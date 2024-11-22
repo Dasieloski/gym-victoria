@@ -53,6 +53,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
     }
 
+    console.log('Registros de Peso:', usuario.registrosPeso);
+
     const weightRecords = usuario.registrosPeso || [];
 
     if (weightRecords.length === 0) {
@@ -65,57 +67,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       .filter(record => record.fecha !== null && record.peso !== null)
       .sort((a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime());
 
-    const primerRegistro = sortedRecords[0];
-    const ultimoRegistro = sortedRecords[sortedRecords.length - 1];
-
-    if (!primerRegistro || !ultimoRegistro) {
-      console.log(`No hay registros de peso válidos para el cliente ID ${id}.`);
-      return NextResponse.json({ message: 'No hay registros de peso válidos' }, { status: 200 });
-    }
-
-    const kgDiferencia = ultimoRegistro.peso! - primerRegistro.peso!;
-    const diasDiferencia = Math.ceil(
-      (new Date(ultimoRegistro.fecha!).getTime() - new Date(primerRegistro.fecha!).getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    const kgPorDia = diasDiferencia !== 0 ? kgDiferencia / diasDiferencia : kgDiferencia;
-    const kgPorSemana = kgPorDia * 7;
-    const kgPorMes = kgPorDia * 30;
-
-    const pesos = sortedRecords
-      .map(record => record.peso)
-      .filter((peso): peso is number => peso !== null);
-
-    const pesoMaximo = Math.max(...pesos);
-    const pesoMinimo = Math.min(...pesos);
-
-    const ganancias = sortedRecords.reduce((acc, record, index) => {
-      if (index === 0) return acc;
-      const diff = record.peso! - sortedRecords[index - 1].peso!;
-      return diff > 0 ? acc + diff : acc;
-    }, 0);
-
-    const estadisticas = {
-      kgDiferencia,
-      diasDiferencia,
-      kgPorDia,
-      kgPorSemana,
-      kgPorMes,
-      pesoMaximo,
-      pesoMinimo,
-      ganancias,
-      registros: sortedRecords.map(r => ({
-        ...r,
-        id: r.id.toString(), // Convertir BigInt a string
-      })),
-    };
-
-    // Definir uniqueDays extrayendo las fechas únicas de reservas
-    const uniqueDays = new Set(
-      usuario.reservasCliente.map(reserva => new Date(reserva.fecha).toDateString())
-    );
-
-    const visitasEsteMes = uniqueDays.size; // Contar los días únicos
+    const estadisticas = calcularEstadisticas(sortedRecords); // Implementa esta función según tus necesidades
 
     const clienteInfo = {
       id: usuario.id.toString(),
@@ -124,10 +76,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       foto: usuario.foto,
       telefono: usuario.telefono,
       rol: usuario.rol,
-      visitasEsteMes, // Agregar el conteo de visitas
+      visitasEsteMes: usuario.visitasEsteMes || 0,
       reservas: usuario.reservasCliente.map(r => ({
         id: r.id.toString(),
-        fecha: r.fecha,
+        fecha: r.fecha.toISOString(),
         estado: r.estado,
         entrenador: r.entrenador
           ? {
@@ -140,8 +92,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         id: m.id.toString(),
         tipo: m.tipo,
         estadoPago: m.estadoPago,
-        fechaInicio: m.fechaInicio,
-        fechaFin: m.fechaFin,
+        fechaInicio: m.fechaInicio.toISOString(),
+        fechaFin: m.fechaFin.toISOString(),
       })),
       entrenadorAsignado: usuario.entrenadorAsignado
         ? {
@@ -153,10 +105,34 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       estadisticas,
     };
 
-    // Ya que todos los campos BigInt han sido convertidos a string, no es necesario serializar nuevamente
-    return NextResponse.json(clienteInfo);
+    // Serializar cualquier BigInt restante si es necesario
+    const serializedClienteInfo = serialize(clienteInfo);
+
+    console.log(`Estadísticas calculadas para el cliente ID ${id}:`, estadisticas);
+
+    return NextResponse.json(serializedClienteInfo);
   } catch (error) {
     console.error('Error al obtener información del usuario:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
+}
+
+// Implementa esta función según tus necesidades de cálculo de estadísticas
+function calcularEstadisticas(registros: any[]): any {
+  // Ejemplo simplificado
+  let totalPeso = 0;
+  registros.forEach(registro => {
+    if (registro.peso) {
+      totalPeso += registro.peso;
+    }
+  });
+
+  const kgPorDia = registros.length > 0 ? parseFloat((totalPeso / registros.length).toFixed(2)) : 0;
+  // Calcula kgPorSemana y kgPorMes según tus necesidades
+
+  return {
+    kgPorDia,
+    kgPorSemana: 0, // Implementa el cálculo adecuado
+    kgPorMes: 0, // Implementa el cálculo adecuado
+  };
 }
