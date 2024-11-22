@@ -85,12 +85,12 @@ const WeightForm: React.FC<WeightFormProps> = ({ onSubmit, onCancel, lastRecord 
             muslo: parseFloat(formData.muslo),
             altura,
             gluteo: formData.gluteo.trim() !== '' ? parseFloat(formData.gluteo) : undefined,
-            grasaCorporal: formData.grasaCorporal.trim() !== '' ? parseFloat(formData.grasaCorporal) : 0, // Valor por defecto si no se proporciona
-            imc, // Añadir el imc calculado
+            grasaCorporal: formData.grasaCorporal.trim() !== '' ? parseFloat(formData.grasaCorporal) : 0,
+            imc,
         };
 
-        // Validar que la conversión a número fue exitosa
-        const hasNaN = Object.values(data).some(value => value !== undefined && isNaN(value));
+        // Validar si hay NaN
+        const hasNaN = Object.values(data).some(value => isNaN(value));
         if (hasNaN) {
             alert('Por favor, ingresa valores numéricos válidos.');
             return;

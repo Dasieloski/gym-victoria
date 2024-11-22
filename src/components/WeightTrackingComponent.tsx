@@ -155,7 +155,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                 <p className="font-semibold text-lg mb-2">{formatDate(record.fecha)}</p>
                                 <p>🏋️‍♂️ Peso: <span className="font-medium">{record.peso.toFixed(1)} kg</span></p>
                                 <p>📏 IMC: <span className="font-medium">{record.imc.toFixed(2)}</span></p>
-                                <p>📏 Altura: <span className="font-medium">{record.altura.toFixed(1)} cm</span></p>
+                                <p>📏 Altura: <span className="font-medium">{record.altura ? record.altura.toFixed(1) : 'N/A'} cm</span></p>
                             </div>
                         ))}
                     </div>
@@ -675,7 +675,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                                     <p className="font-semibold">{formatDate(registro.fecha)}</p>
                                     <p>🏋️‍♂️ Peso: {registro.peso.toFixed(1)} kg</p>
                                     <p>📏 IMC: {registro.imc.toFixed(2)}</p>
-                                    <p>📏 Altura: <span className="font-medium">{registro.altura.toFixed(1)} cm</span></p>
+                                    <p>📏 Altura: <span className="font-medium">{registro.altura ? registro.altura.toFixed(1) : 'N/A'} cm</span></p>
                                 </div>
                                 <ChevronRight size={20} className="text-gray-400" />
                             </div>

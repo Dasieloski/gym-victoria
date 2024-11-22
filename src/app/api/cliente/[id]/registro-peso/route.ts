@@ -31,6 +31,11 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const { id } = params;
     const { peso, imc, grasaCorporal, cuello, pecho, brazo, cintura, cadera, muslo, altura, gluteo } = await request.json();
 
+    // Validar que altura no sea null o undefined
+    if (altura === null || altura === undefined || altura <= 0) {
+        return NextResponse.json({ error: 'Altura es obligatoria y debe ser un número válido' }, { status: 400 });
+    }
+
     try {
         // Verificar si el usuario existe
         const usuario = await prisma.usuario.findUnique({
@@ -59,11 +64,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
             },
         });
 
-        // Convertir campos BigInt a string
+        // Serializar campos si es necesario
         const serializedRegistro = {
             ...nuevoRegistro,
             id: nuevoRegistro.id.toString(),
-            //usuarioId: nuevoRegistro?.usuarioId?.toString(), // Si usuarioId también es BigInt
         };
 
         return NextResponse.json(serializedRegistro, { status: 201 });

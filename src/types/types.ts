@@ -4,6 +4,7 @@ export interface WeightRecord {
     fecha: string;
     peso: number;
     altura: number;
+    gluteo: number | null;
     imc: number;
     grasaCorporal: number;
     cuello: number;
@@ -12,5 +13,4 @@ export interface WeightRecord {
     cintura: number;
     cadera: number;
     muslo: number;
-    gluteo?: number; // Haz que sea opcional si puede no estar presente
 }
