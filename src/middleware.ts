@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-
-interface Token {
-  id: string;
-  rol: 'CLIENTE' | 'ENTRENADOR' | 'ADMIN' | 'CLIENTEESPERA';
-  // otros campos si es necesario
-}
+import { Token } from './types/token';
 
 export async function middleware(req: NextRequest) {
   const token = (await getToken({ req })) as Token | null;
@@ -13,6 +8,12 @@ export async function middleware(req: NextRequest) {
 
   console.log('Ruta solicitada:', pathname);
   console.log('Token recibido:', token);
+
+  if (token) {
+    console.log(`Usuario autenticado con rol: ${token.rol}`);
+  } else {
+    console.log('No hay token de autenticación');
+  }
 
   // Definir las páginas públicas
   const publicPages = ['/', '/registro', '/login', '/403', '/404'];
@@ -48,7 +49,11 @@ export async function middleware(req: NextRequest) {
   }
 
   // Protecciones por rol
-  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin') || pathname.startsWith('/api/historial')) {
+  if (
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api/admin') ||
+    pathname.startsWith('/api/historial')
+  ) {
     if (token.rol !== 'ADMIN') {
       return isApiRoute
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
@@ -64,34 +69,43 @@ export async function middleware(req: NextRequest) {
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
     }
-  } else if (pathname.startsWith('/cliente') || pathname.startsWith('/api/cliente') || pathname.startsWith('/api/historial')) {
-    // Excepción: permitir también a ENTRENADOR y ADMIN acceder a ciertas rutas de CLIENTE
-    const isStatsRoute = /^\/api\/cliente\/\d+\/entrenador-estadistica$/.test(pathname);
-    if (!['CLIENTE', 'ENTRENADOR', 'ADMIN'].includes(token.rol as string)) {
+  } else if (
+    pathname.startsWith('/cliente') ||
+    pathname.startsWith('/api/cliente') ||
+    pathname.startsWith('/api/historial')
+  ) {
+    // Permitir CLIENTE, ENTRENADOR y ADMIN
+    if (!['CLIENTE', 'ENTRENADOR', 'ADMIN'].includes(token.rol)) {
       return isApiRoute
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
     }
 
-    // Si es una ruta de estadísticas, solo ENTRENADOR y ADMIN pueden acceder
-    if (isStatsRoute && !['ENTRENADOR', 'ADMIN'].includes(token.rol as string)) {
+    // Rutas de estadísticas solo para ENTRENADOR y ADMIN
+    const isStatsRoute = /^\/api\/cliente\/\d+\/entrenador-estadistica$/.test(pathname);
+    if (isStatsRoute && !['ENTRENADOR', 'ADMIN'].includes(token.rol)) {
       return isApiRoute
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
     }
-  } else if (pathname.startsWith('/entrenador') || pathname.startsWith('/api/entrenador') || pathname.startsWith('/api/historial')) {
+  } else if (
+    pathname.startsWith('/entrenador') ||
+    pathname.startsWith('/api/entrenador') ||
+    pathname.startsWith('/api/historial')
+  ) {
     if (token.rol !== 'ENTRENADOR') {
       return isApiRoute
         ? NextResponse.json({ error: 'Prohibido' }, { status: 403 })
         : NextResponse.redirect(new URL('/403', req.url));
     }
   } else if (pathname.startsWith('/api/cliente')) {
-    if (!['CLIENTE', 'ENTRENADOR', 'ADMIN'].includes(token.rol as string)) {
+    // Verifica nuevamente que ENTRENADOR está incluido
+    if (!['CLIENTE', 'ENTRENADOR', 'ADMIN'].includes(token.rol)) {
       return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
     }
 
     const isStatsRoute = /^\/api\/cliente\/\d+\/entrenador-estadistica$/.test(pathname);
-    if (isStatsRoute && !['ENTRENADOR', 'ADMIN'].includes(token.rol as string)) {
+    if (isStatsRoute && !['ENTRENADOR', 'ADMIN'].includes(token.rol)) {
       return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
     }
   }
