@@ -79,6 +79,7 @@ export interface Client {
     }[];
     profileImage?: string;
     weightRecords?: WeightRecord[];
+    estadisticas?: Estadisticas;
 }
 
 export interface Estadisticas {
@@ -389,41 +390,54 @@ export default function TrainerPage() {
     const handleShowStats = async (clientId: number) => {
         try {
             setIsLoading(true);
-            // Verificar si el usuario está autenticado
             if (!session) {
                 throw new Error('No estás autenticado.');
             }
 
-            // Obtener los datos completos del cliente
             const responseCliente = await fetch(`/api/cliente/${clientId}`, {
                 method: 'GET',
                 credentials: 'include',
             });
+
             if (!responseCliente.ok) {
-                throw new Error('No se pudieron obtener los datos del cliente');
+                const errorData = await responseCliente.json();
+                throw new Error(errorData.error || 'No se pudieron obtener los datos del cliente');
             }
+
             const dataCliente: Client = await responseCliente.json();
 
-            // Obtener las estadísticas del cliente
-            const responseEstadisticas = await fetch(`/api/cliente/${clientId}/entrenador-estadistica`, {
-                method: 'GET',
-                credentials: 'include',
-            });
-            if (!responseEstadisticas.ok) {
-                throw new Error('No se pudieron obtener las estadísticas del cliente');
+            // Verifica que las estadísticas existan antes de usarlas
+            if (!dataCliente.estadisticas) {
+                throw new Error('No se encontraron estadísticas para el cliente.');
             }
-            const dataEstadisticas: Estadisticas = await responseEstadisticas.json();
+
+            const { estadisticas } = dataCliente;
+
+            // Convierte a número después de toFixed
+            const kgPorDia = estadisticas.kgPorDia !== undefined ? parseFloat(estadisticas.kgPorDia.toFixed(2)) : 0;
+            const kgPorSemana = estadisticas.kgPorSemana !== undefined ? parseFloat(estadisticas.kgPorSemana.toFixed(2)) : 0;
+            const kgPorMes = estadisticas.kgPorMes !== undefined ? parseFloat(estadisticas.kgPorMes.toFixed(2)) : 0;
 
             const clienteConEstadisticas = {
                 ...dataCliente,
-                estadisticas: dataEstadisticas,
+                estadisticas: {
+                    ...estadisticas,
+                    kgPorDia,
+                    kgPorSemana,
+                    kgPorMes,
+                },
             };
 
             setSelectedClient(clienteConEstadisticas);
             setShowStatsModal(true);
         } catch (error) {
-            console.error('Error al obtener los datos del cliente:', error);
-            alert('Hubo un problema al cargar las estadísticas del cliente.');
+            if (error instanceof Error) {
+                console.error('Error al obtener los datos del cliente:', error);
+                alert(error.message || 'Hubo un problema al cargar las estadísticas del cliente.');
+            } else {
+                console.error('Error desconocido:', error);
+                alert('Hubo un problema al cargar las estadísticas del cliente.');
+            }
         } finally {
             setIsLoading(false);
         }
