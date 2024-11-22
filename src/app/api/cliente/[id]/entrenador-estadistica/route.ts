@@ -7,19 +7,29 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   try {
     console.log(`Request received for client ID: ${id}`);
 
-    // Obtener el cliente con sus registros de peso
     const usuario = await prisma.usuario.findUnique({
       where: { id: Number(id) },
       include: {
         registrosPeso: true,
         entrenadorAsignado: {
-          select: {
-            id: true,
-            nombre: true,
-            telefono: true,
+          include: {
+            entrenador: {
+              include: {
+                usuario: true,
+              },
+            },
           },
         },
-        membresias: true, // Asegúrate de incluir membresias si son necesarias
+        membresias: true,
+        reservasCliente: {
+          include: {
+            entrenador: {
+              include: {
+                usuario: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -97,7 +107,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         entrenador: r.entrenador ? {
           id: r.entrenador.id,
           nombre: r.entrenador.usuario.nombre,
-          telefono: r.entrenador.usuario.telefono,
         } : null,
       })),
       membresias: usuario.membresias.map(m => ({
@@ -107,12 +116,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         fechaInicio: m.fechaInicio,
         fechaFin: m.fechaFin,
       })),
-      entrenadorAsignado: usuario.entrenadorAsignado ? {
-        id: usuario.entrenadorAsignado.id,
-        nombre: usuario.entrenadorAsignado.nombre,
-        telefono: usuario.entrenadorAsignado.telefono,
+      entrenadorAsignado: usuario.entrenadorAsignado?.entrenador ? {
+        id: usuario.entrenadorAsignado.entrenador.id,
+        nombre: usuario.entrenadorAsignado.entrenador.usuario.nombre,
+        telefono: usuario.entrenadorAsignado.entrenador.usuario.telefono,
       } : null,
-      estadisticas, // Agregar estadísticas al objeto cliente
+      estadisticas,
     };
 
     console.log(`Estadísticas calculadas para el cliente ID ${id}:`, estadisticas);
