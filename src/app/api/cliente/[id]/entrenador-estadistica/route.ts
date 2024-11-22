@@ -10,33 +10,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   try {
     console.log(`Request received for client ID: ${id}`);
 
-    // Obtener el token desde las cookies utilizando getToken
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-
-    if (!token) {
-      console.log('No se encontró token. Usuario no autenticado.');
-      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
-    }
-
-    const userId = parseInt(token.sub as string, 10);
-
-    // Obtener el usuario desde la base de datos
-    const usuarioAutenticado = await prisma.usuario.findUnique({
-      where: { id: userId },
-      select: { rol: true },
-    });
-
-    if (!usuarioAutenticado) {
-      console.log('Usuario autenticado no encontrado en la base de datos.');
-      return NextResponse.json({ error: 'Usuario no válido' }, { status: 401 });
-    }
-
-    // Verificar roles y permisos
-    if (usuarioAutenticado.rol !== 'ADMIN' && usuarioAutenticado.rol !== 'ENTRENADOR') {
-      console.log(`Usuario con rol ${usuarioAutenticado.rol} no autorizado.`);
-      return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
-    }
-
     // Obtener el cliente con sus registros de peso
     const usuario = await prisma.usuario.findUnique({
       where: { id: Number(id) },
@@ -115,15 +88,38 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     console.log(`Estadísticas calculadas para el cliente ID ${id}:`, estadisticas);
 
+    const token = request.headers.get('Authorization')?.split(' ')[1];
+
+    if (!token) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+    }
+
+    const user = await getToken({ req: request });
+
+    if (!user) {
+      return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
+    }
+
+    const { rol, id: userId } = user;
+
+    console.log(`Usuario autenticado: ${user.nombre} (${rol})`);
+    console.log(`Cliente solicitado: ${usuario.nombre} (ID: ${usuario.id})`);
+
+    if (rol === 'ENTRENADOR') {
+      console.log(`Entrenador asignado al cliente: ${usuario.entrenadorAsignadoId}`);
+    }
+
     // Permitir acceso si el usuario es ADMIN
-    if (usuarioAutenticado.rol === 'ADMIN') {
+    if (rol === 'ADMIN') {
       // Permitir acceso
-    } else if (usuarioAutenticado.rol === 'ENTRENADOR') {
+    } else if (rol === 'ENTRENADOR') {
       // Verificar que el entrenador está asignado al cliente
-      if (usuario.entrenadorAsignado?.id !== userId) {
-        console.log(`Entrenador ID ${userId} no está asignado al cliente ID ${id}.`);
+      if (usuario.entrenadorAsignadoId !== userId) {
         return NextResponse.json({ error: 'No autorizado para acceder a este cliente' }, { status: 403 });
       }
+    } else {
+      // Rol no permitido
+      return NextResponse.json({ error: 'Prohibido' }, { status: 403 });
     }
 
     return NextResponse.json(estadisticas, { status: 200 });
