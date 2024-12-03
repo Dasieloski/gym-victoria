@@ -464,9 +464,35 @@ export default function AdminDashboard() {
         if (!items) return [];
         if (sortBy) {
             return [...items].sort((a, b) => {
-                if (a[sortBy] < b[sortBy]) return -1;
-                if (a[sortBy] > b[sortBy]) return 1;
-                return 0;
+                switch (sortBy) {
+                    case 'nombre':
+                    case 'membresia':
+                    case 'id':
+                        if (a[sortBy] < b[sortBy]) return -1;
+                        if (a[sortBy] > b[sortBy]) return 1;
+                        return 0;
+
+                    case 'ultimoPagoAsc':
+                        return new Date(a.membresiaActual.fechaInicio).getTime() - new Date(b.membresiaActual.fechaInicio).getTime();
+
+                    case 'ultimoPagoDesc':
+                        return new Date(b.membresiaActual.fechaInicio).getTime() - new Date(a.membresiaActual.fechaInicio).getTime();
+
+                    case 'fechaPagoAsc':
+                        return new Date(a.membresiaActual.fechaFin).getTime() - new Date(b.membresiaActual.fechaFin).getTime();
+
+                    case 'fechaPagoDesc':
+                        return new Date(b.membresiaActual.fechaFin).getTime() - new Date(a.membresiaActual.fechaFin).getTime();
+
+                    case 'diasParaPagarAsc':
+                        return calculateDaysUntilPayment(a.membresiaActual.fechaFin) - calculateDaysUntilPayment(b.membresiaActual.fechaFin);
+
+                    case 'diasParaPagarDesc':
+                        return calculateDaysUntilPayment(b.membresiaActual.fechaFin) - calculateDaysUntilPayment(a.membresiaActual.fechaFin);
+
+                    default:
+                        return 0;
+                }
             });
         }
         return items;
@@ -1031,6 +1057,12 @@ export default function AdminDashboard() {
                                     <SelectItem value="nombre">Nombre</SelectItem>
                                     <SelectItem value="membresia">Tipo de Membresía</SelectItem>
                                     <SelectItem value="id">ID de Cliente</SelectItem>
+                                    <SelectItem value="ultimoPagoAsc">Último Pago 🔼</SelectItem>
+                                    <SelectItem value="ultimoPagoDesc">Último Pago 🔽</SelectItem>
+                                    <SelectItem value="fechaPagoAsc">Fecha de Pago 🔼</SelectItem>
+                                    <SelectItem value="fechaPagoDesc">Fecha de Pago 🔽</SelectItem>
+                                    <SelectItem value="diasParaPagarAsc">Días para Pagar 🔼</SelectItem>
+                                    <SelectItem value="diasParaPagarDesc">Días para Pagar 🔽</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
