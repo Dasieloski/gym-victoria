@@ -35,7 +35,7 @@ export default function RootLayout({
   <div class="spinner" role="spinner"><div class="spinner-icon"></div></div>'
             zIndex={1600}
             showAtBottom={false} />
-      {/*     {children} */}
+          {children}
         </Providers>
       </body>
     </html>
