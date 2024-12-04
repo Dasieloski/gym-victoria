@@ -224,12 +224,10 @@ export default function AdminDashboard() {
     const clientesPorcentaje = previousTotalClientes ? ((totalClientes - previousTotalClientes) / previousTotalClientes) * 100 : 0;
 
     const calculateDaysUntilPayment = (fechaFin: string): number => {
-        const today = new Date();
+        const hoy = new Date();
         const fin = new Date(fechaFin);
-        const diffTime = fin.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        console.log(`Dias para pagar (${fechaFin}):`, diffDays);
-        return diffDays;
+        const diferencia = fin.getTime() - hoy.getTime();
+        return Math.ceil(diferencia / (1000 * 60 * 60 * 24));
     };
     const formatDate = (dateString: string): string => {
         const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: '2-digit' };
@@ -812,9 +810,16 @@ export default function AdminDashboard() {
     }
 
     useEffect(() => {
-        const sorted = sortItems(filteredMemberships, sortBy)
-        setSortedMemberships(sorted)
-    }, [sortBy, clientesConMembresia, searchMemberships])
+        const membresiasConDias = clientesConMembresia.map((client) => {
+            const diasParaPagar = client.membresiaActual
+                ? calculateDaysUntilPayment(client.membresiaActual.fechaFin)
+                : 0;
+            return { ...client, diasParaPagar };
+        });
+
+        const sorted = sortItems(membresiasConDias, sortBy);
+        setSortedMemberships(sorted);
+    }, [sortBy, clientesConMembresia, searchMemberships]);
 
     // Función para manejar el cambio de orden
     const handleSortChange = (field: string) => {
@@ -1089,15 +1094,18 @@ export default function AdminDashboard() {
                                     <SelectValue placeholder="Ordenar por" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="nombre">Nombre</SelectItem>
-                                    <SelectItem value="membresiaActual.tipo">Tipo de Membresía</SelectItem>
-                                    <SelectItem value="id">ID de Cliente</SelectItem>
-                                    <SelectItem value="ultimoPagoAsc">Último Pago 🔼</SelectItem>
-                                    <SelectItem value="ultimoPagoDesc">Último Pago 🔽</SelectItem>
-                                    <SelectItem value="fechaPagoAsc">Fecha de Pago 🔼</SelectItem>
-                                    <SelectItem value="fechaPagoDesc">Fecha de Pago 🔽</SelectItem>
-                                    <SelectItem value="diasParaPagarAsc">Días para Pagar 🔼</SelectItem>
-                                    <SelectItem value="diasParaPagarDesc">Días para Pagar 🔽</SelectItem>
+                                    <SelectItem value="nombreAsc">Nombre Asc 🔼</SelectItem>
+                                    <SelectItem value="nombreDesc">Nombre Desc 🔽</SelectItem>
+                                    <SelectItem value="membresiaActual.tipoAsc">Tipo de Membresía Asc 🔼</SelectItem>
+                                    <SelectItem value="membresiaActual.tipoDesc">Tipo de Membresía Desc 🔽</SelectItem>
+                                    <SelectItem value="idAsc">ID de Cliente Asc 🔼</SelectItem>
+                                    <SelectItem value="idDesc">ID de Cliente Desc 🔽</SelectItem>
+                                    <SelectItem value="membresiaActual.fechaInicioAsc">Último Pago Asc 🔼</SelectItem>
+                                    <SelectItem value="membresiaActual.fechaInicioDesc">Último Pago Desc 🔽</SelectItem>
+                                    <SelectItem value="membresiaActual.fechaFinAsc">Fecha de Pago Asc 🔼</SelectItem>
+                                    <SelectItem value="membresiaActual.fechaFinDesc">Fecha de Pago Desc 🔽</SelectItem>
+                                    <SelectItem value="diasParaPagarAsc">Días para Pagar Asc 🔼</SelectItem>
+                                    <SelectItem value="diasParaPagarDesc">Días para Pagar Desc 🔽</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -1122,7 +1130,7 @@ export default function AdminDashboard() {
                                                         Próximo Pago: {formatDate(client.membresiaActual?.fechaFin || '')}
                                                     </p>
                                                     <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
-                                                        Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual?.fechaFin || '')}
+                                                        Días para Pagar: {client.diasParaPagar}
                                                     </p>
                                                     <a
                                                         href={`https://wa.me/${client.telefono}`}
@@ -1209,7 +1217,7 @@ export default function AdminDashboard() {
                                                 Próximo Pago: {formatDate(client.membresiaActual.fechaFin)}
                                             </p>
                                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                                Días para Pagar: {calculateDaysUntilPayment(client.membresiaActual.fechaFin)}
+                                                Días para Pagar: {client.diasParaPagar}
                                             </p>
                                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                                                 Estado de Pago: {client.membresiaActual.estadoPago}

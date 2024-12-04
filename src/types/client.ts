@@ -24,4 +24,5 @@ export interface ClientType {
         id: number;
         nombre: string;
     };
+    diasParaPagar?: number;
 }
