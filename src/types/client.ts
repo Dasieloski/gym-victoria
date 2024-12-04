@@ -1,6 +1,7 @@
 export interface ClientType {
     id: number;
     nombre: string;
+    username?: string;
     carnetIdentidad: string;
     telefono: string;
     rol: string;

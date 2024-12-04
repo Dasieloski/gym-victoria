@@ -89,9 +89,14 @@ export default function AdminDashboard() {
     const [sortBy, setSortBy] = useState('')
     const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; id: number | null; type: string }>({ isOpen: false, id: null, type: '' })
     const [trainers, setTrainers] = useState([])
-    const [editingClient, setEditingClient] = useState<{ id: string; nombre: string; telefono: string; entrenadorAsignadoId: string | null } | null>(null)
+    const [editingClient, setEditingClient] = useState<{
+        id: number; // Cambiado de string a number
+        nombre: string;
+        telefono: string;
+        entrenadorAsignadoId: string | null;
+    } | null>(null);
     const [clientes, setClientes] = useState<ClientType[]>([]); // Definir el tipo de estado
-    const [clientesEspera, setClientesEspera] = useState([])
+    const [clientesEspera, setClientesEspera] = useState<ClientType[]>([]);
     const [isDarkMode, setIsDarkMode] = useState(false)
     const [activeTab, setActiveTab] = useState('dashboard')
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -113,6 +118,7 @@ export default function AdminDashboard() {
     const [selectedMembership, setSelectedMembership] = useState<{
         [key: number]: { tipo: string; isAdvanced: boolean }
     }>({});
+    const [sortedMemberships, setSortedMemberships] = useState<ClientType[]>([]);
 
     const filteredClients = Array.isArray(clientes) ? clientes.filter((client: ClientType) =>
     (client.nombre?.toLowerCase().includes(searchClients.toLowerCase()) ||
@@ -120,9 +126,9 @@ export default function AdminDashboard() {
         client.telefono?.toLowerCase().includes(searchClients.toLowerCase()))
     ) : [];
 
-    const filteredNewClients = Array.isArray(clientesEspera) ? clientesEspera.filter((client: { nombre: string; username: string; carnetIdentidad: string }) =>
+    const filteredNewClients = Array.isArray(clientesEspera) ? clientesEspera.filter((client: ClientType) =>
         client.nombre.toLowerCase().includes(searchNewClients.toLowerCase()) ||
-        client.username.toLowerCase().includes(searchNewClients.toLowerCase()) ||
+        (client.username?.toLowerCase() || '').includes(searchNewClients.toLowerCase()) ||
         client.carnetIdentidad.toLowerCase().includes(searchNewClients.toLowerCase())
     ) : [];
 
@@ -358,7 +364,7 @@ export default function AdminDashboard() {
         fetchData();
     }, []);
 
-    const handleConvertToClient = async (id: string) => {
+    const handleConvertToClient = async (id: number) => {
         try {
             console.log('handleConvertToClient - Iniciando con ID:', id);
             const response = await fetch(`/api/newClients`, {
@@ -461,49 +467,30 @@ export default function AdminDashboard() {
     };
 
 
-    const sortItems = (items: { [key: string]: any }[]) => {
-        if (!items) return [];
-        if (sortBy) {
-            return [...items].sort((a, b) => {
-                switch (sortBy) {
-                    case 'nombre':
-                    case 'membresia':
-                    case 'id':
-                        if (a[sortBy] < b[sortBy]) return -1;
-                        if (a[sortBy] > b[sortBy]) return 1;
-                        return 0;
+    const sortItems = <T extends { id: string | number }>(
+        items: T[],
+        sortBy: string
+    ): T[] => {
+        if (!sortBy) return items;
+        return [...items].sort((a, b) => {
+            const aValue = getProperty(a, sortBy);
+            const bValue = getProperty(b, sortBy);
 
-                    case 'ultimoPagoAsc':
-                        return new Date(a.membresiaActual.fechaInicio).getTime() - new Date(b.membresiaActual.fechaInicio).getTime();
+            if (aValue < bValue) return -1;
+            if (aValue > bValue) return 1;
+            return 0;
+        });
+    }
 
-                    case 'ultimoPagoDesc':
-                        return new Date(b.membresiaActual.fechaInicio).getTime() - new Date(a.membresiaActual.fechaInicio).getTime();
-
-                    case 'fechaPagoAsc':
-                        return new Date(a.membresiaActual.fechaFin).getTime() - new Date(b.membresiaActual.fechaFin).getTime();
-
-                    case 'fechaPagoDesc':
-                        return new Date(b.membresiaActual.fechaFin).getTime() - new Date(a.membresiaActual.fechaFin).getTime();
-
-                    case 'diasParaPagarAsc':
-                        return calculateDaysUntilPayment(a.membresiaActual.fechaFin) - calculateDaysUntilPayment(b.membresiaActual.fechaFin);
-
-                    case 'diasParaPagarDesc':
-                        return calculateDaysUntilPayment(b.membresiaActual.fechaFin) - calculateDaysUntilPayment(a.membresiaActual.fechaFin);
-
-                    default:
-                        return 0;
-                }
-            });
-        }
-        return items;
-    };
+    const getProperty = (obj: any, path: string): any => {
+        return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+    }
 
     const handleDelete = (id: number | null, type: string) => { // Cambiado a 'number | null'
         setDeleteConfirmation({ isOpen: true, id, type });
     };
 
-    const handleEditClient = (client: { id: string; nombre: string; telefono: string; entrenadorAsignadoId: string | null } | null) => {
+    const handleEditClient = (client: { id: number; nombre: string; telefono: string; entrenadorAsignadoId: string | null } | null) => {
         setEditingClient(client);
     };
 
@@ -792,7 +779,10 @@ export default function AdminDashboard() {
         setDeleteConfirmation({ isOpen: true, id, type });
     }
 
-    const sortedMemberships = sortItems(filteredMemberships);
+    useEffect(() => {
+        const sorted = sortItems(filteredMemberships, sortBy)
+        setSortedMemberships(sorted)
+    }, [sortBy, clientesConMembresia, searchMemberships])
 
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''}`}>
@@ -927,7 +917,7 @@ export default function AdminDashboard() {
                             </Select>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(filteredClients).map((client) => (
+                            {sortItems(filteredClients, sortBy).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
                                         <ProfileImage src={client.foto} alt={client.nombre} />
@@ -947,12 +937,17 @@ export default function AdminDashboard() {
                                     <div className="flex justify-end">
                                         <Dialog>
                                             <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm" className="mr-2" onClick={() => handleEditClient({
-                                                    id: client.id,
-                                                    nombre: client.nombre,
-                                                    telefono: client.telefono,
-                                                    entrenadorAsignadoId: client.entrenadorAsignadoId
-                                                })}>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="mr-2"
+                                                    onClick={() => handleEditClient({
+                                                        id: client.id, // Asegúrate de que client.id sea de tipo number
+                                                        nombre: client.nombre,
+                                                        telefono: client.telefono,
+                                                        entrenadorAsignadoId: client.entrenadorAsignado?.id.toString() || null
+                                                    })}
+                                                >
                                                     <Edit size={18} />
                                                 </Button>
                                             </DialogTrigger>
@@ -971,7 +966,7 @@ export default function AdminDashboard() {
                                                             onChange={(e) => setEditingClient({
                                                                 ...editingClient,
                                                                 nombre: e.target.value,
-                                                                id: editingClient?.id || '',
+                                                                id: editingClient!.id, // Usar la aserción de no nulo
                                                                 telefono: editingClient?.telefono || '',
                                                                 entrenadorAsignadoId: editingClient?.entrenadorAsignadoId || ''
                                                             })}
@@ -986,7 +981,7 @@ export default function AdminDashboard() {
                                                             id="phone"
                                                             value={editingClient?.telefono || ''}
                                                             onChange={(e) => setEditingClient({
-                                                                id: editingClient?.id || '',
+                                                                id: editingClient!.id,
                                                                 nombre: editingClient?.nombre || '',
                                                                 telefono: e.target.value,
                                                                 entrenadorAsignadoId: editingClient?.entrenadorAsignadoId || ''
@@ -1003,7 +998,7 @@ export default function AdminDashboard() {
                                                             onValueChange={(value) => setEditingClient({
                                                                 ...editingClient,
                                                                 entrenadorAsignadoId: value === 'Sin entrenador' ? null : value,
-                                                                id: editingClient?.id || '',
+                                                                id: editingClient!.id, // Usar la aserción de no nulo
                                                                 nombre: editingClient?.nombre || '',
                                                                 telefono: editingClient?.telefono || ''
                                                             })}>
@@ -1058,7 +1053,7 @@ export default function AdminDashboard() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="nombre">Nombre</SelectItem>
-                                    <SelectItem value="membresia">Tipo de Membresía</SelectItem>
+                                    <SelectItem value="membresiaActual.tipo">Tipo de Membresía</SelectItem>
                                     <SelectItem value="id">ID de Cliente</SelectItem>
                                     <SelectItem value="ultimoPagoAsc">Último Pago 🔼</SelectItem>
                                     <SelectItem value="ultimoPagoDesc">Último Pago 🔽</SelectItem>
@@ -1199,7 +1194,7 @@ export default function AdminDashboard() {
                     <div>
                         {/* ...otros componentes como el buscador y select de ordenación... */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(bookings || []).map((booking) => (
+                            {sortItems<Booking>(bookings || [], sortBy).map((booking) => (
                                 <div key={booking.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
                                         <ProfileImage src={booking.cliente.foto} alt={booking.cliente.nombre} />
@@ -1252,7 +1247,7 @@ export default function AdminDashboard() {
                             </Select>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(filteredNewClients).map((client) => (
+                            {sortItems(filteredNewClients, sortBy).map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
                                         <ProfileImage src={client.foto} alt={client.nombre} />
@@ -1298,7 +1293,7 @@ export default function AdminDashboard() {
                             </Select>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(filteredUsers).map((user) => (
+                            {sortItems(filteredUsers, sortBy).map((user) => (
                                 <div key={user.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
                                         <ProfileImage src={user.foto} alt={user.nombre} />
