@@ -222,6 +222,7 @@ export default function AdminDashboard() {
         const fin = new Date(fechaFin);
         const diffTime = fin.getTime() - today.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        console.log(`Dias para pagar (${fechaFin}):`, diffDays);
         return diffDays;
     };
     const formatDate = (dateString: string): string => {
@@ -496,7 +497,7 @@ export default function AdminDashboard() {
             });
         }
         return items;
-    }
+    };
 
     const handleDelete = (id: number | null, type: string) => { // Cambiado a 'number | null'
         setDeleteConfirmation({ isOpen: true, id, type });
@@ -790,6 +791,8 @@ export default function AdminDashboard() {
     const handleDeleteM = (id: number, type: string) => {
         setDeleteConfirmation({ isOpen: true, id, type });
     }
+
+    const sortedMemberships = sortItems(filteredMemberships);
 
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''}`}>
@@ -1107,8 +1110,9 @@ export default function AdminDashboard() {
                             </div>
                         )}
 
+                        {/* Lista de Membresías Ordenadas */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {filteredMemberships.map((client) => (
+                            {sortedMemberships.map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
                                         <ProfileImage src={client.foto || '/default-profile.png'} alt={client.nombre} />
@@ -1118,9 +1122,9 @@ export default function AdminDashboard() {
                                         </div>
                                     </div>
                                     <div className="mb-2">
-                                        <label htmlFor={`membership-${client.id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <Label htmlFor={`membership-${client.id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Tipo de Membresía
-                                        </label>
+                                        </Label>
                                         <select
                                             id={`membership-${client.id}`}
                                             value={selectedMembership[client.id]?.tipo || ''}
