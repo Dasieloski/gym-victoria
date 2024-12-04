@@ -472,18 +472,50 @@ export default function AdminDashboard() {
         sortBy: string
     ): T[] => {
         if (!sortBy) return items;
-        return [...items].sort((a, b) => {
-            const aValue = getProperty(a, sortBy);
-            const bValue = getProperty(b, sortBy);
 
-            if (aValue < bValue) return -1;
-            if (aValue > bValue) return 1;
+        let field = sortBy;
+        let direction: 'asc' | 'desc' = 'asc';
+
+        // Detectar si sortBy termina con 'Asc' o 'Desc'
+        if (sortBy.endsWith('Asc')) {
+            field = sortBy.slice(0, -3); // Remover 'Asc'
+            direction = 'asc';
+        } else if (sortBy.endsWith('Desc')) {
+            field = sortBy.slice(0, -4); // Remover 'Desc'
+            direction = 'desc';
+        }
+
+        return [...items].sort((a, b) => {
+            const aValue = getProperty(a, field);
+            const bValue = getProperty(b, field);
+
+            // Verificar si ambos valores son fechas
+            if (isValidDate(aValue) && isValidDate(bValue)) {
+                const aDate = new Date(aValue);
+                const bDate = new Date(bValue);
+                return direction === 'asc' ? aDate.getTime() - bDate.getTime() : bDate.getTime() - aDate.getTime();
+            }
+
+            // Comparar cadenas de texto
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+                return direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+            }
+
+            // Comparar números
+            if (typeof aValue === 'number' && typeof bValue === 'number') {
+                return direction === 'asc' ? aValue - bValue : bValue - aValue;
+            }
+
             return 0;
         });
     }
 
     const getProperty = (obj: any, path: string): any => {
         return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+    }
+
+    const isValidDate = (date: any): boolean => {
+        return !isNaN(Date.parse(date));
     }
 
     const handleDelete = (id: number | null, type: string) => { // Cambiado a 'number | null'
@@ -783,6 +815,11 @@ export default function AdminDashboard() {
         const sorted = sortItems(filteredMemberships, sortBy)
         setSortedMemberships(sorted)
     }, [sortBy, clientesConMembresia, searchMemberships])
+
+    // Función para manejar el cambio de orden
+    const handleSortChange = (field: string) => {
+        setSortBy(field);
+    }
 
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''}`}>
