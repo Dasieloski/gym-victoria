@@ -1102,8 +1102,8 @@ export default function AdminDashboard() {
                                     <SelectItem value="idDesc">ID de Cliente Desc 🔽</SelectItem>
                                     <SelectItem value="membresiaActual.fechaInicioAsc">Último Pago Asc 🔼</SelectItem>
                                     <SelectItem value="membresiaActual.fechaInicioDesc">Último Pago Desc 🔽</SelectItem>
-                                    <SelectItem value="membresiaActual.fechaFinAsc">Fecha de Pago Asc 🔼</SelectItem>
-                                    <SelectItem value="membresiaActual.fechaFinDesc">Fecha de Pago Desc 🔽</SelectItem>
+                                    {/* <SelectItem value="membresiaActual.fechaFinAsc">Fecha de Pago Asc 🔼</SelectItem>
+                                    <SelectItem value="membresiaActual.fechaFinDesc">Fecha de Pago Desc 🔽</SelectItem> */}
                                     <SelectItem value="diasParaPagarAsc">Días para Pagar Asc 🔼</SelectItem>
                                     <SelectItem value="diasParaPagarDesc">Días para Pagar Desc 🔽</SelectItem>
                                 </SelectContent>
