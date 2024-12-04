@@ -810,13 +810,22 @@ export default function AdminDashboard() {
     }
 
     useEffect(() => {
-        const membresiasConDias = clientesConMembresia.map((client) => {
+        // Filtrar las membresías según el término de búsqueda
+        const filtered = clientesConMembresia.filter(client =>
+            client.nombre.toLowerCase().includes(searchMemberships.toLowerCase()) ||
+            client.id.toString().includes(searchMemberships) ||
+            client.membresiaActual?.tipo.toLowerCase().includes(searchMemberships.toLowerCase())
+        );
+
+        // Calcular los días para pagar
+        const membresiasConDias = filtered.map((client) => {
             const diasParaPagar = client.membresiaActual
                 ? calculateDaysUntilPayment(client.membresiaActual.fechaFin)
                 : 0;
             return { ...client, diasParaPagar };
         });
 
+        // Ordenar los resultados filtrados
         const sorted = sortItems(membresiasConDias, sortBy);
         setSortedMemberships(sorted);
     }, [sortBy, clientesConMembresia, searchMemberships]);
