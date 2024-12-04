@@ -163,7 +163,7 @@ export default function AdminDashboard() {
     }, [clientesConMembresia]);
 
     useEffect(() => {
-        console.log('Clientes con membresía actual:', clientesConMembresia);
+       // console.log('Clientes con membresía actual:', clientesConMembresia);
         const contarMembresiasHoy = () => {
             const hoy = dayjs().startOf('day');
 
@@ -174,14 +174,14 @@ export default function AdminDashboard() {
                     client.membresias.forEach(membresia => {
                         const fechaInicio = dayjs(membresia.fechaInicio).startOf('day');
                         if (fechaInicio.isSame(hoy, 'day')) {
-                            console.log(`Cliente: ${client.nombre}, Fecha Inicio: ${fechaInicio.format('YYYY-MM-DD')}`);
+                         //   console.log(`Cliente: ${client.nombre}, Fecha Inicio: ${fechaInicio.format('YYYY-MM-DD')}`);
                             contador += 1;
                         }
                     });
                 }
             });
 
-            console.log(`Membresías asignadas hoy: ${contador}`);
+          //  console.log(`Membresías asignadas hoy: ${contador}`);
             setMembresiasHoy(contador);
         };
 
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
                     throw new Error(errorData.error || 'Error al obtener las reservas');
                 }
                 const data = await response.json();
-                console.log('Reservas obtenidas:', data);
+              //  console.log('Reservas obtenidas:', data);
                 setBookings(data); // Actualizado para asignar data directamente
             } catch (error) {
                 console.error('Error al obtener las reservas:', error as Error);
@@ -268,7 +268,7 @@ export default function AdminDashboard() {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log('Historiales obtenidos:', data); // Verifica los datos aquí
+            //    console.log('Historiales obtenidos:', data); // Verifica los datos aquí
                 setHistoriales(data);
             } catch (error) {
                 console.error('Error al obtener los historiales:', error);
@@ -286,7 +286,7 @@ export default function AdminDashboard() {
                     throw new Error('Error al obtener las membresías');
                 }
                 const data = await response.json();
-                console.log('Datos de membresías:', data); // Verifica los datos aquí
+              //  console.log('Datos de membresías:', data); // Verifica los datos aquí
                 setClientesConMembresia(data);
             } catch (error) {
                 console.error('Error al obtener las membresías:', error);
@@ -364,7 +364,7 @@ export default function AdminDashboard() {
 
     const handleConvertToClient = async (id: number) => {
         try {
-            console.log('handleConvertToClient - Iniciando con ID:', id);
+          //  console.log('handleConvertToClient - Iniciando con ID:', id);
             const response = await fetch(`/api/newClients`, {
                 method: 'PATCH',
                 headers: {
@@ -380,7 +380,7 @@ export default function AdminDashboard() {
             }
 
             const updatedUser = await response.json();
-            console.log('handleConvertToClient - Usuario actualizado:', updatedUser);
+          //  console.log('handleConvertToClient - Usuario actualizado:', updatedUser);
             setClientesEspera(prevClientes =>
                 prevClientes.filter((c: { id: number }) => c.id !== updatedUser.id)
             );
@@ -403,7 +403,7 @@ export default function AdminDashboard() {
                 throw new Error('Error al obtener los roles de usuario');
             }
             const data = await response.json();
-            console.log('Roles obtenidos:', data); // Añade este log para verificar los datos
+          //  console.log('Roles obtenidos:', data); // Añade este log para verificar los datos
             setUserRoles(data);
         } catch (error) {
             console.error('Error al obtener los roles de usuario:', error);
@@ -412,7 +412,7 @@ export default function AdminDashboard() {
     };
 
     useEffect(() => {
-        console.log('Estado actualizado de userRoles:', userRoles);
+      //  console.log('Estado actualizado de userRoles:', userRoles);
     }, [userRoles]);
 
     const handleUpdateRole = async (id: string, newRole: string) => {
@@ -648,7 +648,7 @@ export default function AdminDashboard() {
     }
 
     // Verifica el contenido de clientesConMembresia
-    console.log('Clientes con membresía:', clientesConMembresia);
+ //   console.log('Clientes con membresía:', clientesConMembresia);
 
     // Calcular la distribución de membresías
     const totalMensual = clientesConMembresia.filter((client: { membresiaActual?: { tipo: string } }) => client.membresiaActual?.tipo === 'MENSUAL').length;
@@ -656,7 +656,7 @@ export default function AdminDashboard() {
     const totalAnual = clientesConMembresia.filter((client: { membresiaActual?: { tipo: string } }) => client.membresiaActual?.tipo === 'ANUAL').length;
 
     // Verifica los totales calculados
-    console.log('Distribución de membresías:', { totalMensual, totalTrimestral, totalAnual });
+ //   console.log('Distribución de membresías:', { totalMensual, totalTrimestral, totalAnual });
 
     const pieChartData = {
         labels: ['Mensual', 'Semestral', 'Anual'],
@@ -725,10 +725,10 @@ export default function AdminDashboard() {
     }, [searchHistory, sortBy]);
 
     const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean) => {
-        console.log('handleMembershipChange called');
-        console.log('clientId:', clientId);
-        console.log('newMembershipType:', newMembershipType);
-        console.log('isAdvanced:', isAdvanced);
+     //   console.log('handleMembershipChange called');
+       // console.log('clientId:', clientId);
+        //console.log('newMembershipType:', newMembershipType);
+        //console.log('isAdvanced:', isAdvanced);
 
         if (!newMembershipType) {
             toast.error('Por favor, seleccione un tipo de membresía válido');
@@ -742,7 +742,7 @@ export default function AdminDashboard() {
 
         if (isAdvanced) {
             payload.descripcion = 'Pago adelantado';
-            console.log('Payload para pago adelantado:', payload);
+          //  console.log('Payload para pago adelantado:', payload);
         } else {
             let duration = 0;
             switch (newMembershipType) {
@@ -764,7 +764,7 @@ export default function AdminDashboard() {
 
             payload.fechaInicio = fechaInicio.toISOString();
             payload.fechaFin = fechaFin.toISOString();
-            console.log('Payload para pago normal:', payload);
+           // console.log('Payload para pago normal:', payload);
         }
 
         try {
@@ -776,7 +776,7 @@ export default function AdminDashboard() {
                 body: JSON.stringify(payload),
             });
 
-            console.log('Respuesta de la API:', response);
+          //  console.log('Respuesta de la API:', response);
 
             if (!response.ok) {
                 const errorData = await response.json();
@@ -785,7 +785,7 @@ export default function AdminDashboard() {
             }
 
             const updatedClient: ClientType = await response.json();
-            console.log('Cliente actualizado:', updatedClient);
+           // console.log('Cliente actualizado:', updatedClient);
 
             setClientesConMembresia(prev =>
                 prev.map((client: ClientType) =>
@@ -1102,8 +1102,8 @@ export default function AdminDashboard() {
                                     <SelectItem value="idDesc">ID de Cliente Desc 🔽</SelectItem>
                                     <SelectItem value="membresiaActual.fechaInicioAsc">Último Pago Asc 🔼</SelectItem>
                                     <SelectItem value="membresiaActual.fechaInicioDesc">Último Pago Desc 🔽</SelectItem>
-                                    {/* <SelectItem value="membresiaActual.fechaFinAsc">Fecha de Pago Asc 🔼</SelectItem>
-                                    <SelectItem value="membresiaActual.fechaFinDesc">Fecha de Pago Desc 🔽</SelectItem> */}
+                                    <SelectItem value="membresiaActual.fechaFinAsc">Próximo Pago Asc 🔼</SelectItem>
+                                    <SelectItem value="membresiaActual.fechaFinDesc">Próximo Pago Desc 🔽</SelectItem>
                                     <SelectItem value="diasParaPagarAsc">Días para Pagar Asc 🔼</SelectItem>
                                     <SelectItem value="diasParaPagarDesc">Días para Pagar Desc 🔽</SelectItem>
                                 </SelectContent>
