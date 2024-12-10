@@ -454,7 +454,7 @@ export default function WeightTrackingComponent({ clientId }: WeightTrackingComp
                     {/* IMC */}
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
                         <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">📏 IMC</h3>
-                        <p className="text-3xl font-bold text-[#2272FF]">{latestRecord.imc.toFixed(1)}</p>
+                        <p className="text-3xl font-bold text-[#2272FF]">{latestRecord.imc.toFixed(2)}</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                             Índice de Masa Corporal
                         </p>
