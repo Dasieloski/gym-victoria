@@ -44,9 +44,8 @@ interface WeightRecordPartial {
     gluteo?: number;
 }
 
-function calcularPesoIdeal(altura: number): number {
-    const alturaEnCm = altura * 100; // Convertir metros a centímetros
-    return alturaEnCm - 100;
+function calcularPesoIdeal(alturaCm: number): number {
+    return alturaCm - 100;
 }
 
 // Función para la fórmula de Broca
