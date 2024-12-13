@@ -17,8 +17,8 @@ const getAdditionalDays = (tipo: string): number => {
 
 export async function PUT(request: Request) {
     try {
-        // Leer todo el cuerpo de la solicitud una sola vez
-        const { clientId, tipo, descripcion, fechaInicio, fechaFin, additionalDays } = await request.json();
+        // Leer todo el cuerpo de la solicitud
+        const { clientId, tipo, descripcion, fechaInicio, fechaFin, additionalDays, countDaysWithoutPayment } = await request.json();
 
         console.log('Backend: Recibido PUT request');
         console.log('clientId:', clientId);
@@ -26,6 +26,8 @@ export async function PUT(request: Request) {
         console.log('descripcion:', descripcion);
         console.log('fechaInicio:', fechaInicio);
         console.log('fechaFin:', fechaFin);
+        console.log('additionalDays:', additionalDays);
+        console.log('countDaysWithoutPayment:', countDaysWithoutPayment);
 
         if (!clientId || !tipo) { 
             console.log('Backend: clientId o tipo faltantes');
@@ -45,14 +47,38 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
         }
 
-        // Determinar si es un pago adelantado
-        const isAdvanced = descripcion && descripcion.toLowerCase().includes('adelantado');
-        console.log('Backend: isAdvanced:', isAdvanced);
+        // Obtener la fecha actual
+        const hoy = new Date();
 
         let nuevaFechaInicio: Date;
         let nuevaFechaFin: Date;
 
-        if (isAdvanced && usuario.membresiaActual) {
+        if (countDaysWithoutPayment) {
+            // Calcular los días sin pago
+            const fechaFinActual = new Date(usuario.membresiaActual?.fechaFin || hoy);
+            const diferenciaTiempo = hoy.getTime() - fechaFinActual.getTime();
+            const diasSinPago = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
+
+            console.log('Backend: diasSinPago:', diasSinPago);
+
+            // Calcular los días a agregar restando los días sin pago al periodo de la membresía
+            const diasDeMembresia = getAdditionalDays(tipo);
+            const diasParaAgregar = diasDeMembresia - diasSinPago;
+
+            console.log('Backend: diasParaAgregar:', diasParaAgregar);
+
+            // Establecer la nueva fecha de inicio como hoy
+            nuevaFechaInicio = hoy;
+
+            // Calcular la nueva fecha de fin añadiendo los días a agregar
+            nuevaFechaFin = new Date(hoy.getTime() + (diasParaAgregar * 24 * 60 * 60 * 1000));
+
+            console.log('Backend: nuevaFechaFin (contar días sin pago):', nuevaFechaFin);
+        } else if (descripcion && descripcion.toLowerCase().includes('adelantado') && usuario.membresiaActual) {
+            // Determinar si es un pago adelantado
+            const isAdvanced = true;
+            console.log('Backend: isAdvanced:', isAdvanced);
+
             // Obtener la fechaFin de la membresía actual
             const currentFechaFin = new Date(usuario.membresiaActual.fechaFin);
             console.log('Backend: currentFechaFin:', currentFechaFin);
@@ -68,7 +94,7 @@ export async function PUT(request: Request) {
             nuevaFechaFin = new Date(currentFechaFin.getTime() + (additionalDaysToAdd * 24 * 60 * 60 * 1000));
             console.log('Backend: nuevaFechaFin (adelantado):', nuevaFechaFin);
         } else {
-            // Si no es un pago adelantado, usar las fechas proporcionadas en la solicitud
+            // Si no es un pago adelantado ni contar días sin pago, usar las fechas proporcionadas en la solicitud
             if (!fechaInicio || !fechaFin) {
                 console.log('Backend: fechaInicio o fechaFin faltantes');
                 return NextResponse.json({ error: 'fechaInicio y fechaFin son requeridos si no es adelantado' }, { status: 400 });

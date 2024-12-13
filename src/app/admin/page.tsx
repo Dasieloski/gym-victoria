@@ -116,7 +116,11 @@ export default function AdminDashboard() {
     const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
     const [membresiasHoy, setMembresiasHoy] = useState(0);
     const [selectedMembership, setSelectedMembership] = useState<{
-        [key: number]: { tipo: string; isAdvanced: boolean; countDaysWithoutPayment: boolean }
+        [key: number]: { 
+            tipo: string; 
+            isAdvanced: boolean; 
+            countDaysWithoutPayment: boolean; 
+        }
     }>({});
     const [sortedMemberships, setSortedMemberships] = useState<ClientType[]>([]);
 
@@ -226,8 +230,9 @@ export default function AdminDashboard() {
     const calculateDaysUntilPayment = (fechaFin: string): number => {
         const hoy = new Date();
         const fin = new Date(fechaFin);
-        const diferencia = fin.getTime() - hoy.getTime();
-        return Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+        const diferenciaTiempo = hoy.getTime() - fin.getTime();
+        const dias = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
+        return dias >= 0 ? dias : 0; // Asegura que no sea negativo
     };
     const formatDate = (dateString: string): string => {
         const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: '2-digit' };
@@ -725,103 +730,67 @@ export default function AdminDashboard() {
     }, [searchHistory, sortBy]);
 
     const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean, countDaysWithoutPayment: boolean) => {
-     //   console.log('handleMembershipChange called');
-       // console.log('clientId:', clientId);
-        //console.log('newMembershipType:', newMembershipType);
-        //console.log('isAdvanced:', isAdvanced);
-
-        if (!newMembershipType) {
-            toast.error('Por favor, seleccione un tipo de membresía válido');
-            return;
-        }
-
-        let payload: any = {
-            clientId,
-            tipo: newMembershipType.toUpperCase(),
-        };
-
-        if (isAdvanced) {
-            payload.descripcion = 'Pago adelantado';
-          //  console.log('Payload para pago adelantado:', payload);
-        } else {
-            let duration = 0;
-            switch (newMembershipType) {
-                case 'MENSUAL':
-                    duration = 30;
-                    break;
-                case 'TRIMESTRAL':
-                    duration = 180; // Actualizado a 90 días
-                    break;
-                case 'ANUAL':
-                    duration = 365;
-                    break;
-                default:
-                    duration = 30;
-            }
-
-            const fechaInicio = new Date();
-            const fechaFin = new Date(fechaInicio.getTime() + (duration * 24 * 60 * 60 * 1000));
-
-            payload.fechaInicio = fechaInicio.toISOString();
-            payload.fechaFin = fechaFin.toISOString();
-           // console.log('Payload para pago normal:', payload);
-        }
-
-        if (countDaysWithoutPayment) {
-            // Calcular los días sin pago
-            const client = clientesConMembresia.find(c => c.id === clientId);
-            if (client && client.membresiaActual) {
-                const hoy = new Date();
-                const fechaFinActual = new Date(client.membresiaActual.fechaFin);
-                const diasSinPago = calculateDaysUntilPayment(client.membresiaActual.fechaFin);
-
-                // Restar los días sin pago al periodo de la nueva membresía
-                let additionalDays = 0;
-                if (newMembershipType === 'MENSUAL') {
-                    additionalDays = 30 - diasSinPago;
-                }
-
-                payload.additionalDays = additionalDays;
-            }
-        }
-
         try {
+            const requestBody: any = { clientId, tipo: newMembershipType };
+
+            if (isAdvanced) {
+                requestBody.descripcion = 'adelantado';
+            }
+
+            if (countDaysWithoutPayment) {
+                // Calcular los días sin pago
+                const client = clientesConMembresia.find(c => c.id === clientId);
+                if (client && client.membresiaActual) {
+                    const hoy = new Date();
+                    const fechaFinActual = new Date(client.membresiaActual.fechaFin);
+                    const diasSinPago = calculateDaysUntilPayment(client.membresiaActual.fechaFin);
+
+                    console.log(`Días sin pago para cliente ${client.id}:`, diasSinPago);
+
+                    // Restar los días sin pago al periodo de la nueva membresía
+                    let additionalDays = 0;
+                    if (newMembershipType === 'MENSUAL') {
+                        additionalDays = 30 - diasSinPago;
+                    } else if (newMembershipType === 'ANUAL') {
+                        additionalDays = 365 - diasSinPago;
+                    } else if (newMembershipType === 'TRIMESTRAL') {
+                        // No modificar las membresías trimestrales
+                        additionalDays = 180;
+                    }
+
+                    // Asegurarse de que additionalDays no sea negativo
+                    if (additionalDays < 0) additionalDays = 0;
+
+                    requestBody.additionalDays = additionalDays;
+                    requestBody.countDaysWithoutPayment = true;
+                }
+            }
+
             const response = await fetch('/api/admin/updateMembership', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(requestBody),
             });
-
-          //  console.log('Respuesta de la API:', response);
 
             if (!response.ok) {
                 const errorData = await response.json();
-                console.error('Error de la API:', errorData);
-                throw new Error(errorData.error || 'Error desconocido al actualizar la membresía');
+                throw new Error(errorData.error || 'Error al actualizar la membresía');
             }
 
             const updatedClient: ClientType = await response.json();
-           // console.log('Cliente actualizado:', updatedClient);
-
             setClientesConMembresia(prev =>
                 prev.map((client: ClientType) =>
                     client.id === updatedClient.id ? updatedClient : client
                 )
             );
             toast.success('Membresía actualizada con éxito');
-
-            // Resetear la selección después de la asignación
-            setSelectedMembership(prev => ({
-                ...prev,
-                [clientId]: { tipo: '', isAdvanced: false, countDaysWithoutPayment: false }
-            }));
         } catch (error) {
             console.error('Error al actualizar la membresía:', error);
             toast.error(`Error al actualizar la membresía: ${(error as Error).message}`);
         }
-    }
+    };
 
     const handleDeleteM = (id: number, type: string) => {
         setDeleteConfirmation({ isOpen: true, id, type });
