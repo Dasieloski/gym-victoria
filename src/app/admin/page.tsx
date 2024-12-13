@@ -232,13 +232,13 @@ export default function AdminDashboard() {
     const ingresosPorcentaje = previousIngresosMensuales ? ((ingresosMensuales - previousIngresosMensuales) / previousIngresosMensuales) * 100 : 0;
     const clientesPorcentaje = previousTotalClientes ? ((totalClientes - previousTotalClientes) / previousTotalClientes) * 100 : 0;
 
-    const calculateDaysUntilPayment = (fechaFin: string): number => {
-        const hoy = new Date();
-        const fin = new Date(fechaFin);
-        const diferenciaTiempo = fin.getTime() - hoy.getTime();
-        const dias = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));
-        return dias >= 0 ? dias : 0; // Asegura que no sea negativo
-    };
+   const calculateDaysUntilPayment = (fechaFin: string): number => {
+       const hoy = new Date();
+       const fin = new Date(fechaFin);
+       const diferenciaTiempo = fin.getTime() - hoy.getTime();
+       const dias = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));
+       return dias; // Permite valores negativos
+   };
     const formatDate = (dateString: string): string => {
         const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: '2-digit' };
         return new Date(dateString).toLocaleDateString('es-ES', options);
@@ -1018,7 +1018,7 @@ export default function AdminDashboard() {
                                                     </div>
                                                     <div className="grid grid-cols-4 items-center gap-4">
                                                         <Label htmlFor="phone" className="text-right">
-                                                            Teléfono
+                                                            Tel��fono
                                                         </Label>
                                                         <Input
                                                             id="phone"
@@ -1186,7 +1186,7 @@ export default function AdminDashboard() {
                                                 Seleccione la membresía
                                             </option>
                                             <option value="MENSUAL">Mensual</option>
-                                            <option value="TRIMESTRAL">Semestral</option>
+                                            <option value="TRIMESTRAL">Trimestral</option>
                                             <option value="ANUAL">Anual</option>
                                         </select>
 
@@ -1238,9 +1238,20 @@ export default function AdminDashboard() {
                                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
                                                 Próximo Pago: {formatDate(client.membresiaActual.fechaFin)}
                                             </p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                                Días para Pagar: {client.diasParaPagar}
+                                            <p
+                                                className={`text-sm mb-1 ${
+                                                    client.diasParaPagar && client.diasParaPagar < 0
+                                                        ? 'text-red-600 font-bold'
+                                                        : 'text-gray-600 dark:text-gray-400'
+                                                }`}
+                                            >
+                                                Días para Pagar: {client.diasParaPagar} {client.diasParaPagar && client.diasParaPagar < 0 && '⚠️'}
                                             </p>
+                                            {client.diasParaPagar && client.diasParaPagar < 0 && (
+                                                <p className="text-sm text-red-600">
+                                                    Este cliente está en negativo de días para pagar🚫
+                                                </p>
+                                            )}
                                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                                                 Estado de Pago: {client.membresiaActual.estadoPago}
                                             </p>
