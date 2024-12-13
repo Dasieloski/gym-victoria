@@ -153,13 +153,18 @@ export default function AdminDashboard() {
     ) : [];
 
     const filtrarClientesProximosPagos = (clientes: ClientType[]) => {
-        return clientes.filter(cliente => {
-            if (cliente.membresiaActual) {
-                const diasParaPagar = calculateDaysUntilPayment(cliente.membresiaActual.fechaFin);
-                return diasParaPagar <= 10 && diasParaPagar > 0;
-            }
-            return false;
-        });
+        return clientes
+            .filter(cliente => {
+                if (cliente.membresiaActual) {
+                    const diasParaPagar = calculateDaysUntilPayment(cliente.membresiaActual.fechaFin);
+                    return diasParaPagar <= 10 && diasParaPagar > 0;
+                }
+                return false;
+            })
+            .map(cliente => ({
+                ...cliente,
+                diasParaPagar: calculateDaysUntilPayment(cliente.membresiaActual!.fechaFin)
+            }));
     };
     useEffect(() => {
         const clientesFiltrados = filtrarClientesProximosPagos(clientesConMembresia);
