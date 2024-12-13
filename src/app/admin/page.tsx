@@ -227,13 +227,13 @@ export default function AdminDashboard() {
     const ingresosPorcentaje = previousIngresosMensuales ? ((ingresosMensuales - previousIngresosMensuales) / previousIngresosMensuales) * 100 : 0;
     const clientesPorcentaje = previousTotalClientes ? ((totalClientes - previousTotalClientes) / previousTotalClientes) * 100 : 0;
 
-    const calculateDaysUntilPayment = (fechaFin: string): number => {
-        const hoy = new Date();
-        const fin = new Date(fechaFin);
-        const diferenciaTiempo = hoy.getTime() - fin.getTime();
-        const dias = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
-        return dias >= 0 ? dias : 0; // Asegura que no sea negativo
-    };
+const calculateDaysUntilPayment = (fechaFin: string): number => {
+    const hoy = new Date();
+    const fin = new Date(fechaFin);
+    const diferenciaTiempo = fin.getTime() - hoy.getTime();
+    const dias = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));
+    return dias >= 0 ? dias : 0; // Asegura que no sea negativo
+};
     const formatDate = (dateString: string): string => {
         const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: '2-digit' };
         return new Date(dateString).toLocaleDateString('es-ES', options);
