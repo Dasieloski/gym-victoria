@@ -116,10 +116,10 @@ export default function AdminDashboard() {
     const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
     const [membresiasHoy, setMembresiasHoy] = useState(0);
     const [selectedMembership, setSelectedMembership] = useState<{
-        [key: number]: { 
-            tipo: string; 
-            isAdvanced: boolean; 
-            countDaysWithoutPayment: boolean; 
+        [key: number]: {
+            tipo: string;
+            isAdvanced: boolean;
+            countDaysWithoutPayment: boolean;
         }
     }>({});
     const [sortedMemberships, setSortedMemberships] = useState<ClientType[]>([]);
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
     }, [clientesConMembresia]);
 
     useEffect(() => {
-       // console.log('Clientes con membresía actual:', clientesConMembresia);
+        // console.log('Clientes con membresía actual:', clientesConMembresia);
         const contarMembresiasHoy = () => {
             const hoy = dayjs().startOf('day');
 
@@ -178,14 +178,14 @@ export default function AdminDashboard() {
                     client.membresias.forEach(membresia => {
                         const fechaInicio = dayjs(membresia.fechaInicio).startOf('day');
                         if (fechaInicio.isSame(hoy, 'day')) {
-                         //   console.log(`Cliente: ${client.nombre}, Fecha Inicio: ${fechaInicio.format('YYYY-MM-DD')}`);
+                            //   console.log(`Cliente: ${client.nombre}, Fecha Inicio: ${fechaInicio.format('YYYY-MM-DD')}`);
                             contador += 1;
                         }
                     });
                 }
             });
 
-          //  console.log(`Membresías asignadas hoy: ${contador}`);
+            //  console.log(`Membresías asignadas hoy: ${contador}`);
             setMembresiasHoy(contador);
         };
 
@@ -227,13 +227,13 @@ export default function AdminDashboard() {
     const ingresosPorcentaje = previousIngresosMensuales ? ((ingresosMensuales - previousIngresosMensuales) / previousIngresosMensuales) * 100 : 0;
     const clientesPorcentaje = previousTotalClientes ? ((totalClientes - previousTotalClientes) / previousTotalClientes) * 100 : 0;
 
-const calculateDaysUntilPayment = (fechaFin: string): number => {
-    const hoy = new Date();
-    const fin = new Date(fechaFin);
-    const diferenciaTiempo = fin.getTime() - hoy.getTime();
-    const dias = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));
-    return dias >= 0 ? dias : 0; // Asegura que no sea negativo
-};
+    const calculateDaysUntilPayment = (fechaFin: string): number => {
+        const hoy = new Date();
+        const fin = new Date(fechaFin);
+        const diferenciaTiempo = fin.getTime() - hoy.getTime();
+        const dias = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));
+        return dias >= 0 ? dias : 0; // Asegura que no sea negativo
+    };
     const formatDate = (dateString: string): string => {
         const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: '2-digit' };
         return new Date(dateString).toLocaleDateString('es-ES', options);
@@ -254,7 +254,7 @@ const calculateDaysUntilPayment = (fechaFin: string): number => {
                     throw new Error(errorData.error || 'Error al obtener las reservas');
                 }
                 const data = await response.json();
-              //  console.log('Reservas obtenidas:', data);
+                //  console.log('Reservas obtenidas:', data);
                 setBookings(data); // Actualizado para asignar data directamente
             } catch (error) {
                 console.error('Error al obtener las reservas:', error as Error);
@@ -273,7 +273,7 @@ const calculateDaysUntilPayment = (fechaFin: string): number => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-            //    console.log('Historiales obtenidos:', data); // Verifica los datos aquí
+                //    console.log('Historiales obtenidos:', data); // Verifica los datos aquí
                 setHistoriales(data);
             } catch (error) {
                 console.error('Error al obtener los historiales:', error);
@@ -291,7 +291,7 @@ const calculateDaysUntilPayment = (fechaFin: string): number => {
                     throw new Error('Error al obtener las membresías');
                 }
                 const data = await response.json();
-              //  console.log('Datos de membresías:', data); // Verifica los datos aquí
+                //  console.log('Datos de membresías:', data); // Verifica los datos aquí
                 setClientesConMembresia(data);
             } catch (error) {
                 console.error('Error al obtener las membresías:', error);
@@ -369,7 +369,7 @@ const calculateDaysUntilPayment = (fechaFin: string): number => {
 
     const handleConvertToClient = async (id: number) => {
         try {
-          //  console.log('handleConvertToClient - Iniciando con ID:', id);
+            //  console.log('handleConvertToClient - Iniciando con ID:', id);
             const response = await fetch(`/api/newClients`, {
                 method: 'PATCH',
                 headers: {
@@ -385,7 +385,7 @@ const calculateDaysUntilPayment = (fechaFin: string): number => {
             }
 
             const updatedUser = await response.json();
-          //  console.log('handleConvertToClient - Usuario actualizado:', updatedUser);
+            //  console.log('handleConvertToClient - Usuario actualizado:', updatedUser);
             setClientesEspera(prevClientes =>
                 prevClientes.filter((c: { id: number }) => c.id !== updatedUser.id)
             );
@@ -408,7 +408,7 @@ const calculateDaysUntilPayment = (fechaFin: string): number => {
                 throw new Error('Error al obtener los roles de usuario');
             }
             const data = await response.json();
-          //  console.log('Roles obtenidos:', data); // Añade este log para verificar los datos
+            //  console.log('Roles obtenidos:', data); // Añade este log para verificar los datos
             setUserRoles(data);
         } catch (error) {
             console.error('Error al obtener los roles de usuario:', error);
@@ -417,7 +417,7 @@ const calculateDaysUntilPayment = (fechaFin: string): number => {
     };
 
     useEffect(() => {
-      //  console.log('Estado actualizado de userRoles:', userRoles);
+        //  console.log('Estado actualizado de userRoles:', userRoles);
     }, [userRoles]);
 
     const handleUpdateRole = async (id: string, newRole: string) => {
@@ -653,7 +653,7 @@ const calculateDaysUntilPayment = (fechaFin: string): number => {
     }
 
     // Verifica el contenido de clientesConMembresia
- //   console.log('Clientes con membresía:', clientesConMembresia);
+    //   console.log('Clientes con membresía:', clientesConMembresia);
 
     // Calcular la distribución de membresías
     const totalMensual = clientesConMembresia.filter((client: { membresiaActual?: { tipo: string } }) => client.membresiaActual?.tipo === 'MENSUAL').length;
@@ -661,7 +661,7 @@ const calculateDaysUntilPayment = (fechaFin: string): number => {
     const totalAnual = clientesConMembresia.filter((client: { membresiaActual?: { tipo: string } }) => client.membresiaActual?.tipo === 'ANUAL').length;
 
     // Verifica los totales calculados
- //   console.log('Distribución de membresías:', { totalMensual, totalTrimestral, totalAnual });
+    //   console.log('Distribución de membresías:', { totalMensual, totalTrimestral, totalAnual });
 
     const pieChartData = {
         labels: ['Mensual', 'Semestral', 'Anual'],
