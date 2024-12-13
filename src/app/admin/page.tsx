@@ -116,7 +116,7 @@ export default function AdminDashboard() {
     const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
     const [membresiasHoy, setMembresiasHoy] = useState(0);
     const [selectedMembership, setSelectedMembership] = useState<{
-        [key: number]: { tipo: string; isAdvanced: boolean }
+        [key: number]: { tipo: string; isAdvanced: boolean; countDaysWithoutPayment: boolean }
     }>({});
     const [sortedMemberships, setSortedMemberships] = useState<ClientType[]>([]);
 
@@ -724,7 +724,7 @@ export default function AdminDashboard() {
         setCurrentPage(1);
     }, [searchHistory, sortBy]);
 
-    const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean) => {
+    const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean, countDaysWithoutPayment: boolean) => {
      //   console.log('handleMembershipChange called');
        // console.log('clientId:', clientId);
         //console.log('newMembershipType:', newMembershipType);
@@ -767,6 +767,24 @@ export default function AdminDashboard() {
            // console.log('Payload para pago normal:', payload);
         }
 
+        if (countDaysWithoutPayment) {
+            // Calcular los días sin pago
+            const client = clientesConMembresia.find(c => c.id === clientId);
+            if (client && client.membresiaActual) {
+                const hoy = new Date();
+                const fechaFinActual = new Date(client.membresiaActual.fechaFin);
+                const diasSinPago = calculateDaysUntilPayment(client.membresiaActual.fechaFin);
+
+                // Restar los días sin pago al periodo de la nueva membresía
+                let additionalDays = 0;
+                if (newMembershipType === 'MENSUAL') {
+                    additionalDays = 30 - diasSinPago;
+                }
+
+                payload.additionalDays = additionalDays;
+            }
+        }
+
         try {
             const response = await fetch('/api/admin/updateMembership', {
                 method: 'PUT',
@@ -797,7 +815,7 @@ export default function AdminDashboard() {
             // Resetear la selección después de la asignación
             setSelectedMembership(prev => ({
                 ...prev,
-                [clientId]: { tipo: '', isAdvanced: false }
+                [clientId]: { tipo: '', isAdvanced: false, countDaysWithoutPayment: false }
             }));
         } catch (error) {
             console.error('Error al actualizar la membresía:', error);
@@ -1180,11 +1198,12 @@ export default function AdminDashboard() {
                                             onChange={(e) => {
                                                 const tipo = e.target.value;
                                                 const isAdvanced = selectedMembership[client.id]?.isAdvanced || false;
-                                                handleMembershipChange(client.id, tipo, isAdvanced);
+                                                const countDaysWithoutPayment = selectedMembership[client.id]?.countDaysWithoutPayment || false;
+                                                handleMembershipChange(client.id, tipo, isAdvanced, countDaysWithoutPayment);
                                                 // Resetear la selección después de la asignación
                                                 setSelectedMembership(prev => ({
                                                     ...prev,
-                                                    [client.id]: { tipo: '', isAdvanced: false }
+                                                    [client.id]: { tipo: '', isAdvanced: false, countDaysWithoutPayment: false }
                                                 }));
                                             }}
                                             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
@@ -1215,6 +1234,26 @@ export default function AdminDashboard() {
                                                 className="mr-2"
                                             />
                                             Adelantar Pago
+                                        </label>
+
+                                        {/* Añadir el checkbox para contar días sin pago */}
+                                        <label className="flex items-center mt-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedMembership[client.id]?.countDaysWithoutPayment || false}
+                                                onChange={(e) => {
+                                                    const isChecked = e.target.checked;
+                                                    setSelectedMembership(prev => ({
+                                                        ...prev,
+                                                        [client.id]: {
+                                                            ...prev[client.id],
+                                                            countDaysWithoutPayment: isChecked,
+                                                        },
+                                                    }));
+                                                }}
+                                                className="mr-2"
+                                            />
+                                            Contar Días Sin Pago
                                         </label>
                                     </div>
                                     {client.membresiaActual ? (

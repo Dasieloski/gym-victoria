@@ -18,7 +18,7 @@ const getAdditionalDays = (tipo: string): number => {
 export async function PUT(request: Request) {
     try {
         // Leer todo el cuerpo de la solicitud una sola vez
-        const { clientId, tipo, descripcion, fechaInicio, fechaFin } = await request.json();
+        const { clientId, tipo, descripcion, fechaInicio, fechaFin, additionalDays } = await request.json();
 
         console.log('Backend: Recibido PUT request');
         console.log('clientId:', clientId);
@@ -58,14 +58,14 @@ export async function PUT(request: Request) {
             console.log('Backend: currentFechaFin:', currentFechaFin);
 
             // Calcular los días adicionales basados en el tipo de membresía
-            const additionalDays = getAdditionalDays(tipo);
-            console.log('Backend: additionalDays:', additionalDays);
+            const additionalDaysToAdd = additionalDays || getAdditionalDays(tipo);
+            console.log('Backend: additionalDays:', additionalDaysToAdd);
 
             // Establecer la nueva fecha de inicio como la fechaFin actual
             nuevaFechaInicio = currentFechaFin;
 
-            // Calcular la nueva fecha de fin añadiendo los días adicionales usando getTime
-            nuevaFechaFin = new Date(currentFechaFin.getTime() + (additionalDays * 24 * 60 * 60 * 1000));
+            // Calcular la nueva fecha de fin añadiendo los días adicionales
+            nuevaFechaFin = new Date(currentFechaFin.getTime() + (additionalDaysToAdd * 24 * 60 * 60 * 1000));
             console.log('Backend: nuevaFechaFin (adelantado):', nuevaFechaFin);
         } else {
             // Si no es un pago adelantado, usar las fechas proporcionadas en la solicitud
