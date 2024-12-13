@@ -7,7 +7,7 @@ const getAdditionalDays = (tipo: string): number => {
         case 'ANUAL':
             return 365;
         case 'TRIMESTRAL':
-            return 180; // 6 meses
+            return 180; // 3 meses
         case 'MENSUAL':
             return 30;
         default:
@@ -17,6 +17,7 @@ const getAdditionalDays = (tipo: string): number => {
 
 export async function PUT(request: Request) {
     try {
+        // Leer todo el cuerpo de la solicitud una sola vez
         const { clientId, tipo, descripcion, fechaInicio, fechaFin } = await request.json();
 
         console.log('Backend: Recibido PUT request');
@@ -51,45 +52,33 @@ export async function PUT(request: Request) {
         let nuevaFechaInicio: Date;
         let nuevaFechaFin: Date;
 
-        const hoy = new Date();
+        if (isAdvanced && usuario.membresiaActual) {
+            // Obtener la fechaFin de la membresía actual
+            const currentFechaFin = new Date(usuario.membresiaActual.fechaFin);
+            console.log('Backend: currentFechaFin:', currentFechaFin);
 
-        if (usuario.membresiaActual && new Date(usuario.membresiaActual.fechaFin) >= hoy) {
-            // Si la membresía actual está activa, extender desde la fechaFin actual
-            nuevaFechaInicio = new Date(usuario.membresiaActual.fechaFin);
+            // Calcular los días adicionales basados en el tipo de membresía
             const additionalDays = getAdditionalDays(tipo);
-            nuevaFechaFin = new Date(nuevaFechaInicio.getTime() + (additionalDays * 24 * 60 * 60 * 1000));
+            console.log('Backend: additionalDays:', additionalDays);
 
-            console.log('Backend: Extendiendo membresía existente');
-            console.log('Nueva Fecha Inicio:', nuevaFechaInicio);
-            console.log('Nueva Fecha Fin:', nuevaFechaFin);
+            // Establecer la nueva fecha de inicio como la fechaFin actual
+            nuevaFechaInicio = currentFechaFin;
+
+            // Calcular la nueva fecha de fin añadiendo los días adicionales usando getTime
+            nuevaFechaFin = new Date(currentFechaFin.getTime() + (additionalDays * 24 * 60 * 60 * 1000));
+            console.log('Backend: nuevaFechaFin (adelantado):', nuevaFechaFin);
         } else {
-            // Si no hay membresía activa, iniciar desde hoy o desde la fecha proporcionada si es avanzado
-            if (isAdvanced) {
-                // Usar la fechaFin proporcionada para iniciar la nueva membresía desde allí
-                if (!fechaFin) {
-                    console.log('Backend: fechaFin faltante para pago adelantado');
-                    return NextResponse.json({ error: 'fechaFin es requerido para pagos adelantados' }, { status: 400 });
-                }
-                nuevaFechaInicio = new Date(fechaFin);
-                const additionalDays = getAdditionalDays(tipo);
-                nuevaFechaFin = new Date(nuevaFechaInicio.getTime() + (additionalDays * 24 * 60 * 60 * 1000));
-
-                console.log('Backend: Creando membresía adelantada desde fechaFin proporcionada');
-                console.log('Nueva Fecha Inicio:', nuevaFechaInicio);
-                console.log('Nueva Fecha Fin:', nuevaFechaFin);
-            } else {
-                if (!fechaInicio || !fechaFin) {
-                    console.log('Backend: fechaInicio o fechaFin faltantes');
-                    return NextResponse.json({ error: 'fechaInicio y fechaFin son requeridos si no es adelantado' }, { status: 400 });
-                }
-
-                nuevaFechaInicio = new Date(fechaInicio);
-                nuevaFechaFin = new Date(fechaFin);
-
-                console.log('Backend: Creando nueva membresía desde hoy o fechaInicio proporcionada');
-                console.log('Nueva Fecha Inicio:', nuevaFechaInicio);
-                console.log('Nueva Fecha Fin:', nuevaFechaFin);
+            // Si no es un pago adelantado, usar las fechas proporcionadas en la solicitud
+            if (!fechaInicio || !fechaFin) {
+                console.log('Backend: fechaInicio o fechaFin faltantes');
+                return NextResponse.json({ error: 'fechaInicio y fechaFin son requeridos si no es adelantado' }, { status: 400 });
             }
+
+            nuevaFechaInicio = new Date(fechaInicio);
+            nuevaFechaFin = new Date(fechaFin);
+
+            console.log('Backend: nuevaFechaInicio (normal):', nuevaFechaInicio);
+            console.log('Backend: nuevaFechaFin (normal):', nuevaFechaFin);
         }
 
         // Crear una nueva membresía con las fechas calculadas
