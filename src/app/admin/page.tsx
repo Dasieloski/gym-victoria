@@ -116,7 +116,7 @@ export default function AdminDashboard() {
     const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
     const [membresiasHoy, setMembresiasHoy] = useState(0);
     const [selectedMembership, setSelectedMembership] = useState<{
-        [key: number]: { tipo: string; isAdvanced: boolean; countUnpaidDays: boolean }
+        [key: number]: { tipo: string; isAdvanced: boolean }
     }>({});
     const [sortedMemberships, setSortedMemberships] = useState<ClientType[]>([]);
 
@@ -724,7 +724,12 @@ export default function AdminDashboard() {
         setCurrentPage(1);
     }, [searchHistory, sortBy]);
 
-    const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean, countUnpaidDays: boolean) => {
+    const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean) => {
+     //   console.log('handleMembershipChange called');
+       // console.log('clientId:', clientId);
+        //console.log('newMembershipType:', newMembershipType);
+        //console.log('isAdvanced:', isAdvanced);
+
         if (!newMembershipType) {
             toast.error('Por favor, seleccione un tipo de membresía válido');
             return;
@@ -733,18 +738,11 @@ export default function AdminDashboard() {
         let payload: any = {
             clientId,
             tipo: newMembershipType.toUpperCase(),
-            countUnpaidDays,
         };
 
         if (isAdvanced) {
             payload.descripcion = 'Pago adelantado';
-            const cliente = clientesConMembresia.find(c => c.id === clientId);
-            if (cliente && cliente.membresiaActual) {
-                payload.fechaFin = cliente.membresiaActual.fechaFin;
-            } else {
-                toast.error('No se pudo determinar la fechaFin para el pago adelantado');
-                return;
-            }
+          //  console.log('Payload para pago adelantado:', payload);
         } else {
             let duration = 0;
             switch (newMembershipType) {
@@ -752,7 +750,7 @@ export default function AdminDashboard() {
                     duration = 30;
                     break;
                 case 'TRIMESTRAL':
-                    duration = 180;
+                    duration = 180; // Actualizado a 90 días
                     break;
                 case 'ANUAL':
                     duration = 365;
@@ -761,12 +759,12 @@ export default function AdminDashboard() {
                     duration = 30;
             }
 
-            const today = new Date();
-            const fechaInicio = today.toISOString();
-            const fechaFin = new Date(today.getTime() + (duration * 24 * 60 * 60 * 1000)).toISOString();
+            const fechaInicio = new Date();
+            const fechaFin = new Date(fechaInicio.getTime() + (duration * 24 * 60 * 60 * 1000));
 
-            payload.fechaInicio = fechaInicio;
-            payload.fechaFin = fechaFin;
+            payload.fechaInicio = fechaInicio.toISOString();
+            payload.fechaFin = fechaFin.toISOString();
+           // console.log('Payload para pago normal:', payload);
         }
 
         try {
@@ -778,6 +776,8 @@ export default function AdminDashboard() {
                 body: JSON.stringify(payload),
             });
 
+          //  console.log('Respuesta de la API:', response);
+
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error('Error de la API:', errorData);
@@ -785,6 +785,7 @@ export default function AdminDashboard() {
             }
 
             const updatedClient: ClientType = await response.json();
+           // console.log('Cliente actualizado:', updatedClient);
 
             setClientesConMembresia(prev =>
                 prev.map((client: ClientType) =>
@@ -796,7 +797,7 @@ export default function AdminDashboard() {
             // Resetear la selección después de la asignación
             setSelectedMembership(prev => ({
                 ...prev,
-                [clientId]: { tipo: '', isAdvanced: false, countUnpaidDays: false }
+                [clientId]: { tipo: '', isAdvanced: false }
             }));
         } catch (error) {
             console.error('Error al actualizar la membresía:', error);
@@ -1102,8 +1103,18 @@ export default function AdminDashboard() {
                                     <SelectValue placeholder="Ordenar por" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="nombre">Nombre</SelectItem>
-                                    <SelectItem value="tipo">Tipo de Membresía</SelectItem>
+                                    <SelectItem value="nombreAsc">Nombre Asc 🔼</SelectItem>
+                                    <SelectItem value="nombreDesc">Nombre Desc 🔽</SelectItem>
+                                    <SelectItem value="membresiaActual.tipoAsc">Tipo de Membresía Asc 🔼</SelectItem>
+                                    <SelectItem value="membresiaActual.tipoDesc">Tipo de Membresía Desc 🔽</SelectItem>
+                                    <SelectItem value="idAsc">ID de Cliente Asc 🔼</SelectItem>
+                                    <SelectItem value="idDesc">ID de Cliente Desc 🔽</SelectItem>
+                                    <SelectItem value="membresiaActual.fechaInicioAsc">Último Pago Asc 🔼</SelectItem>
+                                    <SelectItem value="membresiaActual.fechaInicioDesc">Último Pago Desc 🔽</SelectItem>
+                                    <SelectItem value="membresiaActual.fechaFinAsc">Próximo Pago Asc 🔼</SelectItem>
+                                    <SelectItem value="membresiaActual.fechaFinDesc">Próximo Pago Desc 🔽</SelectItem>
+                                    <SelectItem value="diasParaPagarAsc">Días para Pagar Asc 🔼</SelectItem>
+                                    <SelectItem value="diasParaPagarDesc">Días para Pagar Desc 🔽</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -1150,39 +1161,43 @@ export default function AdminDashboard() {
 
                         {/* Lista de Membresías Ordenadas */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {sortItems(filteredMemberships, sortBy).map((client) => (
+                            {sortedMemberships.map((client) => (
                                 <div key={client.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                     <div className="flex items-center mb-4">
-                                        <ProfileImage src={client.foto} alt={client.nombre} />
+                                        <ProfileImage src={client.foto || '/default-profile.png'} alt={client.nombre} />
                                         <div className="ml-4">
                                             <h3 className="text-lg font-semibold">{client.nombre}</h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400">ID: {client.id}</p>
                                         </div>
                                     </div>
                                     <div className="mb-2">
-                                        <label htmlFor={`membership-${client.id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <Label htmlFor={`membership-${client.id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Tipo de Membresía
-                                        </label>
+                                        </Label>
                                         <select
                                             id={`membership-${client.id}`}
-                                            value={client.membresiaActual?.tipo || ''}
-                                            onChange={(e) => handleMembershipChange(
-                                                client.id, 
-                                                e.target.value, 
-                                                selectedMembership[client.id]?.isAdvanced || false,
-                                                selectedMembership[client.id]?.countUnpaidDays || false
-                                            )}
+                                            value={selectedMembership[client.id]?.tipo || ''}
+                                            onChange={(e) => {
+                                                const tipo = e.target.value;
+                                                const isAdvanced = selectedMembership[client.id]?.isAdvanced || false;
+                                                handleMembershipChange(client.id, tipo, isAdvanced);
+                                                // Resetear la selección después de la asignación
+                                                setSelectedMembership(prev => ({
+                                                    ...prev,
+                                                    [client.id]: { tipo: '', isAdvanced: false }
+                                                }));
+                                            }}
                                             className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-[#2272FF] focus:border-[#2272FF] dark:text-white"
                                         >
                                             <option value="" disabled>
                                                 Seleccione la membresía
                                             </option>
                                             <option value="MENSUAL">Mensual</option>
-                                            <option value="TRIMESTRAL">Trimestral</option>
+                                            <option value="TRIMESTRAL">Semestral</option>
                                             <option value="ANUAL">Anual</option>
                                         </select>
 
-                                        {/* Añadir checkbox para Adelantar Pago */}
+                                        {/* Añadir un checkbox para indicar si es adelantado */}
                                         <label className="flex items-center mt-2">
                                             <input
                                                 type="checkbox"
@@ -1200,26 +1215,6 @@ export default function AdminDashboard() {
                                                 className="mr-2"
                                             />
                                             Adelantar Pago
-                                        </label>
-
-                                        {/* Añadir checkbox para Contar Días sin Pago */}
-                                        <label className="flex items-center mt-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedMembership[client.id]?.countUnpaidDays || false}
-                                                onChange={(e) => {
-                                                    const isChecked = e.target.checked;
-                                                    setSelectedMembership(prev => ({
-                                                        ...prev,
-                                                        [client.id]: {
-                                                            ...prev[client.id],
-                                                            countUnpaidDays: isChecked,
-                                                        },
-                                                    }));
-                                                }}
-                                                className="mr-2"
-                                            />
-                                            Contar días sin pago
                                         </label>
                                     </div>
                                     {client.membresiaActual ? (
