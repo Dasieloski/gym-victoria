@@ -725,11 +725,6 @@ export default function AdminDashboard() {
     }, [searchHistory, sortBy]);
 
     const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean) => {
-     //   console.log('handleMembershipChange called');
-       // console.log('clientId:', clientId);
-        //console.log('newMembershipType:', newMembershipType);
-        //console.log('isAdvanced:', isAdvanced);
-
         if (!newMembershipType) {
             toast.error('Por favor, seleccione un tipo de membresía válido');
             return;
@@ -742,7 +737,14 @@ export default function AdminDashboard() {
 
         if (isAdvanced) {
             payload.descripcion = 'Pago adelantado';
-          //  console.log('Payload para pago adelantado:', payload);
+            // Asegúrate de proporcionar la fechaFin si es necesario
+            const cliente = clientesConMembresia.find(c => c.id === clientId);
+            if (cliente && cliente.membresiaActual) {
+                payload.fechaFin = cliente.membresiaActual.fechaFin;
+            } else {
+                toast.error('No se pudo determinar la fechaFin para el pago adelantado');
+                return;
+            }
         } else {
             let duration = 0;
             switch (newMembershipType) {
@@ -750,7 +752,7 @@ export default function AdminDashboard() {
                     duration = 30;
                     break;
                 case 'TRIMESTRAL':
-                    duration = 180; // Actualizado a 90 días
+                    duration = 90;
                     break;
                 case 'ANUAL':
                     duration = 365;
@@ -759,12 +761,12 @@ export default function AdminDashboard() {
                     duration = 30;
             }
 
-            const fechaInicio = new Date();
-            const fechaFin = new Date(fechaInicio.getTime() + (duration * 24 * 60 * 60 * 1000));
+            const today = new Date();
+            const fechaInicio = today.toISOString();
+            const fechaFin = new Date(today.getTime() + (duration * 24 * 60 * 60 * 1000)).toISOString();
 
-            payload.fechaInicio = fechaInicio.toISOString();
-            payload.fechaFin = fechaFin.toISOString();
-           // console.log('Payload para pago normal:', payload);
+            payload.fechaInicio = fechaInicio;
+            payload.fechaFin = fechaFin;
         }
 
         try {
@@ -776,8 +778,6 @@ export default function AdminDashboard() {
                 body: JSON.stringify(payload),
             });
 
-          //  console.log('Respuesta de la API:', response);
-
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error('Error de la API:', errorData);
@@ -785,7 +785,6 @@ export default function AdminDashboard() {
             }
 
             const updatedClient: ClientType = await response.json();
-           // console.log('Cliente actualizado:', updatedClient);
 
             setClientesConMembresia(prev =>
                 prev.map((client: ClientType) =>
