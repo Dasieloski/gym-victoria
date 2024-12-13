@@ -17,7 +17,8 @@ const getAdditionalDays = (tipo: string): number => {
 
 export async function PUT(request: Request) {
     try {
-        const { clientId, tipo, descripcion, fechaInicio, fechaFin, contarDiasSinPago } = await request.json();
+        // Leer todo el cuerpo de la solicitud una sola vez
+        const { clientId, tipo, descripcion, fechaInicio, fechaFin } = await request.json();
 
         console.log('Backend: Recibido PUT request');
         console.log('clientId:', clientId);
@@ -25,9 +26,8 @@ export async function PUT(request: Request) {
         console.log('descripcion:', descripcion);
         console.log('fechaInicio:', fechaInicio);
         console.log('fechaFin:', fechaFin);
-        console.log('contarDiasSinPago:', contarDiasSinPago);
 
-        if (!clientId || !tipo) {
+        if (!clientId || !tipo) { 
             console.log('Backend: clientId o tipo faltantes');
             return NextResponse.json({ error: 'clientId y tipo son requeridos' }, { status: 400 });
         }
@@ -52,93 +52,33 @@ export async function PUT(request: Request) {
         let nuevaFechaInicio: Date;
         let nuevaFechaFin: Date;
 
-        const hoy = new Date();
+        if (isAdvanced && usuario.membresiaActual) {
+            // Obtener la fechaFin de la membresía actual
+            const currentFechaFin = new Date(usuario.membresiaActual.fechaFin);
+            console.log('Backend: currentFechaFin:', currentFechaFin);
 
-        if (usuario.membresiaActual && new Date(usuario.membresiaActual.fechaFin) >= hoy) {
-            // Si la membresía actual está activa, extender desde la fechaFin actual
-            nuevaFechaInicio = new Date(usuario.membresiaActual.fechaFin);
-            let additionalDays = getAdditionalDays(tipo);
+            // Calcular los días adicionales basados en el tipo de membresía
+            const additionalDays = getAdditionalDays(tipo);
+            console.log('Backend: additionalDays:', additionalDays);
 
-            // Solo restar días si no es TRIMESTRAL y contarDiasSinPago está activo
-            if (contarDiasSinPago && tipo.toUpperCase() !== 'TRIMESTRAL') {
-                // Calcular días sin pago
-                const fechaUltimoPago = new Date(usuario.membresiaActual.fechaInicio);
-                const diasSinPago = Math.floor((hoy.getTime() - fechaUltimoPago.getTime()) / (1000 * 60 * 60 * 24));
+            // Establecer la nueva fecha de inicio como la fechaFin actual
+            nuevaFechaInicio = currentFechaFin;
 
-                console.log('Backend: Días sin pago:', diasSinPago);
-
-                // Restar días sin pago de la duración total
-                additionalDays = Math.max(additionalDays - diasSinPago, 0);
-                console.log('Backend: Días adicionales después de restar sin pago:', additionalDays);
-            }
-
-            nuevaFechaFin = new Date(nuevaFechaInicio.getTime() + (additionalDays * 24 * 60 * 60 * 1000));
-
-            console.log('Backend: Extendiendo membresía existente');
-            console.log('Nueva Fecha Inicio:', nuevaFechaInicio);
-            console.log('Nueva Fecha Fin:', nuevaFechaFin);
+            // Calcular la nueva fecha de fin añadiendo los días adicionales usando getTime
+            nuevaFechaFin = new Date(currentFechaFin.getTime() + (additionalDays * 24 * 60 * 60 * 1000));
+            console.log('Backend: nuevaFechaFin (adelantado):', nuevaFechaFin);
         } else {
-            // Si no hay membresía activa, iniciar desde hoy o desde la fecha proporcionada si es avanzado
-            if (isAdvanced) {
-                // Usar la fechaFin proporcionada para iniciar la nueva membresía desde allí
-                if (!fechaFin) {
-                    console.log('Backend: fechaFin faltante para pago adelantado');
-                    return NextResponse.json({ error: 'fechaFin es requerido para pagos adelantados' }, { status: 400 });
-                }
-                nuevaFechaInicio = new Date(fechaFin);
-                const additionalDays = getAdditionalDays(tipo);
-                nuevaFechaFin = new Date(nuevaFechaInicio.getTime() + (additionalDays * 24 * 60 * 60 * 1000));
-
-                console.log('Backend: Creando membresía adelantada desde fechaFin proporcionada');
-                console.log('Nueva Fecha Inicio:', nuevaFechaInicio);
-                console.log('Nueva Fecha Fin:', nuevaFechaFin);
-            } else {
-                if (!fechaInicio || !fechaFin) {
-                    console.log('Backend: fechaInicio o fechaFin faltantes');
-                    return NextResponse.json({ error: 'fechaInicio y fechaFin son requeridos si no es adelantado' }, { status: 400 });
-                }
-
-                nuevaFechaInicio = new Date(fechaInicio);
-                nuevaFechaFin = new Date(fechaFin);
-
-                // Si se debe contar días sin pago, calcular y restar días
-                if (contarDiasSinPago && tipo.toUpperCase() !== 'TRIMESTRAL') {
-                    const diasSinPago = Math.floor((hoy.getTime() - nuevaFechaInicio.getTime()) / (1000 * 60 * 60 * 24));
-                    console.log('Backend: Días sin pago:', diasSinPago);
-
-                    const durationDays = getAdditionalDays(tipo);
-                    const adjustedDays = Math.max(durationDays - diasSinPago, 0);
-                    nuevaFechaFin = new Date(nuevaFechaInicio.getTime() + (adjustedDays * 24 * 60 * 60 * 1000));
-
-                    console.log('Backend: Fecha Fin ajustada después de restar días sin pago:', nuevaFechaFin);
-                }
-
-                console.log('Backend: Creando nueva membresía desde hoy o fechaInicio proporcionada');
-                console.log('Nueva Fecha Inicio:', nuevaFechaInicio);
-                console.log('Nueva Fecha Fin:', nuevaFechaFin);
+            // Si no es un pago adelantado, usar las fechas proporcionadas en la solicitud
+            if (!fechaInicio || !fechaFin) {
+                console.log('Backend: fechaInicio o fechaFin faltantes');
+                return NextResponse.json({ error: 'fechaInicio y fechaFin son requeridos si no es adelantado' }, { status: 400 });
             }
-        }
 
-        // Verificar que no exista una membresía superpuesta
-        const overlappingMembership = await prisma.membresia.findFirst({
-            where: {
-                clienteId: clientId,
-                OR: [
-                    {
-                        fechaInicio: {
-                            lte: nuevaFechaFin,
-                        },
-                        fechaFin: {
-                            gte: nuevaFechaInicio,
-                        },
-                    },
-                ],
-            },
-        });
+            nuevaFechaInicio = new Date(fechaInicio);
+            nuevaFechaFin = new Date(fechaFin);
 
-        if (overlappingMembership) {
-            console.log('Backend: Membresía superpuesta detectada');
-            return NextResponse.json({ error: 'Ya existe una membresía que se superpone con las fechas proporcionadas' }, { status: 400 });
+            console.log('Backend: nuevaFechaInicio (normal):', nuevaFechaInicio);
+            console.log('Backend: nuevaFechaFin (normal):', nuevaFechaFin);
         }
 
         // Crear una nueva membresía con las fechas calculadas
