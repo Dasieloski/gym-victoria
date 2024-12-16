@@ -94,17 +94,27 @@ export async function PUT(request: Request) {
             nuevaFechaFin = new Date(currentFechaFin.getTime() + (additionalDaysToAdd * 24 * 60 * 60 * 1000));
             console.log('Backend: nuevaFechaFin (adelantado):', nuevaFechaFin);
         } else {
-            // Si no es un pago adelantado ni contar días sin pago, usar las fechas proporcionadas en la solicitud
-            if (!fechaInicio || !fechaFin) {
-                console.log('Backend: fechaInicio o fechaFin faltantes');
-                return NextResponse.json({ error: 'fechaInicio y fechaFin son requeridos si no es adelantado' }, { status: 400 });
+            if (usuario.membresiaActual) {
+                // Si el cliente tiene una membresía actual, usar las fechas proporcionadas
+                if (!fechaInicio || !fechaFin) {
+                    console.log('Backend: fechaInicio o fechaFin faltantes');
+                    return NextResponse.json({ error: 'fechaInicio y fechaFin son requeridos si no es adelantado' }, { status: 400 });
+                }
+
+                nuevaFechaInicio = new Date(fechaInicio);
+                nuevaFechaFin = new Date(fechaFin);
+
+                console.log('Backend: nuevaFechaInicio (normal):', nuevaFechaInicio);
+                console.log('Backend: nuevaFechaFin (normal):', nuevaFechaFin);
+            } else {
+                // Si el cliente no tiene una membresía actual, asignar fechas automáticamente
+                nuevaFechaInicio = hoy;
+                const diasDeMembresia = getAdditionalDays(tipo);
+                nuevaFechaFin = new Date(hoy.getTime() + (diasDeMembresia * 24 * 60 * 60 * 1000));
+
+                console.log('Backend: nuevaFechaInicio (automático):', nuevaFechaInicio);
+                console.log('Backend: nuevaFechaFin (automático):', nuevaFechaFin);
             }
-
-            nuevaFechaInicio = new Date(fechaInicio);
-            nuevaFechaFin = new Date(fechaFin);
-
-            console.log('Backend: nuevaFechaInicio (normal):', nuevaFechaInicio);
-            console.log('Backend: nuevaFechaFin (normal):', nuevaFechaFin);
         }
 
         // Crear una nueva membresía con las fechas calculadas
