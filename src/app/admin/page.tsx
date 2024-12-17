@@ -114,7 +114,7 @@ export default function AdminDashboard() {
     const [currentPage, setCurrentPage] = useState(1);
     const [clientesProximosPagos, setClientesProximosPagos] = useState<ClientType[]>([]);
     const itemsPerPage = 10; // Puedes ajustar este valor según tus necesidades
-    const [membresiasHoy, setMembresiasHoy] = useState(0);
+    const [membresiasHoy, setMembresiasHoy] = useState<number>(0);
     const [selectedMembership, setSelectedMembership] = useState<{
         [key: number]: {
             tipo: string;
@@ -179,19 +179,32 @@ export default function AdminDashboard() {
             let contador = 0;
 
             clientesConMembresia.forEach(client => {
+                // Contar todas las membresías en el array 'membresias'
                 if (client.membresias && Array.isArray(client.membresias)) {
                     client.membresias.forEach(membresia => {
                         const fechaInicio = dayjs(membresia.fechaInicio).startOf('day');
                         if (fechaInicio.isSame(hoy, 'day')) {
-                            //   console.log(`Cliente: ${client.nombre}, Fecha Inicio: ${fechaInicio.format('YYYY-MM-DD')}`);
                             contador += 1;
+                            console.log(`Membresía registrada para cliente ${client.nombre} el ${fechaInicio.format('YYYY-MM-DD')}`);
                         }
                     });
                 }
+
+                // Contar 'membresiaActual' si no está incluida en el array 'membresias'
+                if (client.membresiaActual) {
+                    const yaContada = client.membresias?.some(m => m.id === client.membresiaActual?.id);
+                    if (!yaContada) {
+                        const fechaInicioActual = dayjs(client.membresiaActual.fechaInicio).startOf('day');
+                        if (fechaInicioActual.isSame(hoy, 'day')) {
+                            contador += 1;
+                            console.log(`Membresía actual registrada para cliente ${client.nombre} el ${fechaInicioActual.format('YYYY-MM-DD')}`);
+                        }
+                    }
+                }
             });
 
-            //  console.log(`Membresías asignadas hoy: ${contador}`);
             setMembresiasHoy(contador);
+            console.log(`Total de membresías pagadas hoy: ${contador}`);
         };
 
         contarMembresiasHoy();
@@ -1018,7 +1031,7 @@ export default function AdminDashboard() {
                                                     </div>
                                                     <div className="grid grid-cols-4 items-center gap-4">
                                                         <Label htmlFor="phone" className="text-right">
-                                                            Tel��fono
+                                                            Teléfono
                                                         </Label>
                                                         <Input
                                                             id="phone"
