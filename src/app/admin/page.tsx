@@ -747,7 +747,12 @@ export default function AdminDashboard() {
         setCurrentPage(1);
     }, [searchHistory, sortBy]);
 
-    const handleMembershipChange = async (clientId: number, newMembershipType: string, isAdvanced: boolean, countDaysWithoutPayment: boolean) => {
+    const handleMembershipChange = async (
+        clientId: number,
+        newMembershipType: string,
+        isAdvanced: boolean,
+        countDaysWithoutPayment: boolean
+    ) => {
         try {
             const requestBody: any = { clientId, tipo: newMembershipType };
 
@@ -782,6 +787,35 @@ export default function AdminDashboard() {
                     requestBody.additionalDays = additionalDays;
                     requestBody.countDaysWithoutPayment = true;
                 }
+            } else {
+                // Asignar fechas automáticamente para membresías normales
+                const client = clientesConMembresia.find(c => c.id === clientId);
+                let nuevaFechaInicio: string;
+                let nuevaFechaFin: string;
+
+                if (client && client.membresiaActual) {
+                    const fechaFinActual = new Date(client.membresiaActual.fechaFin);
+                    const hoy = new Date();
+
+                    // Establecer la nueva fecha de inicio como la fecha de fin actual o hoy, lo que sea mayor
+                    const inicio = fechaFinActual > hoy ? fechaFinActual : hoy;
+                    nuevaFechaInicio = inicio.toISOString();
+
+                    // Calcular la nueva fecha de fin sumando los días correspondientes al tipo de membresía
+                    const diasDeMembresia = getAdditionalDays(newMembershipType);
+                    const fin = new Date(inicio.getTime() + diasDeMembresia * 24 * 60 * 60 * 1000);
+                    nuevaFechaFin = fin.toISOString();
+                } else {
+                    const hoy = new Date();
+                    nuevaFechaInicio = hoy.toISOString();
+
+                    const diasDeMembresia = getAdditionalDays(newMembershipType);
+                    const fin = new Date(hoy.getTime() + diasDeMembresia * 24 * 60 * 60 * 1000);
+                    nuevaFechaFin = fin.toISOString();
+                }
+
+                requestBody.fechaInicio = nuevaFechaInicio;
+                requestBody.fechaFin = nuevaFechaFin;
             }
 
             const response = await fetch('/api/admin/updateMembership', {
@@ -839,6 +873,19 @@ export default function AdminDashboard() {
     const handleSortChange = (field: string) => {
         setSortBy(field);
     }
+
+    const getAdditionalDays = (tipo: string): number => {
+        switch (tipo.toUpperCase()) {
+            case 'ANUAL':
+                return 365;
+            case 'TRIMESTRAL':
+                return 180; // 3 meses
+            case 'MENSUAL':
+                return 30;
+            default:
+                return 30; // Por defecto, asumiendo 30 días
+        }
+    };
 
     return (
         <div className={`min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 ${isDarkMode ? 'dark' : ''}`}>
