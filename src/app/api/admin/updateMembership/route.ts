@@ -120,7 +120,7 @@ export async function PUT(request: Request) {
         // Crear una nueva membresía con las fechas calculadas
         const nuevaMembresia = await prisma.membresia.create({
             data: {
-                tipo: tipo.toUpperCase(),
+                tipo: tipo,
                 fechaInicio: nuevaFechaInicio,
                 fechaFin: nuevaFechaFin,
                 estadoPago: 'PAGADO',

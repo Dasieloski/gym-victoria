@@ -765,19 +765,18 @@ export default function AdminDashboard() {
 
                     console.log(`Días sin pago para cliente ${client.id}:`, diasSinPago);
 
-                    // Restar los días sin pago al periodo de la nueva membresía
+                    // Calcular additionalDays basado en el tipo de membresía y días sin pago
                     let additionalDays = 0;
                     if (newMembershipType === 'MENSUAL') {
                         additionalDays = 30 - diasSinPago;
                     } else if (newMembershipType === 'ANUAL') {
                         additionalDays = 365 - diasSinPago;
                     } else if (newMembershipType === 'TRIMESTRAL') {
-                        // No modificar las membresías trimestrales
-                        additionalDays = 180;
+                        additionalDays = 180; // No modificar las membresías trimestrales
                     }
 
                     // Asegurarse de que additionalDays no sea negativo
-                    if (additionalDays < 0) additionalDays = 0;
+                    additionalDays = Math.max(additionalDays, 0);
 
                     requestBody.additionalDays = additionalDays;
                     requestBody.countDaysWithoutPayment = true;
