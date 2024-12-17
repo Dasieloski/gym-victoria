@@ -1,43 +1,33 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { TipoMembresia } from '@prisma/client';
 
-interface MembershipRequest {
-    clientId: number;
-    tipo: TipoMembresia;
-    descripcion?: string;
-    fechaInicio?: string;
-    fechaFin?: string;
-    additionalDays?: number;
-    countDaysWithoutPayment?: boolean;
-}
-
-const getAdditionalDays = (tipo: TipoMembresia): number => {
-    switch (tipo) {
-        case TipoMembresia.ANUAL:
+// Función auxiliar para determinar días adicionales según el tipo de membresía
+const getAdditionalDays = (tipo: string): number => {
+    switch (tipo.toUpperCase()) {
+        case 'ANUAL':
             return 365;
-        case TipoMembresia.TRIMESTRAL:
-            return 180; // 6 meses
-        case TipoMembresia.MENSUAL:
+        case 'TRIMESTRAL':
+            return 180; // 3 meses
+        case 'MENSUAL':
             return 30;
         default:
-            return 30; // Por defecto, 30 días
+            return 30; // Por defecto, asumiendo 30 días
     }
 }
 
 export async function PUT(request: Request) {
     try {
-        const { clientId, tipo, descripcion, fechaInicio, fechaFin, additionalDays, countDaysWithoutPayment } = (await request.json()) as MembershipRequest;
+        // Leer todo el cuerpo de la solicitud
+        const { clientId, tipo, descripcion, fechaInicio, fechaFin, additionalDays, countDaysWithoutPayment } = await request.json();
 
-        console.log('Backend: Recibido PUT request con los siguientes datos:', {
-            clientId,
-            tipo,
-            descripcion,
-            fechaInicio,
-            fechaFin,
-            additionalDays,
-            countDaysWithoutPayment
-        });
+        console.log('Backend: Recibido PUT request');
+        console.log('clientId:', clientId);
+        console.log('tipo:', tipo);
+        console.log('descripcion:', descripcion);
+        console.log('fechaInicio:', fechaInicio);
+        console.log('fechaFin:', fechaFin);
+        console.log('additionalDays:', additionalDays);
+        console.log('countDaysWithoutPayment:', countDaysWithoutPayment);
 
         if (!clientId || !tipo) {
             console.log('Backend: clientId o tipo faltantes');
@@ -57,17 +47,15 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: 'Cliente no encontrado' }, { status: 404 });
         }
 
-        // Obtener la fecha actual y normalizarla a inicio del día
+        // Obtener la fecha actual
         const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
 
         let nuevaFechaInicio: Date;
         let nuevaFechaFin: Date;
 
         if (countDaysWithoutPayment) {
             // Calcular los días sin pago
-            const fechaFinActual = usuario.membresiaActual?.fechaFin ? new Date(usuario.membresiaActual.fechaFin) : hoy;
-            fechaFinActual.setHours(0, 0, 0, 0);
+            const fechaFinActual = new Date(usuario.membresiaActual?.fechaFin || hoy);
             const diferenciaTiempo = hoy.getTime() - fechaFinActual.getTime();
             const diasSinPago = Math.floor(diferenciaTiempo / (1000 * 60 * 60 * 24));
 
@@ -80,10 +68,10 @@ export async function PUT(request: Request) {
             console.log('Backend: diasParaAgregar:', diasParaAgregar);
 
             // Establecer la nueva fecha de inicio como hoy
-            nuevaFechaInicio = new Date(hoy);
+            nuevaFechaInicio = hoy;
 
             // Calcular la nueva fecha de fin añadiendo los días a agregar
-            nuevaFechaFin = new Date(hoy.getTime() + diasParaAgregar * 24 * 60 * 60 * 1000);
+            nuevaFechaFin = new Date(hoy.getTime() + (diasParaAgregar * 24 * 60 * 60 * 1000));
 
             console.log('Backend: nuevaFechaFin (contar días sin pago):', nuevaFechaFin);
         } else if (descripcion && descripcion.toLowerCase().includes('adelantado') && usuario.membresiaActual) {
@@ -92,19 +80,18 @@ export async function PUT(request: Request) {
             console.log('Backend: isAdvanced:', isAdvanced);
 
             // Obtener la fechaFin de la membresía actual
-            const currentFechaFin = usuario.membresiaActual.fechaFin ? new Date(usuario.membresiaActual.fechaFin) : hoy;
-            currentFechaFin.setHours(0, 0, 0, 0);
+            const currentFechaFin = new Date(usuario.membresiaActual.fechaFin);
             console.log('Backend: currentFechaFin:', currentFechaFin);
 
             // Calcular los días adicionales basados en el tipo de membresía
             const additionalDaysToAdd = additionalDays || getAdditionalDays(tipo);
             console.log('Backend: additionalDays:', additionalDaysToAdd);
 
-            // **Modificar la fecha de inicio para que sea hoy para las membresías adelantadas**
-            nuevaFechaInicio = new Date(hoy);
+            // Establecer la nueva fecha de inicio como la fechaFin actual
+            nuevaFechaInicio = currentFechaFin;
 
             // Calcular la nueva fecha de fin añadiendo los días adicionales
-            nuevaFechaFin = new Date(hoy.getTime() + additionalDaysToAdd * 24 * 60 * 60 * 1000);
+            nuevaFechaFin = new Date(currentFechaFin.getTime() + (additionalDaysToAdd * 24 * 60 * 60 * 1000));
             console.log('Backend: nuevaFechaFin (adelantado):', nuevaFechaFin);
         } else {
             if (usuario.membresiaActual) {
@@ -115,17 +102,15 @@ export async function PUT(request: Request) {
                 }
 
                 nuevaFechaInicio = new Date(fechaInicio);
-                nuevaFechaInicio.setHours(0, 0, 0, 0);
                 nuevaFechaFin = new Date(fechaFin);
-                nuevaFechaFin.setHours(23, 59, 59, 999);
 
                 console.log('Backend: nuevaFechaInicio (normal):', nuevaFechaInicio);
                 console.log('Backend: nuevaFechaFin (normal):', nuevaFechaFin);
             } else {
                 // Si el cliente no tiene una membresía actual, asignar fechas automáticamente
-                nuevaFechaInicio = new Date(hoy);
+                nuevaFechaInicio = hoy;
                 const diasDeMembresia = getAdditionalDays(tipo);
-                nuevaFechaFin = new Date(hoy.getTime() + diasDeMembresia * 24 * 60 * 60 * 1000);
+                nuevaFechaFin = new Date(hoy.getTime() + (diasDeMembresia * 24 * 60 * 60 * 1000));
 
                 console.log('Backend: nuevaFechaInicio (automático):', nuevaFechaInicio);
                 console.log('Backend: nuevaFechaFin (automático):', nuevaFechaFin);
@@ -135,7 +120,7 @@ export async function PUT(request: Request) {
         // Crear una nueva membresía con las fechas calculadas
         const nuevaMembresia = await prisma.membresia.create({
             data: {
-                tipo: tipo,
+                tipo: tipo.toUpperCase(),
                 fechaInicio: nuevaFechaInicio,
                 fechaFin: nuevaFechaFin,
                 estadoPago: 'PAGADO',
