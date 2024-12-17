@@ -12,6 +12,7 @@ export interface ClientType {
         fechaInicio: string;
         fechaFin: string;
         estadoPago: string;
+        createdAt: string;
     };
     membresias: {
         id: number;
@@ -19,6 +20,7 @@ export interface ClientType {
         fechaInicio: string;
         fechaFin: string;
         estadoPago: string;
+        createdAt: string;
     }[];
     entrenadorAsignado?: {
         id: number;

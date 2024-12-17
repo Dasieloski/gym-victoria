@@ -182,10 +182,10 @@ export default function AdminDashboard() {
                 // Contar todas las membresías en el array 'membresias'
                 if (client.membresias && Array.isArray(client.membresias)) {
                     client.membresias.forEach(membresia => {
-                        const fechaInicio = dayjs(membresia.fechaInicio).startOf('day');
-                        if (fechaInicio.isSame(hoy, 'day')) {
+                        const fechaCreacion = dayjs(membresia.createdAt).startOf('day');
+                        if (fechaCreacion.isSame(hoy, 'day')) {
                             contador += 1;
-                            console.log(`Membresía registrada para cliente ${client.nombre} el ${fechaInicio.format('YYYY-MM-DD')}`);
+                            console.log(`Membresía registrada para cliente ${client.nombre} el ${fechaCreacion.format('YYYY-MM-DD')}`);
                         }
                     });
                 }
@@ -194,10 +194,10 @@ export default function AdminDashboard() {
                 if (client.membresiaActual) {
                     const yaContada = client.membresias?.some(m => m.id === client.membresiaActual?.id);
                     if (!yaContada) {
-                        const fechaInicioActual = dayjs(client.membresiaActual.fechaInicio).startOf('day');
-                        if (fechaInicioActual.isSame(hoy, 'day')) {
+                        const fechaCreacionActual = dayjs(client.membresiaActual.createdAt).startOf('day');
+                        if (fechaCreacionActual.isSame(hoy, 'day')) {
                             contador += 1;
-                            console.log(`Membresía actual registrada para cliente ${client.nombre} el ${fechaInicioActual.format('YYYY-MM-DD')}`);
+                           /*  console.log(`Membresía actual registrada para cliente ${client.nombre} el ${fechaInicioActual.format('YYYY-MM-DD')}`); */
                         }
                     }
                 }
