@@ -125,16 +125,19 @@ export async function DELETE(req: NextRequest) {
 
         // Borrar la foto física de Supabase Storage si existe y es de Supabase
         if (usuario?.foto && usuario.foto.includes('supabase')) {
-            // Extraer el bucket y el path del archivo
             try {
                 const url = new URL(usuario.foto);
-                // Ejemplo de URL: https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>
+                // pathParts: ["", "storage", "v1", "object", "public", "profile-images", "public", "Abel valdes araujo-1736779755379.jpg"]
                 const pathParts = url.pathname.split('/');
-                const bucketIndex = pathParts.indexOf('public') + 1;
-                const bucket = pathParts[bucketIndex - 1];
-                const filePath = pathParts.slice(bucketIndex).join('/');
+                const bucket = pathParts[4]; // "profile-images"
+                const filePath = pathParts.slice(5).join('/'); // "public/Abel valdes araujo-1736779755379.jpg"
                 if (bucket && filePath) {
-                    await supabase.storage.from(bucket).remove([filePath]);
+                    const { error } = await supabase.storage.from(bucket).remove([filePath]);
+                    if (error) {
+                        console.error('Error al borrar la foto en Supabase:', error);
+                    } else {
+                        console.log(`Foto eliminada de Supabase: bucket=${bucket}, filePath=${filePath}`);
+                    }
                 }
             } catch (e) {
                 console.error('Error al intentar borrar la foto física:', e);
