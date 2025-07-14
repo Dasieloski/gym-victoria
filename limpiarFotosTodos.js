@@ -26,9 +26,9 @@ async function limpiarFotosDuplicadasTodos() {
             return;
         }
 
-        // 3. Para cada usuario, elimina las fotos que no sean la válida
+        // 3. Construye un Set con todos los nombres de fotos válidas
+        const fotosValidas = new Set();
         for (const usuario of usuarios) {
-            // Extrae solo el nombre del archivo de la URL guardada en la BD
             let fotoValida = null;
             if (usuario.foto) {
                 try {
@@ -39,27 +39,48 @@ async function limpiarFotosDuplicadasTodos() {
                     // Si ya es solo el nombre, úsalo directo
                     fotoValida = usuario.foto;
                 }
+                fotosValidas.add(fotoValida);
             }
+        }
 
-            // Filtra archivos que empiezan con el username
+        // 4. Para cada usuario, elimina las fotos que no sean la válida
+        for (const usuario of usuarios) {
+            let fotoValida = null;
+            if (usuario.foto) {
+                try {
+                    const url = new URL(usuario.foto);
+                    fotoValida = decodeURIComponent(url.pathname.split('/').pop());
+                } catch {
+                    fotoValida = usuario.foto;
+                }
+            }
             const archivosUsuario = files.filter(file => file.name.startsWith(usuario.username));
             for (const archivo of archivosUsuario) {
                 if (archivo.name !== fotoValida) {
-                    // Confirmación extra antes de borrar
-                    console.log(`[PREVIEW] Se eliminaría: ${archivo.name} para usuario ${usuario.username}`);
-                    // Descomenta la siguiente línea SOLO cuando estés seguro:
                     const { error: deleteError } = await supabase.storage.from(bucket).remove([`${carpeta}/${archivo.name}`]);
                     if (deleteError) {
                         console.error(`Error al eliminar ${archivo.name}:`, deleteError);
                     } else {
-                        console.log(`Eliminado: ${archivo.name}`);
+                        console.log(`Eliminado duplicada: ${archivo.name}`);
                     }
                 }
             }
         }
 
+        // 5. Elimina todas las fotos que no sean de ningún usuario existente
+        for (const archivo of files) {
+            if (!fotosValidas.has(archivo.name)) {
+                const { error: deleteError } = await supabase.storage.from(bucket).remove([`${carpeta}/${archivo.name}`]);
+                if (deleteError) {
+                    console.error(`Error al eliminar huérfana ${archivo.name}:`, deleteError);
+                } else {
+                    console.log(`Eliminada huérfana: ${archivo.name}`);
+                }
+            }
+        }
+
         await prisma.$disconnect();
-        console.log('PREVIEW completado. Si todo está correcto, descomenta la línea de borrado para ejecutar el borrado real.');
+        console.log('Limpieza completada. Todas las fotos duplicadas y huérfanas han sido eliminadas.');
     } catch (err) {
         console.error('Error general:', err);
         await prisma.$disconnect();

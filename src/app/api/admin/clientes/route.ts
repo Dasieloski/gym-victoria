@@ -127,10 +127,10 @@ export async function DELETE(req: NextRequest) {
         if (usuario?.foto && usuario.foto.includes('supabase')) {
             try {
                 const url = new URL(usuario.foto);
-                // pathParts: ["", "storage", "v1", "object", "public", "profile-images", "public", "Abel valdes araujo-1736779755379.jpg"]
                 const pathParts = url.pathname.split('/');
                 const bucket = pathParts[4]; // "profile-images"
-                const filePath = pathParts.slice(5).join('/'); // "public/Abel valdes araujo-1736779755379.jpg"
+                const filePath = pathParts.slice(5).join('/'); // "public/archivo.jpg"
+                console.log('Intentando borrar foto:', { bucket, filePath, url: usuario.foto });
                 if (bucket && filePath) {
                     const { error } = await supabase.storage.from(bucket).remove([filePath]);
                     if (error) {
@@ -138,10 +138,14 @@ export async function DELETE(req: NextRequest) {
                     } else {
                         console.log(`Foto eliminada de Supabase: bucket=${bucket}, filePath=${filePath}`);
                     }
+                } else {
+                    console.error('No se pudo extraer bucket o filePath correctamente.', { bucket, filePath });
                 }
             } catch (e) {
                 console.error('Error al intentar borrar la foto física:', e);
             }
+        } else {
+            console.log('No se encontró foto válida para borrar o no es de Supabase:', usuario?.foto);
         }
 
         return NextResponse.json({ message: 'Cliente eliminado con éxito', cliente: deletedCliente });
