@@ -11,7 +11,7 @@
     "sentry:deploy": "sentry-cli releases finalize $(npm pkg get name | tr -d '\"')@$(npm pkg get version | tr -d '\"')"
   },
   "dependencies": {
-    "@prisma/client": "^5.19.1",
+    "@prisma/client": "^5.22.0",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-icons": "^1.3.0",
     "@radix-ui/react-label": "^2.1.0",
@@ -54,7 +54,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.7",
     "postcss": "^8",
-    "prisma": "^5.19.1",
+    "prisma": "^5.22.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },

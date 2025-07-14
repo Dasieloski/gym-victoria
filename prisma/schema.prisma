@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
@@ -126,7 +127,35 @@ enum EstadoPago {
   IMPAGADO
 }
 
+model Reserva {
+  id           Int           @id @default(autoincrement())
+  clienteId    Int
+  entrenadorId Int?
+  fecha        DateTime
+  estado       EstadoReserva
+  cliente      Usuario       @relation("ClienteReservas", fields: [clienteId], references: [id], map: "Reserva_ClienteId_fkey")
+  entrenador   Entrenador?   @relation("EntrenadorReservas", fields: [entrenadorId], references: [id], map: "Reserva_EntrenadorId_fkey")
+  historiales  Historial[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @default(now())
+}
+
 enum EstadoReserva {
   ACTIVA
   CANCELADA
+}
+
+model Historial {
+  id           Int         @id @default(autoincrement())
+  accion       String
+  descripcion  String
+  usuarioId    Int
+  usuario      Usuario     @relation(fields: [usuarioId], references: [id], map: "Historial_UsuarioId_fkey")
+  entrenadorId Int?
+  entrenador   Entrenador? @relation(fields: [entrenadorId], references: [id], map: "Historial_EntrenadorId_fkey")
+  membresiaId  Int?
+  membresia    Membresia?  @relation(fields: [membresiaId], references: [id], map: "Historial_MembresiaId_fkey")
+  reservaId    Int?
+  reserva      Reserva?    @relation(fields: [reservaId], references: [id], map: "Historial_ReservaId_fkey")
+  fecha        DateTime    @default(now())
 }

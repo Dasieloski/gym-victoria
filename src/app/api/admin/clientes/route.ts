@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { supabase } from '@/lib/supabaseClient';
 
 export async function GET() {
   try {
@@ -96,6 +97,12 @@ export async function DELETE(req: NextRequest) {
     }
 
     try {
+        // Obtener la foto antes de eliminar el usuario
+        const usuario = await prisma.usuario.findUnique({
+            where: { id: clienteId },
+            select: { foto: true },
+        });
+
         // Eliminar referencias a reservas
         await prisma.reserva.deleteMany({
             where: { clienteId: clienteId },
@@ -115,6 +122,24 @@ export async function DELETE(req: NextRequest) {
         const deletedCliente = await prisma.usuario.delete({
             where: { id: clienteId },
         });
+
+        // Borrar la foto física de Supabase Storage si existe y es de Supabase
+        if (usuario?.foto && usuario.foto.includes('supabase')) {
+            // Extraer el bucket y el path del archivo
+            try {
+                const url = new URL(usuario.foto);
+                // Ejemplo de URL: https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>
+                const pathParts = url.pathname.split('/');
+                const bucketIndex = pathParts.indexOf('public') + 1;
+                const bucket = pathParts[bucketIndex - 1];
+                const filePath = pathParts.slice(bucketIndex).join('/');
+                if (bucket && filePath) {
+                    await supabase.storage.from(bucket).remove([filePath]);
+                }
+            } catch (e) {
+                console.error('Error al intentar borrar la foto física:', e);
+            }
+        }
 
         return NextResponse.json({ message: 'Cliente eliminado con éxito', cliente: deletedCliente });
     } catch (error) {
