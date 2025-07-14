@@ -128,8 +128,8 @@ export async function DELETE(req: NextRequest) {
             try {
                 const url = new URL(usuario.foto);
                 const pathParts = url.pathname.split('/');
-                const bucket = pathParts[4]; // "profile-images"
-                const filePath = pathParts.slice(5).join('/'); // "public/archivo.jpg"
+                const bucket = pathParts[5]; // "profile-images"
+                const filePath = pathParts.slice(6).join('/'); // "public/archivo.jpg"
                 console.log('Intentando borrar foto:', { bucket, filePath, url: usuario.foto });
                 if (bucket && filePath) {
                     const { error } = await supabase.storage.from(bucket).remove([filePath]);
